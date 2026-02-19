@@ -17,6 +17,7 @@ backend/weldix.db
 !.env.example
 
 # Local docs (not published)
+doc/
 backend/docs/
 
 # Frontend artifacts
