@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import { useNavigate } from 'react-router-dom'
 
 import { useAuthSession } from '../../auth/useAuthSession'
 import { API_BASE_URL } from '../../shared/api'
@@ -24,6 +25,7 @@ const LOGIN_ROLE_PRESETS = {
 const MotionButton = motion.button
 
 function LoginPage() {
+  const navigate = useNavigate()
   const { token, profile, isFetchingProfile, saveToken, refreshProfile, clearSession } = useAuthSession()
 
   const [selectedLoginRole, setSelectedLoginRole] = useState('admin')
@@ -64,6 +66,7 @@ function LoginPage() {
       const me = await refreshProfile(data.access_token)
       if (me?.role) {
         setFeedback(`Sesion activa como ${me.role}`)
+        navigate('/app/inicio', { replace: true })
       }
     } catch (err) {
       setError(err.message)

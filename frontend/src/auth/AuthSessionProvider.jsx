@@ -9,6 +9,7 @@ export function AuthSessionProvider({ children }) {
   const [token, setToken] = useState('')
   const [profile, setProfile] = useState(null)
   const [isFetchingProfile, setIsFetchingProfile] = useState(false)
+  const [isSessionBootstrapped, setIsSessionBootstrapped] = useState(false)
 
   const clearSession = useCallback(() => {
     localStorage.removeItem(TOKEN_STORAGE_KEY)
@@ -50,9 +51,15 @@ export function AuthSessionProvider({ children }) {
 
   useEffect(() => {
     const savedToken = localStorage.getItem(TOKEN_STORAGE_KEY)
-    if (!savedToken) return
+    if (!savedToken) {
+      setIsSessionBootstrapped(true)
+      return
+    }
+
     setToken(savedToken)
-    refreshProfile(savedToken).catch(() => {})
+    refreshProfile(savedToken)
+      .catch(() => {})
+      .finally(() => setIsSessionBootstrapped(true))
   }, [refreshProfile])
 
   const value = useMemo(
@@ -60,11 +67,20 @@ export function AuthSessionProvider({ children }) {
       token,
       profile,
       isFetchingProfile,
+      isSessionBootstrapped,
       saveToken,
       refreshProfile,
       clearSession,
     }),
-    [token, profile, isFetchingProfile, saveToken, refreshProfile, clearSession],
+    [
+      token,
+      profile,
+      isFetchingProfile,
+      isSessionBootstrapped,
+      saveToken,
+      refreshProfile,
+      clearSession,
+    ],
   )
 
   return <AuthSessionContext.Provider value={value}>{children}</AuthSessionContext.Provider>
