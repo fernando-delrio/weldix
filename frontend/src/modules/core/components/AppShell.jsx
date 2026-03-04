@@ -1,10 +1,10 @@
 import { useMemo } from 'react'
 
-import { useAuthSession } from '../../auth/useAuthSession'
-import { useClock } from '../../hooks/useClock'
+import { useAuthSession } from '../../auth/hooks/useAuthSession'
+import { useClock } from '../hooks/useClock'
 import AppHeader from './AppHeader'
 import BottomNav from './BottomNav'
-import { APP_SHELL_NAV_ITEMS } from './navigation'
+import { APP_SHELL_NAV_ITEMS } from '../lib/navigation'
 
 function getUserInitials(profile) {
   const rawName = profile?.full_name?.trim()

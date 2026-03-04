@@ -1,4 +1,4 @@
-import { toneFor } from './tones'
+import { toneFor } from '../lib/tones'
 import PanelCard from './PanelCard'
 import StageProgress from './StageProgress'
 

@@ -1,4 +1,4 @@
-import { cx } from '../../../shared/cx'
+import { cx } from '../../core/lib/cx'
 
 function StageProgress({ stages, currentStage }) {
   const totalStages = stages.length || 1

@@ -1,6 +1,6 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 
-import { useAuthSession } from './useAuthSession'
+import { useAuthSession } from '../hooks/useAuthSession'
 
 function ProtectedRoute() {
   const { token, profile, isFetchingProfile, isSessionBootstrapped } = useAuthSession()

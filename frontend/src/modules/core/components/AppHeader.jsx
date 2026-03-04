@@ -1,4 +1,4 @@
-import { cx } from '../../shared/cx'
+import { cx } from '../lib/cx'
 
 function AppHeader({ roleLabel, timeLabel, userInitials, onLogout }) {
   return (

@@ -1,14 +1,14 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 
-import { AuthSessionProvider } from './auth/AuthSessionProvider'
-import ProtectedRoute from './auth/ProtectedRoute'
-import { useAuthSession } from './auth/useAuthSession'
-import OperarioDashboardPage from './pages/app/OperarioDashboardPage'
-import PerfilPage from './pages/app/PerfilPage'
-import StockPage from './pages/app/StockPage'
-import TrabajosPage from './pages/app/TrabajosPage'
-import LoginPage from './pages/auth/LoginPage'
-import RegisterPage from './pages/auth/RegisterPage'
+import { AuthSessionProvider } from './modules/auth/lib/AuthSessionProvider'
+import ProtectedRoute from './modules/auth/components/ProtectedRoute'
+import { useAuthSession } from './modules/auth/hooks/useAuthSession'
+import OperarioDashboardPage from './modules/dashboard/components/OperarioDashboardPage'
+import PerfilPage from './modules/dashboard/components/PerfilPage'
+import StockPage from './modules/dashboard/components/StockPage'
+import TrabajosPage from './modules/dashboard/components/TrabajosPage'
+import LoginPage from './modules/auth/components/LoginPage'
+import RegisterPage from './modules/auth/components/RegisterPage'
 
 function RootRedirect() {
   const { token, isSessionBootstrapped } = useAuthSession()

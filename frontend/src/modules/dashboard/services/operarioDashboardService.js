@@ -1,4 +1,4 @@
-import { mapOperarioDashboardModel } from '../models/operarioDashboardModel'
+import { mapOperarioDashboardModel } from '../lib/operarioDashboardModel'
 
 const MOCK_DELAY_MS = 260
 

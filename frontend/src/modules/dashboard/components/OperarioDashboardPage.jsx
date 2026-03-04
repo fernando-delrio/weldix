@@ -1,11 +1,11 @@
-import AppShell from '../../layouts/app-shell/AppShell'
-import { useOperarioDashboard } from '../../features/dashboard/hooks/useOperarioDashboard'
-import ActiveJobCard from '../../features/dashboard/components/ActiveJobCard'
-import MetricCard from '../../features/dashboard/components/MetricCard'
-import PanelCard from '../../features/dashboard/components/PanelCard'
-import SectionHeader from '../../features/dashboard/components/SectionHeader'
-import StockItem from '../../features/dashboard/components/StockItem'
-import TodayJobItem from '../../features/dashboard/components/TodayJobItem'
+import AppShell from '../../core/components/AppShell'
+import { useOperarioDashboard } from '../hooks/useOperarioDashboard'
+import ActiveJobCard from './ActiveJobCard'
+import MetricCard from './MetricCard'
+import PanelCard from './PanelCard'
+import SectionHeader from './SectionHeader'
+import StockItem from './StockItem'
+import TodayJobItem from './TodayJobItem'
 
 function DashboardLoadingState() {
   return (

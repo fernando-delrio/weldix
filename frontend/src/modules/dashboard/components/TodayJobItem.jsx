@@ -1,4 +1,4 @@
-import { toneFor } from './tones'
+import { toneFor } from '../lib/tones'
 
 function TodayJobItem({ job }) {
   const tone = toneFor(job.tone)

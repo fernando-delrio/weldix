@@ -1,8 +1,8 @@
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 
-import { API_BASE_URL } from '../../shared/api'
-import { authTw, cx } from './tw'
+import { API_BASE_URL } from '../../core/lib/api'
+import { authTw, cx } from '../utils/tw'
 
 const itemMotion = {
   initial: { opacity: 0, y: 18 },

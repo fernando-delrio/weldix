@@ -1,4 +1,4 @@
-import { toneFor } from './tones'
+import { toneFor } from '../lib/tones'
 
 function MetricCard({ item }) {
   const tone = toneFor(item.tone)

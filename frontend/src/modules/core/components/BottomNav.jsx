@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom'
 
-import { cx } from '../../shared/cx'
+import { cx } from '../lib/cx'
 
 function BottomNav({ items }) {
   const location = useLocation()

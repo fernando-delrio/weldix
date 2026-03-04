@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { AuthSessionContext } from './AuthSessionContext'
-import { API_BASE_URL } from '../shared/api'
+import { API_BASE_URL } from '../../core/lib/api'
 
 const TOKEN_STORAGE_KEY = 'weldix_access_token'
 

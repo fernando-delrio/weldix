@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 
-import { useAuthSession } from '../../auth/useAuthSession'
-import { API_BASE_URL } from '../../shared/api'
+import { useAuthSession } from '../hooks/useAuthSession'
+import { API_BASE_URL } from '../../core/lib/api'
 import AuthLayout from './AuthLayout'
-import { authTw, cx } from './tw'
+import { authTw, cx } from '../utils/tw'
 
 const REGISTER_ROLE_OPTIONS = {
   operario: {

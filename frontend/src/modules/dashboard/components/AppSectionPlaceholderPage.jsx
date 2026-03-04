@@ -1,5 +1,5 @@
-import AppShell from '../../layouts/app-shell/AppShell'
-import PanelCard from '../../features/dashboard/components/PanelCard'
+import AppShell from '../../core/components/AppShell'
+import PanelCard from './PanelCard'
 
 function AppSectionPlaceholderPage({ title, description }) {
   return (
