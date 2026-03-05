@@ -1,11 +1,13 @@
+import { useState } from 'react'
+
 import AppShell from '../../core/components/AppShell'
+import { useAuthSession } from '../../auth/hooks/useAuthSession'
 import { useOperarioDashboard } from '../hooks/useOperarioDashboard'
 import ActiveJobCard from './ActiveJobCard'
 import MetricCard from './MetricCard'
+import NuevoTrabajoModal from './NuevoTrabajoModal'
 import PanelCard from './PanelCard'
 import SectionHeader from './SectionHeader'
-import StockItem from './StockItem'
-import TodayJobItem from './TodayJobItem'
 
 function DashboardLoadingState() {
   return (
@@ -33,6 +35,7 @@ function DashboardErrorState({ error, onRetry }) {
 }
 
 function OperarioDashboardPage() {
+  const { profile } = useAuthSession()
   const {
     dashboard,
     isLoading,
@@ -43,24 +46,55 @@ function OperarioDashboardPage() {
     registerMaterialUsage,
   } = useOperarioDashboard()
 
+  const [showModal, setShowModal] = useState(false)
+  const [createdFeedback, setCreatedFeedback] = useState('')
+
+  const isAdmin = profile?.role === 'admin'
+
+  const handleCreated = (newJob) => {
+    setShowModal(false)
+    setCreatedFeedback(`Trabajo "${newJob.title}" creado correctamente.`)
+    setTimeout(() => setCreatedFeedback(''), 4000)
+  }
+
   return (
     <AppShell>
       <div className="mx-auto w-full max-w-[680px] space-y-4 pb-5">
         {isLoading || isEmpty ? <DashboardLoadingState /> : null}
         {!isLoading && error ? <DashboardErrorState error={error} onRetry={refresh} /> : null}
 
+        {createdFeedback && (
+          <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3">
+            <p className="text-sm font-semibold text-emerald-300">{createdFeedback}</p>
+          </div>
+        )}
+
         {!isLoading && dashboard ? (
           <>
             <section className="rounded-xl border border-cyan-900/50 bg-slate-900/55 p-4">
-              <p className="text-[0.64rem] font-bold uppercase tracking-[0.2em] text-sky-300">
-                {dashboard.greeting.greetingLabel}
-              </p>
-              <h1 className="mt-1 text-4xl font-extrabold tracking-tight text-slate-100">
-                {dashboard.greeting.operatorName}
-              </h1>
-              <p className="mt-1 text-sm text-slate-400">
-                {dashboard.greeting.dateLabel} - {dashboard.greeting.shiftLabel}
-              </p>
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-[0.64rem] font-bold uppercase tracking-[0.2em] text-sky-300">
+                    {dashboard.greeting.greetingLabel}
+                  </p>
+                  <h1 className="mt-1 text-4xl font-extrabold tracking-tight text-slate-100">
+                    {dashboard.greeting.operatorName}
+                  </h1>
+                  <p className="mt-1 text-sm text-slate-400">
+                    {dashboard.greeting.dateLabel} - {dashboard.greeting.shiftLabel}
+                  </p>
+                </div>
+
+                {isAdmin && (
+                  <button
+                    type="button"
+                    onClick={() => setShowModal(true)}
+                    className="shrink-0 rounded-xl border border-sky-500/50 bg-sky-500/15 px-3 py-2 text-[0.7rem] font-bold uppercase tracking-[0.14em] text-sky-300 transition hover:border-sky-400/70 hover:bg-sky-500/25"
+                  >
+                    + Nuevo trabajo
+                  </button>
+                )}
+              </div>
             </section>
 
             <section className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
@@ -84,26 +118,13 @@ function OperarioDashboardPage() {
               )}
             </section>
 
-            <section>
-              <SectionHeader title="Mis trabajos de hoy" actionLabel="Ver todos" actionTo="/app/trabajos" />
-              <div className="space-y-2.5">
-                {dashboard.todayJobs.map((job) => (
-                  <TodayJobItem key={job.id} job={job} />
-                ))}
-              </div>
-            </section>
-
-            <section>
-              <SectionHeader title="Stock materiales" actionLabel="Registrar uso" actionTo="/app/stock" />
-              <div className="space-y-2.5">
-                {dashboard.stock.map((item) => (
-                  <StockItem key={item.id} item={item} />
-                ))}
-              </div>
-            </section>
           </>
         ) : null}
       </div>
+
+      {showModal && (
+        <NuevoTrabajoModal onClose={() => setShowModal(false)} onCreated={handleCreated} />
+      )}
     </AppShell>
   )
 }
