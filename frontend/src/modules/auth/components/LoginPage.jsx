@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 
 import { useAuthSession } from '../hooks/useAuthSession'
@@ -22,11 +21,9 @@ const LOGIN_ROLE_PRESETS = {
   },
 }
 
-const MotionButton = motion.button
-
 function LoginPage() {
   const navigate = useNavigate()
-  const { token, profile, isFetchingProfile, saveToken, refreshProfile, clearSession } = useAuthSession()
+  const { saveToken, refreshProfile } = useAuthSession()
 
   const [selectedLoginRole, setSelectedLoginRole] = useState('admin')
   const [email, setEmail] = useState(LOGIN_ROLE_PRESETS.admin.email)
@@ -82,10 +79,6 @@ function LoginPage() {
       subtitle="Introduce tus credenciales para continuar"
       feedback={feedback}
       error={error}
-      token={token}
-      profile={profile}
-      isFetchingProfile={isFetchingProfile}
-      onLogout={clearSession}
     >
       <form onSubmit={handleLoginSubmit} className={authTw.formGrid}>
         <label htmlFor="login-email" className={authTw.fieldLabel}>
@@ -124,15 +117,13 @@ function LoginPage() {
 
         <p className={authTw.helperTextRight}>Olvidaste tu contrasena?</p>
 
-        <MotionButton
-          whileHover={{ scale: 1.01 }}
-          whileTap={{ scale: 0.99 }}
+        <button
           type="submit"
           disabled={isSubmitting}
           className={cx(authTw.primaryButton, authTw.primaryButtonWideTracking)}
         >
           {isSubmitting ? 'VALIDANDO...' : 'ENTRAR  ->'}
-        </MotionButton>
+        </button>
       </form>
 
       <div className={authTw.roleDivider}>
@@ -140,13 +131,9 @@ function LoginPage() {
       </div>
 
       <div className={authTw.roleGrid}>
-        {Object.entries(LOGIN_ROLE_PRESETS).map(([key, preset], index) => (
-          <MotionButton
+        {Object.entries(LOGIN_ROLE_PRESETS).map(([key, preset]) => (
+          <button
             key={key}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.3 + index * 0.08 }}
-            whileHover={{ y: -2 }}
             type="button"
             onClick={() => handleLoginRoleSelect(key)}
             className={cx(
@@ -156,7 +143,7 @@ function LoginPage() {
           >
             <span className={authTw.roleIcon}>{preset.icon}</span>
             <span>{preset.label}</span>
-          </MotionButton>
+          </button>
         ))}
       </div>
     </AuthLayout>

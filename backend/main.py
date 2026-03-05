@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.core.bootstrap import run_startup_tasks
-from app.features.auth.router import router as auth_router
+from backend.core.bootstrap import run_startup_tasks
+from backend.features.auth.router import router as auth_router
 
 app = FastAPI(title="Weldix API", version="1.0.0")
 
