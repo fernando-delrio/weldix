@@ -6,23 +6,11 @@ import { API_BASE_URL } from '../../core/lib/api'
 import AuthLayout from './AuthLayout'
 import { authTw, cx } from '../utils/tw'
 
-const REGISTER_ROLE_OPTIONS = {
-  operario: {
-    label: 'OPERARIO',
-    helper: 'Registro publico',
-  },
-  admin: {
-    label: 'JEFE / ADMIN',
-    helper: 'Solo admin autenticado',
-  },
-}
-
 const MotionButton = motion.button
 
 function RegisterPage() {
   const { token, profile, isFetchingProfile, clearSession } = useAuthSession()
 
-  const [registerRole, setRegisterRole] = useState('operario')
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -37,26 +25,11 @@ function RegisterPage() {
     setFeedback('')
 
     try {
-      const payload = {
-        email,
-        password,
-        full_name: name || null,
-      }
+      const payload = { email, password, full_name: name || null }
 
-      const headers = { 'Content-Type': 'application/json' }
-      let endpoint = `${API_BASE_URL}/auth/signup`
-
-      if (registerRole === 'admin') {
-        if (!token || profile?.role !== 'admin') {
-          throw new Error('Para registrar Jefe/Admin debes iniciar sesion como admin.')
-        }
-        endpoint = `${API_BASE_URL}/auth/admin/signup`
-        headers.Authorization = `Bearer ${token}`
-      }
-
-      const response = await fetch(endpoint, {
+      const response = await fetch(`${API_BASE_URL}/auth/signup`, {
         method: 'POST',
-        headers,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       })
       const data = await response.json()
@@ -65,11 +38,10 @@ function RegisterPage() {
         throw new Error(data.detail || 'No se pudo registrar el usuario')
       }
 
-      setFeedback(`Usuario creado: ${data.email} (${data.role})`)
+      setFeedback(`Cuenta creada: ${data.email}`)
       setName('')
       setEmail('')
       setPassword('')
-      setRegisterRole('operario')
     } catch (err) {
       setError(err.message)
     } finally {
@@ -80,8 +52,8 @@ function RegisterPage() {
   return (
     <AuthLayout
       mode="register"
-      title="Registrar usuario"
-      subtitle="Diferencia entre Operario y Jefe/Admin con seguridad en backend"
+      title="Crear cuenta"
+      subtitle="Registro de operario. Los administradores son creados por el jefe de taller."
       feedback={feedback}
       error={error}
       token={token}
@@ -140,30 +112,6 @@ function RegisterPage() {
             className={authTw.fieldInput}
           />
         </div>
-
-        <div className={authTw.roleGrid}>
-          {Object.entries(REGISTER_ROLE_OPTIONS).map(([key, option]) => (
-            <button
-              key={key}
-              type="button"
-              onClick={() => setRegisterRole(key)}
-              className={cx(
-                authTw.registerRoleCardBase,
-                registerRole === key ? authTw.registerRoleCardActive : authTw.registerRoleCardInactive,
-              )}
-            >
-              <p className={authTw.registerRoleTitle}>{option.label}</p>
-              <p className={authTw.registerRoleHelper}>{option.helper}</p>
-            </button>
-          ))}
-        </div>
-
-        {registerRole === 'admin' && (
-          <p className={authTw.registerWarning}>
-            Para crear un Jefe/Admin debes estar autenticado como admin. La API bloquea este registro para
-            cualquier otro usuario.
-          </p>
-        )}
 
         <MotionButton
           whileHover={{ scale: 1.01 }}

@@ -6,7 +6,7 @@ import { useAuthSession } from './modules/auth/hooks/useAuthSession'
 import OperarioDashboardPage from './modules/dashboard/components/OperarioDashboardPage'
 import PerfilPage from './modules/dashboard/components/PerfilPage'
 import StockPage from './modules/dashboard/components/StockPage'
-import TrabajosPage from './modules/dashboard/components/TrabajosPage'
+import TrabajosPage from './modules/trabajos/components/TrabajosPage'
 import LoginPage from './modules/auth/components/LoginPage'
 import RegisterPage from './modules/auth/components/RegisterPage'
 
