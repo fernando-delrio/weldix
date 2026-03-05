@@ -1,16 +1,10 @@
 import { useState } from 'react'
-import { motion } from 'framer-motion'
 
-import { useAuthSession } from '../hooks/useAuthSession'
 import { API_BASE_URL } from '../../core/lib/api'
 import AuthLayout from './AuthLayout'
 import { authTw, cx } from '../utils/tw'
 
-const MotionButton = motion.button
-
 function RegisterPage() {
-  const { token, profile, isFetchingProfile, clearSession } = useAuthSession()
-
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -56,10 +50,6 @@ function RegisterPage() {
       subtitle="Registro de operario. Los administradores son creados por el jefe de taller."
       feedback={feedback}
       error={error}
-      token={token}
-      profile={profile}
-      isFetchingProfile={isFetchingProfile}
-      onLogout={clearSession}
     >
       <form onSubmit={handleSubmit} className={authTw.formGrid}>
         <label htmlFor="register-name" className={authTw.fieldLabel}>
@@ -113,15 +103,13 @@ function RegisterPage() {
           />
         </div>
 
-        <MotionButton
-          whileHover={{ scale: 1.01 }}
-          whileTap={{ scale: 0.99 }}
+        <button
           type="submit"
           disabled={isSubmitting}
           className={cx(authTw.primaryButton, authTw.primaryButtonMediumTracking)}
         >
           {isSubmitting ? 'CREANDO...' : 'REGISTRAR'}
-        </MotionButton>
+        </button>
       </form>
     </AuthLayout>
   )
