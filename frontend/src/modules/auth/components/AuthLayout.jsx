@@ -1,47 +1,36 @@
-import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 
 import { authTw, cx } from '../utils/tw'
+import Particles from '../../../components/Particles/Particles'
+import CountUp from '../../../components/CountUp/CountUp'
 
-const itemMotion = {
-  initial: { opacity: 0, y: 18 },
-  animate: { opacity: 1, y: 0 },
-}
-
-const MotionSection = motion.section
-const MotionHeader = motion.header
-const MotionDiv = motion.div
-
-function AuthLayout({
-  mode,
-  title,
-  subtitle,
-  feedback,
-  error,
-  children,
-}) {
+function AuthLayout({ mode, title, subtitle, feedback, error, children }) {
   return (
     <main className={authTw.pageRoot}>
       <div className={authTw.twoColumnGrid}>
-        <MotionSection
-          initial={{ opacity: 0, x: -26 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.45, ease: 'easeOut' }}
-          className={authTw.heroSection}
-        >
+
+        <section className={authTw.heroSection}>
           <div className={authTw.heroGlow} />
           <div className={authTw.heroGridOverlay} />
+          <div className="pointer-events-none absolute inset-0 z-0 opacity-40">
+            <Particles
+              particleCount={120}
+              particleSpread={8}
+              speed={0.06}
+              particleColors={['#38bdf8', '#7dd3fc', '#ffffff', '#0ea5e9']}
+              alphaParticles
+              particleBaseSize={80}
+              sizeRandomness={0.8}
+              disableRotation={false}
+            />
+          </div>
 
           <div className={authTw.heroContent}>
-            <MotionHeader {...itemMotion} transition={{ duration: 0.45, delay: 0.1 }} className={authTw.logoRow}>
-              <div className={authTw.logoBadge}>W</div>
-              <div>
-                <p className={authTw.brandTitle}>WELDIX</p>
-                <p className={authTw.brandSubtitle}>INDUSTRIAL MANAGEMENT</p>
-              </div>
-            </MotionHeader>
+            <header className={authTw.logoRow}>
+              <img src="/weldix-logo.svg" alt="Weldix" className="h-36 w-auto object-contain" />
+            </header>
 
-            <MotionDiv {...itemMotion} transition={{ duration: 0.5, delay: 0.2 }} className={authTw.heroCopyBox}>
+            <div className={authTw.heroCopyBox}>
               <h2 className={authTw.heroHeadline}>
                 Control total
                 <br />
@@ -53,37 +42,34 @@ function AuthLayout({
                 Gestiona trabajos, materiales y equipos desde una sola plataforma para soldadura y
                 caldereria industrial.
               </p>
-            </MotionDiv>
+            </div>
 
-            <MotionDiv {...itemMotion} transition={{ duration: 0.5, delay: 0.3 }} className={authTw.metricRow}>
-              {[
-                { value: '100%', label: 'WEB SIN INSTALAR' },
-                { value: 'IA', label: 'INTEGRADA' },
-                { value: 'v1.0', label: 'PRODUCCION' },
-              ].map((metric) => (
-                <div key={metric.value}>
-                  <strong className={authTw.metricValue}>{metric.value}</strong>
-                  <small className={authTw.metricLabel}>{metric.label}</small>
-                </div>
-              ))}
-            </MotionDiv>
+            <div className={authTw.metricRow}>
+              <div>
+                <strong className={authTw.metricValue}>
+                  <CountUp from={0} to={100} duration={2} />%
+                </strong>
+                <small className={authTw.metricLabel}>WEB SIN INSTALAR</small>
+              </div>
+              <div>
+                <strong className={authTw.metricValue}>IA</strong>
+                <small className={authTw.metricLabel}>INTEGRADA</small>
+              </div>
+              <div>
+                <strong className={authTw.metricValue}>v1.0</strong>
+                <small className={authTw.metricLabel}>PRODUCCION</small>
+              </div>
+            </div>
           </div>
-        </MotionSection>
+        </section>
 
-        <MotionSection
-          initial={{ opacity: 0, x: 26 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.45, ease: 'easeOut' }}
-          className={authTw.panelSection}
-        >
-          <MotionDiv
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45, delay: 0.15 }}
-            className={authTw.panelCard}
-          >
+        <section className={authTw.panelSection}>
+          <div className={authTw.panelCard}>
             <div className={authTw.modeSwitch}>
-              <Link to="/login" className={cx(authTw.modeButtonBase, mode === 'login' ? authTw.modeButtonActive : authTw.modeButtonInactive)}>
+              <Link
+                to="/login"
+                className={cx(authTw.modeButtonBase, mode === 'login' ? authTw.modeButtonActive : authTw.modeButtonInactive)}
+              >
                 Iniciar sesion
               </Link>
               <Link
@@ -100,9 +86,10 @@ function AuthLayout({
             {children}
 
             {(feedback || error) && (
-              <p className={cx(authTw.feedbackBase, error ? authTw.feedbackError : authTw.feedbackOk)}>{error || feedback}</p>
+              <p className={cx(authTw.feedbackBase, error ? authTw.feedbackError : authTw.feedbackOk)}>
+                {error || feedback}
+              </p>
             )}
-
 
             <div className={authTw.footerRow}>
               <small className={authTw.footerVersion}>WELDIX v1.0</small>
@@ -111,8 +98,9 @@ function AuthLayout({
                 Sistemas operativos
               </span>
             </div>
-          </MotionDiv>
-        </MotionSection>
+          </div>
+        </section>
+
       </div>
     </main>
   )

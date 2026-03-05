@@ -12,14 +12,14 @@ export const authTw = {
   logoRow: 'inline-flex items-center gap-3',
   logoBadge:
     'grid h-11 w-11 place-items-center rounded-lg border border-sky-700/60 bg-sky-900/30 text-lg font-bold text-sky-300',
-  brandTitle: 'm-0 text-3xl font-extrabold tracking-wide text-sky-400',
+  brandTitle: "m-0 font-['Rajdhani'] text-3xl font-extrabold tracking-wide text-sky-400",
   brandSubtitle: 'mt-[-0.15rem] text-[0.68rem] tracking-[0.33em] text-slate-400',
   heroCopyBox: 'my-auto max-w-[520px] pt-12',
-  heroHeadline: 'text-[clamp(2.4rem,7vw,4.1rem)] font-extrabold leading-[0.95] tracking-tight text-slate-100',
+  heroHeadline: "font-['Rajdhani'] text-[clamp(2.4rem,7vw,4.1rem)] font-extrabold leading-[0.95] tracking-tight text-slate-100",
   heroAccent: 'text-sky-400',
   heroParagraph: 'mt-6 max-w-[470px] text-[1rem] leading-relaxed text-slate-300',
   metricRow: 'flex gap-7 pt-5',
-  metricValue: 'block text-[2rem] font-bold text-sky-300',
+  metricValue: "block font-['Rajdhani'] text-[2rem] font-bold text-sky-300",
   metricLabel: 'text-[0.66rem] tracking-[0.16em] text-slate-400',
 
   panelSection: 'grid place-items-center bg-gradient-to-b from-slate-900 to-slate-950 px-4 py-8 sm:px-6',
@@ -29,7 +29,7 @@ export const authTw = {
   modeButtonBase: 'rounded-md px-3 py-2 text-center text-sm font-semibold transition',
   modeButtonActive: 'bg-sky-500 text-slate-950 shadow-sm',
   modeButtonInactive: 'text-slate-300 hover:text-slate-100',
-  panelTitle: 'm-0 text-[clamp(2rem,5.6vw,2.7rem)] font-extrabold leading-tight text-slate-100',
+  panelTitle: "m-0 font-['Rajdhani'] text-[clamp(2rem,5.6vw,2.7rem)] font-extrabold leading-tight text-slate-100",
   panelSubtitle: 'mt-2 text-slate-400',
   feedbackBase: 'mt-3 text-sm',
   feedbackError: 'text-rose-400',
@@ -44,14 +44,14 @@ export const authTw = {
   footerDot: 'h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.55)]',
 
   formGrid: 'mt-5 grid gap-2.5',
-  fieldLabel: 'mt-2 text-[0.72rem] font-semibold tracking-[0.28em] text-slate-400',
+  fieldLabel: "mt-2 font-['Rajdhani'] text-[0.72rem] font-semibold tracking-[0.28em] text-slate-400",
   fieldShell:
     'flex min-h-[52px] items-center rounded-lg border border-slate-700 bg-slate-900/70 transition focus-within:border-sky-500 focus-within:ring-2 focus-within:ring-sky-500/20',
   fieldIcon: 'w-11 text-center text-slate-500',
   fieldInput: 'w-full bg-transparent pr-3.5 text-[0.98rem] text-slate-100 outline-none placeholder:text-slate-500',
   helperTextRight: 'mt-1 text-right text-[0.82rem] text-slate-500',
   primaryButton:
-    'mt-1 h-[52px] rounded-lg bg-gradient-to-r from-sky-500 to-blue-600 text-base font-bold text-white shadow-lg shadow-sky-900/30 transition hover:from-sky-400 hover:to-blue-500 disabled:cursor-not-allowed disabled:opacity-60',
+    "mt-1 h-[52px] rounded-lg bg-gradient-to-r from-sky-500 to-blue-600 font-['Rajdhani'] text-base font-bold text-white shadow-lg shadow-sky-900/30 transition hover:from-sky-400 hover:to-blue-500 disabled:cursor-not-allowed disabled:opacity-60",
   primaryButtonWideTracking: 'tracking-[0.16em]',
   primaryButtonMediumTracking: 'tracking-[0.12em]',
 
