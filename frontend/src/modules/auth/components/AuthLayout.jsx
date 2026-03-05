@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 
-import { API_BASE_URL } from '../../core/lib/api'
 import { authTw, cx } from '../utils/tw'
 
 const itemMotion = {
@@ -19,10 +18,6 @@ function AuthLayout({
   subtitle,
   feedback,
   error,
-  token,
-  profile,
-  isFetchingProfile,
-  onLogout,
   children,
 }) {
   return (
@@ -108,18 +103,6 @@ function AuthLayout({
               <p className={cx(authTw.feedbackBase, error ? authTw.feedbackError : authTw.feedbackOk)}>{error || feedback}</p>
             )}
 
-            <div className={authTw.sessionBox}>
-              <p className={authTw.sessionText}>API: {API_BASE_URL}</p>
-              <p className={authTw.sessionText}>
-                Estado: {isFetchingProfile ? 'Comprobando sesion...' : token ? 'Autenticado' : 'No autenticado'}
-              </p>
-              <p className={authTw.sessionText}>
-                Usuario: {profile ? `${profile.email} (${profile.role})` : '-'}
-              </p>
-              <button type="button" className={authTw.logoutButton} onClick={onLogout} disabled={!token}>
-                Cerrar sesion
-              </button>
-            </div>
 
             <div className={authTw.footerRow}>
               <small className={authTw.footerVersion}>WELDIX v1.0</small>
