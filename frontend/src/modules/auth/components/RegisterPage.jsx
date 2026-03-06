@@ -1,47 +1,10 @@
-import { useState } from 'react'
-
-import { API_BASE_URL } from '../../core/lib/api'
 import AuthLayout from './AuthLayout'
 import { authTw, cx } from '../utils/tw'
+import { useRegisterForm } from '../hooks/useRegisterForm'
 
 function RegisterPage() {
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [feedback, setFeedback] = useState('')
-  const [error, setError] = useState('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
-
-  const handleSubmit = async (event) => {
-    event.preventDefault()
-    setIsSubmitting(true)
-    setError('')
-    setFeedback('')
-
-    try {
-      const payload = { email, password, full_name: name || null }
-
-      const response = await fetch(`${API_BASE_URL}/auth/signup`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      })
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.detail || 'No se pudo registrar el usuario')
-      }
-
-      setFeedback(`Cuenta creada: ${data.email}`)
-      setName('')
-      setEmail('')
-      setPassword('')
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
+  const { name, setName, email, setEmail, password, setPassword, feedback, error, isSubmitting, submit } =
+    useRegisterForm()
 
   return (
     <AuthLayout
@@ -51,7 +14,7 @@ function RegisterPage() {
       feedback={feedback}
       error={error}
     >
-      <form onSubmit={handleSubmit} className={authTw.formGrid}>
+      <form onSubmit={submit} className={authTw.formGrid}>
         <label htmlFor="register-name" className={authTw.fieldLabel}>
           NOMBRE
         </label>
@@ -61,7 +24,7 @@ function RegisterPage() {
             id="register-name"
             type="text"
             value={name}
-            onChange={(event) => setName(event.target.value)}
+            onChange={(e) => setName(e.target.value)}
             placeholder="Nombre completo (opcional)"
             autoComplete="name"
             className={authTw.fieldInput}
@@ -77,7 +40,7 @@ function RegisterPage() {
             id="register-email"
             type="email"
             value={email}
-            onChange={(event) => setEmail(event.target.value)}
+            onChange={(e) => setEmail(e.target.value)}
             placeholder="nuevo@weldix.com"
             autoComplete="email"
             required
@@ -94,7 +57,7 @@ function RegisterPage() {
             id="register-password"
             type="password"
             value={password}
-            onChange={(event) => setPassword(event.target.value)}
+            onChange={(e) => setPassword(e.target.value)}
             placeholder="Minimo 8 caracteres"
             autoComplete="new-password"
             minLength={8}

@@ -1,6 +1,6 @@
 import AppSectionPlaceholderPage from './AppSectionPlaceholderPage'
 
-function PerfilPage() {
+function ProfilePage() {
   return (
     <AppSectionPlaceholderPage
       title="Perfil"
@@ -9,4 +9,4 @@ function PerfilPage() {
   )
 }
 
-export default PerfilPage
+export default ProfilePage
