@@ -1,5 +1,18 @@
 import { toneFor } from '../../dashboard/lib/tones'
 
+const progressBar = ({ progress }) =>
+  progress > 0 && (
+    <div className="mt-3">
+      <div className="h-1.5 w-full rounded-full bg-slate-800">
+        <div
+          className="h-1.5 rounded-full bg-gradient-to-r from-sky-400 to-cyan-300 transition-all"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+      <p className="mt-1 text-right text-[0.6rem] text-slate-500">{progress}%</p>
+    </div>
+  )
+
 function JobCard({ job }) {
   const tone = toneFor(job.tone)
 
@@ -23,17 +36,7 @@ function JobCard({ job }) {
         <span>{job.due}</span>
       </div>
 
-      {job.progress > 0 && (
-        <div className="mt-3">
-          <div className="h-1.5 w-full rounded-full bg-slate-800">
-            <div
-              className="h-1.5 rounded-full bg-gradient-to-r from-sky-400 to-cyan-300 transition-all"
-              style={{ width: `${job.progress}%` }}
-            />
-          </div>
-          <p className="mt-1 text-right text-[0.6rem] text-slate-500">{job.progress}%</p>
-        </div>
-      )}
+      {progressBar(job)}
     </article>
   )
 }

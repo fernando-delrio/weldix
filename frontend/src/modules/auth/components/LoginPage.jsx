@@ -1,75 +1,50 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 
-import { useAuthSession } from '../hooks/useAuthSession'
-import { API_BASE_URL } from '../../core/lib/api'
 import AuthLayout from './AuthLayout'
 import { authTw, cx } from '../utils/tw'
+import { useLoginForm } from '../hooks/useLoginForm'
 
-const LOGIN_ROLE_PRESETS = {
-  operario: {
-    label: 'OPERARIO',
-    icon: 'OP',
-    email: 'operario@weldix.dev',
-    password: 'Password123',
-  },
-  admin: {
-    label: 'JEFE / ADMIN',
-    icon: 'AD',
-    email: 'admin@weldix.dev',
-    password: 'Admin1234!',
-  },
-}
+const DEV_PRESETS = import.meta.env.DEV
+  ? {
+      operario: { label: 'OPERARIO', icon: 'OP', email: 'operario@weldix.dev', password: 'Password123' },
+      admin: { label: 'JEFE / ADMIN', icon: 'AD', email: 'admin@weldix.dev', password: 'Admin1234!' },
+    }
+  : null
+
+const roleButtonClass = ({ selectedRole, key }) =>
+  cx(authTw.roleButtonBase, selectedRole === key ? authTw.roleButtonActive : authTw.roleButtonInactive)
+
+const devPresets = ({ selectedRole, onPreset }) =>
+  DEV_PRESETS && (
+    <>
+      <div className={authTw.roleDivider}>
+        <span className={authTw.roleDividerText}>ACCESO RAPIDO POR ROL</span>
+      </div>
+      <div className={authTw.roleGrid}>
+        {Object.entries(DEV_PRESETS).map(([key, preset]) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => onPreset(key)}
+            className={roleButtonClass({ selectedRole, key })}
+          >
+            <span className={authTw.roleIcon}>{preset.icon}</span>
+            <span>{preset.label}</span>
+          </button>
+        ))}
+      </div>
+    </>
+  )
 
 function LoginPage() {
-  const navigate = useNavigate()
-  const { saveToken, refreshProfile } = useAuthSession()
+  const { email, setEmail, password, setPassword, feedback, error, isSubmitting, fillPreset, submit } =
+    useLoginForm()
 
-  const [selectedLoginRole, setSelectedLoginRole] = useState('admin')
-  const [email, setEmail] = useState(LOGIN_ROLE_PRESETS.admin.email)
-  const [password, setPassword] = useState(LOGIN_ROLE_PRESETS.admin.password)
-  const [feedback, setFeedback] = useState('')
-  const [error, setError] = useState('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [selectedRole, setSelectedRole] = useState('admin')
 
-  const handleLoginRoleSelect = (roleKey) => {
-    const preset = LOGIN_ROLE_PRESETS[roleKey]
-    setSelectedLoginRole(roleKey)
-    setEmail(preset.email)
-    setPassword(preset.password)
-  }
-
-  const handleLoginSubmit = async (event) => {
-    event.preventDefault()
-    setIsSubmitting(true)
-    setError('')
-    setFeedback('')
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      })
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.detail || 'No se pudo iniciar sesion')
-      }
-
-      saveToken(data.access_token)
-      setFeedback('Acceso concedido. Validando usuario...')
-
-      const me = await refreshProfile(data.access_token)
-      if (me?.role) {
-        setFeedback(`Sesion activa como ${me.role}`)
-        navigate('/app/inicio', { replace: true })
-      }
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setIsSubmitting(false)
-    }
+  const handlePreset = (key) => {
+    setSelectedRole(key)
+    fillPreset(DEV_PRESETS[key])
   }
 
   return (
@@ -80,7 +55,7 @@ function LoginPage() {
       feedback={feedback}
       error={error}
     >
-      <form onSubmit={handleLoginSubmit} className={authTw.formGrid}>
+      <form onSubmit={submit} className={authTw.formGrid}>
         <label htmlFor="login-email" className={authTw.fieldLabel}>
           CORREO ELECTRONICO
         </label>
@@ -90,7 +65,7 @@ function LoginPage() {
             id="login-email"
             type="email"
             value={email}
-            onChange={(event) => setEmail(event.target.value)}
+            onChange={(e) => setEmail(e.target.value)}
             placeholder="usuario@weldix.com"
             autoComplete="email"
             required
@@ -107,7 +82,7 @@ function LoginPage() {
             id="login-password"
             type="password"
             value={password}
-            onChange={(event) => setPassword(event.target.value)}
+            onChange={(e) => setPassword(e.target.value)}
             placeholder="******"
             autoComplete="current-password"
             required
@@ -126,26 +101,7 @@ function LoginPage() {
         </button>
       </form>
 
-      <div className={authTw.roleDivider}>
-        <span className={authTw.roleDividerText}>ACCESO RAPIDO POR ROL</span>
-      </div>
-
-      <div className={authTw.roleGrid}>
-        {Object.entries(LOGIN_ROLE_PRESETS).map(([key, preset]) => (
-          <button
-            key={key}
-            type="button"
-            onClick={() => handleLoginRoleSelect(key)}
-            className={cx(
-              authTw.roleButtonBase,
-              selectedLoginRole === key ? authTw.roleButtonActive : authTw.roleButtonInactive,
-            )}
-          >
-            <span className={authTw.roleIcon}>{preset.icon}</span>
-            <span>{preset.label}</span>
-          </button>
-        ))}
-      </div>
+      {devPresets({ selectedRole, onPreset: handlePreset })}
     </AuthLayout>
   )
 }
