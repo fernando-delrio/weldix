@@ -1,4 +1,4 @@
-import { mapTrabajosModel } from '../lib/trabajosModel'
+import { mapJobsModel } from '../lib/jobsModel'
 
 const MOCK_DELAY_MS = 220
 
@@ -71,7 +71,7 @@ const MOCK_JOBS = [
   },
 ]
 
-export async function getTrabajos() {
+export async function getJobs() {
   await new Promise((resolve) => window.setTimeout(resolve, MOCK_DELAY_MS))
-  return mapTrabajosModel(MOCK_JOBS)
+  return mapJobsModel(MOCK_JOBS)
 }

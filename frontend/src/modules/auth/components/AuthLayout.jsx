@@ -4,6 +4,16 @@ import { authTw, cx } from '../utils/tw'
 import Particles from '../../../components/Particles/Particles'
 import CountUp from '../../../components/CountUp/CountUp'
 
+const modeButtonClass = (currentMode, targetMode) =>
+  cx(authTw.modeButtonBase, currentMode === targetMode ? authTw.modeButtonActive : authTw.modeButtonInactive)
+
+const feedbackMessage = ({ feedback, error }) =>
+  (feedback || error) && (
+    <p className={cx(authTw.feedbackBase, error ? authTw.feedbackError : authTw.feedbackOk)}>
+      {error || feedback}
+    </p>
+  )
+
 function AuthLayout({ mode, title, subtitle, feedback, error, children }) {
   return (
     <main className={authTw.pageRoot}>
@@ -66,16 +76,10 @@ function AuthLayout({ mode, title, subtitle, feedback, error, children }) {
         <section className={authTw.panelSection}>
           <div className={authTw.panelCard}>
             <div className={authTw.modeSwitch}>
-              <Link
-                to="/login"
-                className={cx(authTw.modeButtonBase, mode === 'login' ? authTw.modeButtonActive : authTw.modeButtonInactive)}
-              >
+              <Link to="/login" className={modeButtonClass(mode, 'login')}>
                 Iniciar sesion
               </Link>
-              <Link
-                to="/register"
-                className={cx(authTw.modeButtonBase, mode === 'register' ? authTw.modeButtonActive : authTw.modeButtonInactive)}
-              >
+              <Link to="/register" className={modeButtonClass(mode, 'register')}>
                 Crear cuenta
               </Link>
             </div>
@@ -85,11 +89,7 @@ function AuthLayout({ mode, title, subtitle, feedback, error, children }) {
 
             {children}
 
-            {(feedback || error) && (
-              <p className={cx(authTw.feedbackBase, error ? authTw.feedbackError : authTw.feedbackOk)}>
-                {error || feedback}
-              </p>
-            )}
+            {feedbackMessage({ feedback, error })}
 
             <div className={authTw.footerRow}>
               <small className={authTw.footerVersion}>WELDIX v1.0</small>

@@ -1,4 +1,4 @@
-import { mapOperarioDashboardModel } from '../lib/operarioDashboardModel'
+import { mapWorkerDashboardModel } from '../lib/workerDashboardModel'
 
 const MOCK_DELAY_MS = 260
 
@@ -78,7 +78,7 @@ function buildMockRawDashboard() {
   }
 }
 
-export async function getOperarioDashboard() {
+export async function getWorkerDashboard() {
   await new Promise((resolve) => window.setTimeout(resolve, MOCK_DELAY_MS))
-  return mapOperarioDashboardModel(buildMockRawDashboard())
+  return mapWorkerDashboardModel(buildMockRawDashboard())
 }
