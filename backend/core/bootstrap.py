@@ -44,12 +44,12 @@ def seed_admin() -> None:
 
 
 _SEED_JOBS = [
-    {"code": "ORD-2024-087", "title": "Estructura metalica nave industrial", "client": "Construcciones Lopez S.L.", "type": "Estructura Metalica", "area": "Soldadura estructural", "due_date": date.today(), "status": "En proceso", "progress": 65},
-    {"code": "ORD-2024-089", "title": "Escalera acero inoxidable",           "client": "Reformas Garcia",            "type": "Inox",                 "area": "Soldadura fina",        "due_date": date(2024, 3, 21), "status": "Pendiente",  "progress": 0},
-    {"code": "ORD-2024-085", "title": "Deposito agua 5000L",                 "client": "Agro Hermanos Perez",        "type": "Caldereria Industrial", "area": "Caldereria",            "due_date": date(2024, 3, 20), "status": "Control",    "progress": 90},
-    {"code": "ORD-2024-081", "title": "Barandilla terraza inox",             "client": "Comunidad Residencial Norte","type": "Inox",                 "area": "Soldadura fina",        "due_date": date(2024, 3, 15), "status": "Completado", "progress": 100},
-    {"code": "ORD-2024-078", "title": "Tolva acero carbono 3T",              "client": "Agro Hermanos Perez",        "type": "Caldereria Industrial", "area": "Caldereria",            "due_date": date(2024, 3, 10), "status": "Completado", "progress": 100},
-    {"code": "ORD-2024-091", "title": "Soporte maquinaria CNC",              "client": "Talleres Mendez",            "type": "Estructura Metalica",  "area": "Soldadura estructural", "due_date": date(2024, 3, 28), "status": "Pendiente",  "progress": 0},
+    {"titulo": "Estructura metalica nave industrial", "cliente": "Construcciones Lopez S.L.", "estado": "en_proceso", "fecha_inicio": date.today(),         "progreso": 65,  "descripcion": None},
+    {"titulo": "Escalera acero inoxidable",           "cliente": "Reformas Garcia",           "estado": "pendiente",  "fecha_inicio": date(2024, 3, 21),    "progreso": 0,   "descripcion": None},
+    {"titulo": "Deposito agua 5000L",                 "cliente": "Agro Hermanos Perez",       "estado": "control",    "fecha_inicio": date(2024, 3, 20),    "progreso": 90,  "descripcion": None},
+    {"titulo": "Barandilla terraza inox",             "cliente": "Comunidad Residencial Norte","estado": "listo",     "fecha_inicio": date(2024, 3, 15),    "progreso": 100, "descripcion": None},
+    {"titulo": "Tolva acero carbono 3T",              "cliente": "Agro Hermanos Perez",       "estado": "entregado",  "fecha_inicio": date(2024, 3, 10),    "progreso": 100, "descripcion": None},
+    {"titulo": "Soporte maquinaria CNC",              "cliente": "Talleres Mendez",            "estado": "pendiente",  "fecha_inicio": date(2024, 3, 28),    "progreso": 0,   "descripcion": None},
 ]
 
 

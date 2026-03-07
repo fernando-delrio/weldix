@@ -5,10 +5,10 @@ from backend.core.database import get_db
 from backend.features.auth.dependencies import get_current_user, require_role
 from backend.features.auth.model import User
 
-from .schemas import CreateJobRequest, JobResponse, UpdateJobRequest, UpdateJobStatusRequest
+from .schemas import CreateJobRequest, JobResponse, UpdateEstadoRequest, UpdateJobRequest
 from . import service
 
-router = APIRouter(prefix="/jobs", tags=["jobs"])
+router = APIRouter(prefix="/trabajos", tags=["trabajos"])
 
 
 @router.get("", response_model=list[JobResponse])
@@ -43,15 +43,15 @@ def get_job(
     return JobResponse.from_orm_job(job)
 
 
-@router.patch("/{job_id}/status", response_model=JobResponse)
-def update_status(
+@router.patch("/{job_id}/estado", response_model=JobResponse)
+def update_estado(
     job_id: int,
-    body: UpdateJobStatusRequest,
+    body: UpdateEstadoRequest,
     db: Session = Depends(get_db),
     _: User = Depends(get_current_user),
 ):
     try:
-        job = service.update_job_status(db, job_id, body.status, body.progress)
+        job = service.update_estado(db, job_id, body.estado, body.progreso)
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
     return JobResponse.from_orm_job(job)
