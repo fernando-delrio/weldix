@@ -1,16 +1,8 @@
-from datetime import date, datetime, timezone
-
 from sqlalchemy.orm import Session
 
 from .model import Job
 from .schemas import CreateJobRequest, UpdateJobRequest
 
-
-def _current_year() -> int:
-    return datetime.now(timezone.utc).year
-
-def _generate_code(job_id: int) -> str:
-    return f"ORD-{_current_year()}-{job_id:03d}"
 
 def _clamp_progress(value: int) -> int:
     return max(0, min(value, 100))
@@ -29,27 +21,24 @@ def get_job_by_id(db: Session, job_id: int) -> Job:
 
 def create_job(db: Session, data: CreateJobRequest) -> Job:
     job = Job(
-        code="TEMP",
-        title=data.title,
-        client=data.client,
-        type=data.type,
-        area=data.area,
-        due_date=data.due_date,
-        status=data.status,
-        progress=_clamp_progress(data.progress),
+        titulo=data.titulo,
+        cliente=data.cliente,
+        estado=data.estado,
+        operario_id=data.operario_id,
+        fecha_inicio=data.fecha_inicio,
+        progreso=_clamp_progress(data.progreso),
+        descripcion=data.descripcion,
     )
     db.add(job)
-    db.flush()  # genera el id sin hacer commit
-    job.code = _generate_code(job.id)
     db.commit()
     db.refresh(job)
     return job
 
 
-def update_job_status(db: Session, job_id: int, status: str, progress: int) -> Job:
+def update_estado(db: Session, job_id: int, estado: str, progreso: int) -> Job:
     job = get_job_by_id(db, job_id)
-    job.status   = status
-    job.progress = _clamp_progress(progress)
+    job.estado   = estado
+    job.progreso = _clamp_progress(progreso)
     db.commit()
     db.refresh(job)
     return job
@@ -57,12 +46,12 @@ def update_job_status(db: Session, job_id: int, status: str, progress: int) -> J
 
 def update_job(db: Session, job_id: int, data: UpdateJobRequest) -> Job:
     job = get_job_by_id(db, job_id)
-    if data.title    is not None: job.title    = data.title
-    if data.client   is not None: job.client   = data.client
-    if data.type     is not None: job.type     = data.type
-    if data.area     is not None: job.area     = data.area
-    if data.due_date is not None: job.due_date = data.due_date
-    if data.progress is not None: job.progress = _clamp_progress(data.progress)
+    if data.titulo       is not None: job.titulo       = data.titulo
+    if data.cliente      is not None: job.cliente      = data.cliente
+    if data.operario_id  is not None: job.operario_id  = data.operario_id
+    if data.fecha_inicio is not None: job.fecha_inicio = data.fecha_inicio
+    if data.progreso     is not None: job.progreso     = _clamp_progress(data.progreso)
+    if data.descripcion  is not None: job.descripcion  = data.descripcion
     db.commit()
     db.refresh(job)
     return job
