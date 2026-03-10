@@ -51,6 +51,16 @@ export async function getJobByCode(code) {
   return res.json()
 }
 
+export const consumeMaterial = async (materialId, newQuantity) => {
+  const res = await fetch(`${API_BASE_URL}/stock/${materialId}`, {
+    method: 'PATCH',
+    headers: jsonHeaders(),
+    body: JSON.stringify({ quantity: newQuantity }),
+  })
+  if (!res.ok) throw new Error('Error al actualizar el stock')
+  return res.json()
+}
+
 export async function getOperarios() {
   const res = await fetch(`${API_BASE_URL}/auth/users`, { headers: authHeaders() })
   if (!res.ok) throw new Error('Error al obtener operarios')

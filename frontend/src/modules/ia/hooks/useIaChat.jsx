@@ -2,8 +2,8 @@ import { useCallback, useRef, useState } from 'react'
 
 import { consultarIA } from '../services/iaService'
 
-export const useIaChat = () => {
-  const [messages, setMessages] = useState([])
+export const useIaChat = (jobContext = null) => {
+  const [messages, setMessages]     = useState([])
   const [isLoading, setIsLoading]   = useState(false)
   const [error, setError]           = useState('')
   const historialRef = useRef([])   // historial en formato {role, content} para la API
@@ -18,7 +18,7 @@ export const useIaChat = () => {
     setError('')
 
     try {
-      const respuesta = await consultarIA(texto.trim(), historialRef.current.slice(0, -1))
+      const respuesta = await consultarIA(texto.trim(), historialRef.current.slice(0, -1), jobContext)
       const assistantMsg = { role: 'assistant', content: respuesta }
       setMessages((prev) => [...prev, assistantMsg])
       historialRef.current = [...historialRef.current, assistantMsg]
@@ -27,7 +27,7 @@ export const useIaChat = () => {
     } finally {
       setIsLoading(false)
     }
-  }, [isLoading])
+  }, [isLoading, jobContext])
 
   const clearChat = useCallback(() => {
     setMessages([])

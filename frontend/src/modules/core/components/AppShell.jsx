@@ -1,27 +1,29 @@
-import { useState } from 'react'
-
-import IaChatPanel from '../../ia/components/IaChatPanel'
 import { useAuthSession } from '../../auth/hooks/useAuthSession'
 import { useClock } from '../hooks/useClock'
+import IaChatPanel from '../../ia/components/IaChatPanel'
+import { IaProvider, useIaContext } from '../../ia/lib/IaContext'
 import AppHeader from './AppHeader'
 import BottomNav from './BottomNav'
 import { APP_SHELL_NAV_ITEMS } from '../lib/navigation'
 
-const IaFab = ({ onClick }) => (
-  <button
-    type="button"
-    onClick={onClick}
-    className="fixed bottom-[88px] right-4 z-40 flex h-12 w-12 items-center justify-center rounded-full border border-sky-500/40 bg-sky-500/20 text-xl shadow-lg backdrop-blur transition hover:border-sky-400/70 hover:bg-sky-500/30 sm:bottom-6 sm:right-6"
-    title="Asistente IA"
-  >
-    🔧
-  </button>
-)
+const IaFab = () => {
+  const { openChat } = useIaContext()
+  return (
+    <button
+      type="button"
+      onClick={() => openChat()}
+      className="fixed bottom-[88px] right-4 z-40 flex h-12 w-12 items-center justify-center rounded-full border border-sky-500/40 bg-sky-500/20 text-xl shadow-lg backdrop-blur transition hover:border-sky-400/70 hover:bg-sky-500/30 sm:bottom-6 sm:right-6"
+      title="Asistente IA"
+    >
+      🔧
+    </button>
+  )
+}
 
-const AppShell = ({ children }) => {
+const AppShellInner = ({ children }) => {
   const { profile, clearSession } = useAuthSession()
   const timeLabel = useClock()
-  const [showIa, setShowIa] = useState(false)
+  const { isOpen } = useIaContext()
 
   const roleLabel = (profile?.role || 'operario').toUpperCase()
 
@@ -41,11 +43,16 @@ const AppShell = ({ children }) => {
       </main>
 
       <BottomNav items={APP_SHELL_NAV_ITEMS} />
-
-      <IaFab onClick={() => setShowIa(true)} />
-      {showIa && <IaChatPanel onClose={() => setShowIa(false)} />}
+      <IaFab />
+      {isOpen && <IaChatPanel />}
     </div>
   )
 }
+
+const AppShell = ({ children }) => (
+  <IaProvider>
+    <AppShellInner>{children}</AppShellInner>
+  </IaProvider>
+)
 
 export default AppShell
