@@ -21,6 +21,7 @@ def get_job_by_id(db: Session, job_id: int) -> Job:
 
 def create_job(db: Session, data: CreateJobRequest) -> Job:
     job = Job(
+        code=data.code,
         titulo=data.titulo,
         cliente=data.cliente,
         estado=data.estado,

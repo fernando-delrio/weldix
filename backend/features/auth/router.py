@@ -5,8 +5,8 @@ from backend.core.database import get_db
 from .dependencies import get_current_user, require_role
 from .model import User
 from .registration import SignupData, SignupStrategyFactory
-from .schemas import AdminSignupRequest, LoginRequest, MeResponse, SignupRequest, TokenResponse
-from .service import authenticate_user
+from .schemas import AdminSignupRequest, ChangePasswordRequest, LoginRequest, MeResponse, SignupRequest, TokenResponse, UpdateProfileRequest
+from .service import authenticate_user, change_password, update_profile
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 public_signup_strategy = SignupStrategyFactory.for_public_signup()
@@ -61,6 +61,28 @@ def login(body: LoginRequest, db: Session = Depends(get_db)):
 @router.get("/me", response_model=MeResponse)
 def me(user: User = Depends(get_current_user)):
     return MeResponse(id=user.id, email=user.email, full_name=user.full_name, role=user.role)
+
+
+@router.patch("/me", response_model=MeResponse)
+def update_me(
+    body: UpdateProfileRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    user = update_profile(db, current_user, body.full_name)
+    return MeResponse(id=user.id, email=user.email, full_name=user.full_name, role=user.role)
+
+
+@router.post("/me/password", status_code=204)
+def update_password(
+    body: ChangePasswordRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    try:
+        change_password(db, current_user, body.current_password, body.new_password)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
 
 
 @router.get("/users", response_model=list[MeResponse])

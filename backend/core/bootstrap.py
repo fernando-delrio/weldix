@@ -3,6 +3,7 @@ from datetime import date
 
 from backend.features.auth.model import User
 from backend.features.jobs.model import Job
+from backend.features.stock.model import Material
 
 from .config import settings
 from .database import Base, SessionLocal, engine
@@ -65,7 +66,30 @@ def seed_jobs() -> None:
         db.close()
 
 
+_SEED_STOCK = [
+    {"name": "Varilla soldadura 3.2mm", "quantity": 12,  "minimum": 50,  "unit": "ud"},
+    {"name": "Chapa acero 3mm",         "quantity": 36,  "minimum": 10,  "unit": "kg"},
+    {"name": "Electrodo basico 4mm",    "quantity": 80,  "minimum": 100, "unit": "ud"},
+    {"name": "Hilo MIG 0.8mm",          "quantity": 3,   "minimum": 5,   "unit": "kg"},
+    {"name": "Disco corte 230mm",       "quantity": 25,  "minimum": 20,  "unit": "ud"},
+    {"name": "Gas argon 99.9%",         "quantity": 2,   "minimum": 3,   "unit": "bote"},
+]
+
+
+def seed_stock() -> None:
+    db = SessionLocal()
+    try:
+        if db.query(Material).count() > 0:
+            return
+        for data in _SEED_STOCK:
+            db.add(Material(**data))
+        db.commit()
+    finally:
+        db.close()
+
+
 def run_startup_tasks() -> None:
     init_schema()
     seed_admin()
     seed_jobs()
+    seed_stock()

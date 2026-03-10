@@ -4,7 +4,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from backend.core.bootstrap import run_startup_tasks
 from backend.core.config import settings
 from backend.features.auth.router import router as auth_router
+from backend.features.dashboard.router import router as dashboard_router
 from backend.features.jobs.router import router as jobs_router
+from backend.features.stock.router import router as stock_router
 
 app = FastAPI(title="Weldix API", version="1.0.0")
 
@@ -23,7 +25,9 @@ def on_startup() -> None:
 
 
 app.include_router(auth_router)
+app.include_router(dashboard_router)
 app.include_router(jobs_router)
+app.include_router(stock_router)
 
 
 @app.get("/health")

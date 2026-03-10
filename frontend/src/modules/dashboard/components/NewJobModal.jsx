@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { cx } from '../../core/lib/cx'
+import { createJob, getOperarios } from '../services/workerDashboardService'
 
 const JOB_TYPES = ['Inox', 'Caldereria Industrial', 'Estructura Metalica', 'Otro']
 
@@ -11,20 +12,45 @@ const labelBase = 'mt-3 text-[0.7rem] font-semibold uppercase tracking-[0.24em] 
 
 const submitLabel = ({ isSubmitting }) => isSubmitting ? 'CREANDO...' : 'CREAR TRABAJO'
 
+const errorBanner = ({ error }) =>
+  error && <p className="mt-2 text-sm text-rose-400">{error}</p>
+
 function NewJobModal({ onClose, onCreated }) {
-  const [ot, setOt] = useState('')
-  const [title, setTitle] = useState('')
-  const [type, setType] = useState(JOB_TYPES[0])
-  const [client, setClient] = useState('')
-  const [due, setDue] = useState('')
+  const [code, setCode]       = useState('')
+  const [title, setTitle]     = useState('')
+  const [type, setType]       = useState(JOB_TYPES[0])
+  const [client, setClient]   = useState('')
+  const [due, setDue]         = useState('')
+  const [operarioId, setOperarioId] = useState('')
+  const [operarios, setOperarios]   = useState([])
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError]     = useState('')
+
+  useEffect(() => {
+    getOperarios()
+      .then(setOperarios)
+      .catch(() => {})
+  }, [])
 
   const handleSubmit = async (event) => {
     event.preventDefault()
     setIsSubmitting(true)
-    await new Promise((resolve) => setTimeout(resolve, 400))
-    onCreated({ id: ot, title, type, client, due, status: 'Pendiente', tone: 'warning', progress: 0 })
-    setIsSubmitting(false)
+    setError('')
+    try {
+      const job = await createJob({
+        code:        code || null,
+        titulo:      title,
+        cliente:     client,
+        descripcion: type,
+        fecha_inicio: due || null,
+        operario_id: operarioId ? Number(operarioId) : null,
+      })
+      onCreated({ id: job.id, title: job.titulo, code: job.code })
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -52,10 +78,9 @@ function NewJobModal({ onClose, onCreated }) {
           <div className={fieldBase}>
             <input
               type="text"
-              value={ot}
-              onChange={(e) => setOt(e.target.value)}
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
               placeholder="ORD-2024-XXX"
-              required
               className={inputBase}
             />
           </div>
@@ -105,10 +130,27 @@ function NewJobModal({ onClose, onCreated }) {
               type="date"
               value={due}
               onChange={(e) => setDue(e.target.value)}
-              required
               className={cx(inputBase, 'text-slate-400')}
             />
           </div>
+
+          <label className={labelBase}>Asignar a operario</label>
+          <div className={cx(fieldBase, 'px-3.5')}>
+            <select
+              value={operarioId}
+              onChange={(e) => setOperarioId(e.target.value)}
+              className="w-full bg-transparent text-[0.95rem] text-slate-100 outline-none"
+            >
+              <option value="" className="bg-slate-900">Sin asignar</option>
+              {operarios.map((op) => (
+                <option key={op.id} value={op.id} className="bg-slate-900">
+                  {op.full_name || op.email}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {errorBanner({ error })}
 
           <button
             type="submit"

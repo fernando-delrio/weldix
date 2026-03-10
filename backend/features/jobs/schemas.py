@@ -17,6 +17,7 @@ def _tone_for(estado: str) -> str:
 
 class JobResponse(BaseModel):
     id:           int
+    code:         str | None
     titulo:       str
     cliente:      str
     estado:       str
@@ -37,6 +38,7 @@ class JobResponse(BaseModel):
 
 
 class CreateJobRequest(BaseModel):
+    code:         Optional[str] = None
     titulo:       str = Field(min_length=1)
     cliente:      str = Field(min_length=1)
     estado:       str = "pendiente"
