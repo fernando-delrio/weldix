@@ -1,10 +1,23 @@
+import { getStatusConfig } from '../../core/lib/statusConfig'
 import { toneFor } from '../lib/tones'
 import PanelCard from './PanelCard'
 import StageProgress from './StageProgress'
 
+const advanceButton = ({ nextLabel, onComplete }) =>
+  nextLabel && (
+    <button
+      type="button"
+      onClick={onComplete}
+      className="h-11 rounded-xl bg-gradient-to-r from-sky-500 to-blue-500 text-sm font-bold tracking-[0.03em] text-white transition hover:from-sky-400 hover:to-blue-400"
+    >
+      {nextLabel}
+    </button>
+  )
+
 function ActiveJobCard({ job, onComplete, onRegisterMaterial }) {
   const statusTone = toneFor(job.statusTone)
-  const dueTone = toneFor(job.dueTone)
+  const dueTone    = toneFor(job.dueTone)
+  const { nextLabel } = getStatusConfig(job.status)
 
   return (
     <PanelCard className="border-sky-500/55">
@@ -26,13 +39,7 @@ function ActiveJobCard({ job, onComplete, onRegisterMaterial }) {
       <StageProgress stages={job.stages} currentStage={job.currentStage} />
 
       <div className="mt-4 flex flex-col gap-2.5">
-        <button
-          type="button"
-          onClick={onComplete}
-          className="h-11 rounded-xl bg-gradient-to-r from-sky-500 to-blue-500 text-sm font-bold tracking-[0.03em] text-white transition hover:from-sky-400 hover:to-blue-400"
-        >
-          Marcar como completado
-        </button>
+        {advanceButton({ nextLabel, onComplete })}
         <button
           type="button"
           onClick={onRegisterMaterial}
