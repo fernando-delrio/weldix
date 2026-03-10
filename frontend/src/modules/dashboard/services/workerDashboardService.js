@@ -39,6 +39,18 @@ export async function createJob(data) {
   return res.json()
 }
 
+export async function getJobByCode(code) {
+  const res = await fetch(
+    `${API_BASE_URL}/trabajos/buscar?code=${encodeURIComponent(code.toUpperCase())}`,
+    { headers: authHeaders() },
+  )
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}))
+    throw new Error(body.detail ?? 'OT no encontrada')
+  }
+  return res.json()
+}
+
 export async function getOperarios() {
   const res = await fetch(`${API_BASE_URL}/auth/users`, { headers: authHeaders() })
   if (!res.ok) throw new Error('Error al obtener operarios')

@@ -6,8 +6,10 @@ import { useWorkerDashboard } from '../hooks/useWorkerDashboard'
 import ActiveJobCard from './ActiveJobCard'
 import MetricCard from './MetricCard'
 import NewJobModal from './NewJobModal'
+import StartJobByOrtModal from './StartJobByOrtModal'
 import PanelCard from './PanelCard'
 import SectionHeader from './SectionHeader'
+import TodayJobItem from './TodayJobItem'
 
 const loadingState = ({ isLoading, isEmpty }) =>
   (isLoading || isEmpty) && (
@@ -50,20 +52,42 @@ const adminNewJobButton = ({ isAdmin, onOpen }) =>
     </button>
   )
 
+const startByOrtButton = ({ hasActiveJob, onOpen }) =>
+  !hasActiveJob && (
+    <button
+      type="button"
+      onClick={onOpen}
+      className="w-full rounded-xl border border-sky-500/50 bg-sky-500/10 py-3 text-[0.75rem] font-bold uppercase tracking-[0.14em] text-sky-300 transition hover:bg-sky-500/20"
+    >
+      + Iniciar trabajo por OT
+    </button>
+  )
+
 const activeJobSection = ({ activeJob, onComplete, onRegisterMaterial }) =>
   activeJob
     ? <ActiveJobCard job={activeJob} onComplete={onComplete} onRegisterMaterial={onRegisterMaterial} />
-    : <PanelCard><p className="text-sm text-slate-300">No hay trabajo activo en este momento.</p></PanelCard>
+    : <PanelCard><p className="text-sm text-slate-400">Sin trabajo activo en este momento.</p></PanelCard>
+
+const pendingJobsSection = ({ todayJobs }) =>
+  todayJobs.length > 0 && (
+    <section>
+      <SectionHeader title="Pendientes asignados" />
+      <div className="space-y-2">
+        {todayJobs.map((job) => <TodayJobItem key={job.id} job={job} />)}
+      </div>
+    </section>
+  )
 
 const modalOverlay = ({ showModal, onClose, onCreated }) =>
   showModal && <NewJobModal onClose={onClose} onCreated={onCreated} />
 
 function WorkerDashboardPage() {
   const { profile } = useAuthSession()
-  const { dashboard, isLoading, isEmpty, error, refresh, markActiveJobCompleted, registerMaterialUsage } =
+  const { dashboard, isLoading, isEmpty, error, refresh, markActiveJobCompleted, startPendingJob, registerMaterialUsage } =
     useWorkerDashboard()
 
-  const [showModal, setShowModal] = useState(false)
+  const [showModal, setShowModal]       = useState(false)
+  const [showOrtModal, setShowOrtModal] = useState(false)
   const [createdFeedback, setCreatedFeedback] = useState('')
 
   const isAdmin = profile?.role === 'admin'
@@ -113,12 +137,24 @@ function WorkerDashboardPage() {
                 onComplete: markActiveJobCompleted,
                 onRegisterMaterial: registerMaterialUsage,
               })}
+              {startByOrtButton({
+                hasActiveJob: Boolean(dashboard.activeJob),
+                onOpen: () => setShowOrtModal(true),
+              })}
             </section>
+
+            {pendingJobsSection({ todayJobs: dashboard.todayJobs })}
           </>
         )}
       </div>
 
       {modalOverlay({ showModal, onClose: () => setShowModal(false), onCreated: handleCreated })}
+      {showOrtModal && (
+        <StartJobByOrtModal
+          onClose={() => setShowOrtModal(false)}
+          onStart={startPendingJob}
+        />
+      )}
     </AppShell>
   )
 }

@@ -30,6 +30,19 @@ def create_job(
     return JobResponse.from_orm_job(job)
 
 
+@router.get("/buscar", response_model=JobResponse)
+def find_job_by_code(
+    code: str,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+):
+    try:
+        job = service.get_job_by_code(db, code)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+    return JobResponse.from_orm_job(job)
+
+
 @router.get("/{job_id}", response_model=JobResponse)
 def get_job(
     job_id: int,

@@ -1,3 +1,5 @@
+import { getStatusConfig } from '../../core/lib/statusConfig'
+
 // Convierte un array desconocido en array seguro (nunca falla con null/undefined)
 const safeArray = (value) => Array.isArray(value) ? value : []
 
@@ -15,12 +17,12 @@ function sanitizeMetric(metric, index) {
 
 function sanitizeTodayJob(job, index) {
   return {
-    id:     job?.id     || `job-${index}`,
-    title:  job?.title  || 'Trabajo sin titulo',
-    area:   job?.area   || 'Area no definida',
-    due:    job?.due    || '-',
-    status: job?.status || 'Pendiente',
-    tone:   job?.tone   || 'neutral',
+    id:     job?.id    || `job-${index}`,
+    title:  job?.title || 'Trabajo sin titulo',
+    area:   job?.area  || '',
+    due:    job?.due   || '-',
+    status: getStatusConfig(job?.status).label,
+    tone:   job?.tone  || 'neutral',
   }
 }
 

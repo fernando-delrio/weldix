@@ -19,6 +19,15 @@ def get_job_by_id(db: Session, job_id: int) -> Job:
     return job
 
 
+def get_job_by_code(db: Session, code: str) -> Job:
+    job = db.query(Job).filter(Job.code == code.strip().upper()).first()
+    if not job:
+        raise ValueError(f"No se encontró ninguna OT con código {code}")
+    if job.estado != "pendiente":
+        raise ValueError(f"La OT {code} ya está en estado '{job.estado}' y no puede iniciarse")
+    return job
+
+
 def create_job(db: Session, data: CreateJobRequest) -> Job:
     job = Job(
         code=data.code,

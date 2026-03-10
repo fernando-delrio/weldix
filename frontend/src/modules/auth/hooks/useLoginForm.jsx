@@ -18,11 +18,6 @@ export function useLoginForm() {
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const fillPreset = ({ email: e, password: p }) => {
-    setEmail(e)
-    setPassword(p)
-  }
-
   const submit = async (event) => {
     event.preventDefault()
     setIsSubmitting(true)
@@ -42,5 +37,5 @@ export function useLoginForm() {
     }
   }
 
-  return { email, setEmail, password, setPassword, feedback, error, isSubmitting, fillPreset, submit }
+  return { email, setEmail, password, setPassword, feedback, error, isSubmitting, submit }
 }
