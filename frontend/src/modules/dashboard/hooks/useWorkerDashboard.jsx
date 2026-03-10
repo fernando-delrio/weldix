@@ -44,6 +44,15 @@ export function useWorkerDashboard() {
     }
   }, [dashboard, refresh])
 
+  const startPendingJob = useCallback(async (jobId) => {
+    try {
+      await advanceJobStatus(jobId, 'en_proceso', 25)
+      await refresh()
+    } catch {
+      // no-op: el usuario puede reintentar
+    }
+  }, [refresh])
+
   const registerMaterialUsage = useCallback(() => {
     setDashboard((prev) =>
       hasActiveJob(prev)
@@ -63,5 +72,5 @@ export function useWorkerDashboard() {
 
   const isEmpty = useMemo(() => !dashboard, [dashboard])
 
-  return { dashboard, isLoading, isEmpty, error, refresh, markActiveJobCompleted, registerMaterialUsage }
+  return { dashboard, isLoading, isEmpty, error, refresh, markActiveJobCompleted, startPendingJob, registerMaterialUsage }
 }

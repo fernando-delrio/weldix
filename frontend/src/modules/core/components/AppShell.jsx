@@ -1,28 +1,29 @@
-import { useMemo } from 'react'
+import { useState } from 'react'
 
+import IaChatPanel from '../../ia/components/IaChatPanel'
 import { useAuthSession } from '../../auth/hooks/useAuthSession'
 import { useClock } from '../hooks/useClock'
 import AppHeader from './AppHeader'
 import BottomNav from './BottomNav'
 import { APP_SHELL_NAV_ITEMS } from '../lib/navigation'
 
-function getUserInitials(profile) {
-  const rawName = profile?.full_name?.trim()
-  if (rawName) {
-    const parts = rawName.split(/\s+/).slice(0, 2)
-    return parts.map((part) => part[0]).join('').toUpperCase()
-  }
+const IaFab = ({ onClick }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className="fixed bottom-[88px] right-4 z-40 flex h-12 w-12 items-center justify-center rounded-full border border-sky-500/40 bg-sky-500/20 text-xl shadow-lg backdrop-blur transition hover:border-sky-400/70 hover:bg-sky-500/30 sm:bottom-6 sm:right-6"
+    title="Asistente IA"
+  >
+    🔧
+  </button>
+)
 
-  const rawEmail = profile?.email || ''
-  return rawEmail.slice(0, 2).toUpperCase() || 'WD'
-}
-
-function AppShell({ children }) {
+const AppShell = ({ children }) => {
   const { profile, clearSession } = useAuthSession()
   const timeLabel = useClock()
+  const [showIa, setShowIa] = useState(false)
 
   const roleLabel = (profile?.role || 'operario').toUpperCase()
-  const userInitials = useMemo(() => getUserInitials(profile), [profile])
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-slate-950 text-slate-100">
@@ -32,7 +33,6 @@ function AppShell({ children }) {
       <AppHeader
         roleLabel={roleLabel}
         timeLabel={timeLabel}
-        userInitials={userInitials}
         onLogout={clearSession}
       />
 
@@ -41,6 +41,9 @@ function AppShell({ children }) {
       </main>
 
       <BottomNav items={APP_SHELL_NAV_ITEMS} />
+
+      <IaFab onClick={() => setShowIa(true)} />
+      {showIa && <IaChatPanel onClose={() => setShowIa(false)} />}
     </div>
   )
 }

@@ -45,12 +45,12 @@ def seed_admin() -> None:
 
 
 _SEED_JOBS = [
-    {"titulo": "Estructura metalica nave industrial", "cliente": "Construcciones Lopez S.L.", "estado": "en_proceso", "fecha_inicio": date.today(),         "progreso": 65,  "descripcion": None},
-    {"titulo": "Escalera acero inoxidable",           "cliente": "Reformas Garcia",           "estado": "pendiente",  "fecha_inicio": date(2024, 3, 21),    "progreso": 0,   "descripcion": None},
-    {"titulo": "Deposito agua 5000L",                 "cliente": "Agro Hermanos Perez",       "estado": "control",    "fecha_inicio": date(2024, 3, 20),    "progreso": 90,  "descripcion": None},
-    {"titulo": "Barandilla terraza inox",             "cliente": "Comunidad Residencial Norte","estado": "listo",     "fecha_inicio": date(2024, 3, 15),    "progreso": 100, "descripcion": None},
-    {"titulo": "Tolva acero carbono 3T",              "cliente": "Agro Hermanos Perez",       "estado": "entregado",  "fecha_inicio": date(2024, 3, 10),    "progreso": 100, "descripcion": None},
-    {"titulo": "Soporte maquinaria CNC",              "cliente": "Talleres Mendez",            "estado": "pendiente",  "fecha_inicio": date(2024, 3, 28),    "progreso": 0,   "descripcion": None},
+    {"code": "ORD-2026-001", "titulo": "Estructura metalica nave industrial", "cliente": "Construcciones Lopez S.L.", "estado": "en_proceso", "fecha_inicio": date(2026, 3, 18), "progreso": 65,  "descripcion": None},
+    {"code": "ORD-2026-002", "titulo": "Escalera acero inoxidable",           "cliente": "Reformas Garcia",           "estado": "pendiente",  "fecha_inicio": date(2026, 3, 21), "progreso": 0,   "descripcion": None},
+    {"code": "ORD-2026-003", "titulo": "Deposito agua 5000L",                 "cliente": "Agro Hermanos Perez",       "estado": "control",    "fecha_inicio": date(2026, 3, 20), "progreso": 90,  "descripcion": None},
+    {"code": "ORD-2026-004", "titulo": "Barandilla terraza inox",             "cliente": "Comunidad Residencial Norte","estado": "listo",     "fecha_inicio": date(2026, 3, 15), "progreso": 100, "descripcion": None},
+    {"code": "ORD-2026-005", "titulo": "Tolva acero carbono 3T",              "cliente": "Agro Hermanos Perez",       "estado": "entregado",  "fecha_inicio": date(2026, 3, 10), "progreso": 100, "descripcion": None},
+    {"code": "ORD-2026-006", "titulo": "Soporte maquinaria CNC",              "cliente": "Talleres Mendez",           "estado": "pendiente",  "fecha_inicio": date(2026, 3, 28), "progreso": 0,   "descripcion": None},
 ]
 
 

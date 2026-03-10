@@ -1,51 +1,10 @@
-import { useState } from 'react'
-
 import AuthLayout from './AuthLayout'
 import { authTw, cx } from '../utils/tw'
 import { useLoginForm } from '../hooks/useLoginForm'
 
-const DEV_PRESETS = import.meta.env.DEV
-  ? {
-      operario: { label: 'OPERARIO', icon: 'OP', email: 'operario@weldix.dev', password: 'Password123' },
-      admin: { label: 'JEFE / ADMIN', icon: 'AD', email: 'admin@weldix.dev', password: 'Admin1234!' },
-    }
-  : null
-
-const roleButtonClass = ({ selectedRole, key }) =>
-  cx(authTw.roleButtonBase, selectedRole === key ? authTw.roleButtonActive : authTw.roleButtonInactive)
-
-const devPresets = ({ selectedRole, onPreset }) =>
-  DEV_PRESETS && (
-    <>
-      <div className={authTw.roleDivider}>
-        <span className={authTw.roleDividerText}>ACCESO RAPIDO POR ROL</span>
-      </div>
-      <div className={authTw.roleGrid}>
-        {Object.entries(DEV_PRESETS).map(([key, preset]) => (
-          <button
-            key={key}
-            type="button"
-            onClick={() => onPreset(key)}
-            className={roleButtonClass({ selectedRole, key })}
-          >
-            <span className={authTw.roleIcon}>{preset.icon}</span>
-            <span>{preset.label}</span>
-          </button>
-        ))}
-      </div>
-    </>
-  )
-
-function LoginPage() {
-  const { email, setEmail, password, setPassword, feedback, error, isSubmitting, fillPreset, submit } =
+const LoginPage = () => {
+  const { email, setEmail, password, setPassword, feedback, error, isSubmitting, submit } =
     useLoginForm()
-
-  const [selectedRole, setSelectedRole] = useState('admin')
-
-  const handlePreset = (key) => {
-    setSelectedRole(key)
-    fillPreset(DEV_PRESETS[key])
-  }
 
   return (
     <AuthLayout
@@ -100,8 +59,6 @@ function LoginPage() {
           {isSubmitting ? 'VALIDANDO...' : 'ENTRAR  ->'}
         </button>
       </form>
-
-      {devPresets({ selectedRole, onPreset: handlePreset })}
     </AuthLayout>
   )
 }

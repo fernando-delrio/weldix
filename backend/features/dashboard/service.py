@@ -94,8 +94,9 @@ def get_worker_dashboard(db: Session, user: User) -> dict:
         .all()
     )
 
-    active_job = next((j for j in jobs if j.estado == 'en_proceso'), None)
-    today_jobs = [j for j in jobs if j.estado in ('pendiente', 'control') and j is not active_job][:5]
+    active_job = next((j for j in jobs if j.estado in ('en_proceso', 'control')), None)
+    # Solo pendientes explícitamente asignados al usuario (Fase 4 añadirá asignación real)
+    today_jobs = [j for j in jobs if j.estado == 'pendiente' and j.operario_id == user.id][:5]
 
     stock = db.query(Material).order_by(Material.name).all()
 
