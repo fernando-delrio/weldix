@@ -1,27 +1,35 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { getStatusConfig } from '../../core/lib/statusConfig'
-import { advanceJobStatus, getWorkerDashboard } from '../services/workerDashboardService'
+import { advanceJobStatus, consumeMaterial, getWorkerDashboard } from '../services/workerDashboardService'
 
-// Suma delta al valor de una metrica concreta dentro del array de metricas
-const updateMetric = (metrics, metricKey, delta) =>
-  metrics.map((metric) =>
-    metric.key === metricKey ? { ...metric, value: Math.max(0, metric.value + delta) } : metric,
-  )
 
-const hasActiveJob = (dashboard) => Boolean(dashboard?.activeJob)
+const hasActiveJob  = (dashboard) => Boolean(dashboard?.activeJob)
+const canAdvanceJob = (dashboard) => hasActiveJob(dashboard) && Boolean(getStatusConfig(dashboard.activeJob.status).next)
+const findStockItem = (stock, id) => stock?.find((s) => s.id === id)
+const decreasedQty  = (item, consumed) => Math.max(0, item.quantity - consumed)
 
-export function useWorkerDashboard() {
+const executeAdvance = async ({ id, status }, refresh) => {
+  const { next, nextProgress } = getStatusConfig(status)
+  await advanceJobStatus(id, next, nextProgress)
+  await refresh()
+}
+
+const executeMaterialUsage = async (item, materialId, consumed, refresh) => {
+  await consumeMaterial(materialId, decreasedQty(item, consumed))
+  await refresh()
+}
+
+export const useWorkerDashboard = () => {
   const [dashboard, setDashboard] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState('')
+  const [error, setError]         = useState('')
 
   const refresh = useCallback(async () => {
     setIsLoading(true)
     setError('')
     try {
-      const data = await getWorkerDashboard()
-      setDashboard(data)
+      setDashboard(await getWorkerDashboard())
     } catch {
       setError('No se pudo cargar el panel. Intenta nuevamente.')
     } finally {
@@ -32,43 +40,22 @@ export function useWorkerDashboard() {
   useEffect(() => { refresh() }, [refresh])
 
   const markActiveJobCompleted = useCallback(async () => {
-    if (!hasActiveJob(dashboard)) return
-    const { id, status } = dashboard.activeJob
-    const { next, nextProgress } = getStatusConfig(status)
-    if (!next) return
-    try {
-      await advanceJobStatus(id, next, nextProgress)
-      await refresh()
-    } catch {
-      // no-op: el error no bloquea la UI, el usuario puede reintentar
-    }
+    const canAdvance = canAdvanceJob(dashboard)
+    return canAdvance && executeAdvance(dashboard.activeJob, refresh)
   }, [dashboard, refresh])
 
   const startPendingJob = useCallback(async (jobId) => {
+    const { next, nextProgress } = getStatusConfig('pendiente')
     try {
-      await advanceJobStatus(jobId, 'en_proceso', 25)
+      await advanceJobStatus(jobId, next, nextProgress)
       await refresh()
-    } catch {
-      // no-op: el usuario puede reintentar
-    }
+    } catch { /* no-op */ }
   }, [refresh])
 
-  const registerMaterialUsage = useCallback(() => {
-    setDashboard((prev) =>
-      hasActiveJob(prev)
-        ? {
-            ...prev,
-            activeJob: {
-              ...prev.activeJob,
-              progress: Math.min(100, prev.activeJob.progress + 8),
-            },
-            stock: prev.stock.map((item, index) =>
-              index === 0 ? { ...item, level: Math.max(0, item.level - 6) } : item,
-            ),
-          }
-        : prev,
-    )
-  }, [])
+  const registerMaterialUsage = useCallback(async (materialId, consumed) => {
+    const item = findStockItem(dashboard?.stock, materialId)
+    return item && executeMaterialUsage(item, materialId, consumed, refresh)
+  }, [dashboard, refresh])
 
   const isEmpty = useMemo(() => !dashboard, [dashboard])
 

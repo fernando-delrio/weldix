@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 
 import { cx } from '../../core/lib/cx'
+import { useIaContext } from '../lib/IaContext'
 import { useIaChat } from '../hooks/useIaChat'
 
 const UserBubble = ({ content }) => (
@@ -33,7 +34,15 @@ const TypingIndicator = () => (
   </div>
 )
 
-const emptyState = ({ messages }) =>
+const jobContextBanner = ({ jobContext }) =>
+  jobContext && (
+    <div className="mx-4 mt-3 rounded-lg border border-sky-700/40 bg-sky-500/10 px-3 py-2">
+      <p className="text-[0.6rem] font-bold uppercase tracking-widest text-sky-400">Contexto del trabajo activo</p>
+      <p className="mt-0.5 text-xs text-slate-300">{jobContext}</p>
+    </div>
+  )
+
+const emptyState = ({ messages, jobContext }) =>
   messages.length === 0 && (
     <div className="flex h-full flex-col items-center justify-center gap-3 px-4 text-center">
       <div className="grid h-12 w-12 place-items-center rounded-xl border border-sky-700/40 bg-sky-500/10 text-2xl">
@@ -41,13 +50,16 @@ const emptyState = ({ messages }) =>
       </div>
       <p className="text-sm font-semibold text-slate-300">Asistente técnico Weldix</p>
       <p className="text-xs text-slate-500 leading-relaxed">
-        Pregúntame sobre técnicas de soldadura, materiales, normas o cualquier duda del taller.
+        {jobContext
+          ? 'Pregúntame sobre este trabajo, materiales disponibles o cualquier duda técnica del taller.'
+          : 'Pregúntame sobre técnicas de soldadura, materiales, normas o cualquier duda del taller.'}
       </p>
     </div>
   )
 
-const IaChatPanel = ({ onClose }) => {
-  const { messages, isLoading, error, sendMessage, clearChat } = useIaChat()
+const IaChatPanel = () => {
+  const { jobContext, closeChat } = useIaContext()
+  const { messages, isLoading, error, sendMessage, clearChat } = useIaChat(jobContext)
   const [input, setInput] = useState('')
   const bottomRef = useRef(null)
 
@@ -73,13 +85,14 @@ const IaChatPanel = ({ onClose }) => {
     <div className="fixed inset-0 z-50 flex items-end justify-end sm:items-end sm:p-4">
       <div
         className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"
-        onClick={onClose}
+        onClick={closeChat}
         aria-hidden="true"
       />
 
-      <div className="relative z-10 flex w-full flex-col rounded-t-2xl border border-slate-700/80 bg-slate-900 shadow-2xl sm:w-[420px] sm:rounded-2xl"
-           style={{ height: 'min(600px, 85dvh)' }}>
-
+      <div
+        className="relative z-10 flex w-full flex-col rounded-t-2xl border border-slate-700/80 bg-slate-900 shadow-2xl sm:w-[420px] sm:rounded-2xl"
+        style={{ height: 'min(600px, 85dvh)' }}
+      >
         {/* Header */}
         <div className="flex shrink-0 items-center justify-between border-b border-slate-700/60 px-4 py-3">
           <div className="flex items-center gap-2.5">
@@ -101,7 +114,7 @@ const IaChatPanel = ({ onClose }) => {
             )}
             <button
               type="button"
-              onClick={onClose}
+              onClick={closeChat}
               className="grid h-7 w-7 place-items-center rounded-lg border border-slate-700 text-slate-400 transition hover:border-slate-500 hover:text-slate-200"
             >
               ✕
@@ -109,9 +122,11 @@ const IaChatPanel = ({ onClose }) => {
           </div>
         </div>
 
+        {jobContextBanner({ jobContext })}
+
         {/* Messages */}
         <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
-          {emptyState({ messages })}
+          {emptyState({ messages, jobContext })}
           {messages.map((msg, i) =>
             msg.role === 'user'
               ? <UserBubble key={i} content={msg.content} />
