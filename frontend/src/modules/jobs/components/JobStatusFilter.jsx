@@ -1,5 +1,8 @@
 import { cx } from '../../core/lib/cx'
+import { getStatusConfig } from '../../core/lib/statusConfig'
 import { STATUS_FILTERS } from '../hooks/useJobs'
+
+const filterLabel = (key) => key === 'todos' ? 'Todos' : getStatusConfig(key).label
 
 const filterButtonClass = ({ activeFilter, filter }) =>
   cx(
@@ -9,21 +12,19 @@ const filterButtonClass = ({ activeFilter, filter }) =>
       : 'border-slate-700 bg-slate-900/60 text-slate-400 hover:border-slate-500 hover:text-slate-300',
   )
 
-function JobStatusFilter({ activeFilter, onFilterChange }) {
-  return (
-    <div className="flex gap-2 overflow-x-auto pb-1">
-      {STATUS_FILTERS.map((filter) => (
-        <button
-          key={filter}
-          type="button"
-          onClick={() => onFilterChange(filter)}
-          className={filterButtonClass({ activeFilter, filter })}
-        >
-          {filter}
-        </button>
-      ))}
-    </div>
-  )
-}
+const JobStatusFilter = ({ activeFilter, onFilterChange }) => (
+  <div className="flex gap-2 overflow-x-auto pb-1">
+    {STATUS_FILTERS.map((filter) => (
+      <button
+        key={filter}
+        type="button"
+        onClick={() => onFilterChange(filter)}
+        className={filterButtonClass({ activeFilter, filter })}
+      >
+        {filterLabel(filter)}
+      </button>
+    ))}
+  </div>
+)
 
 export default JobStatusFilter

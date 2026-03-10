@@ -28,5 +28,7 @@ class Settings(BaseSettings):
         "http://localhost:5174",
     ]
 
+    mistral_api_key: str | None = None
+
 
 settings = Settings()
