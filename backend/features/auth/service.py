@@ -53,6 +53,20 @@ def create_user(db: Session, email: str, password: str, full_name: str | None, r
     return user
 
 
+def update_profile(db: Session, user: User, full_name: str) -> User:
+    user.full_name = full_name.strip()
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+def change_password(db: Session, user: User, current_password: str, new_password: str) -> None:
+    if not verify_password(current_password, user.password_hash):
+        raise ValueError("Contraseña actual incorrecta")
+    user.password_hash = hash_password(new_password)
+    db.commit()
+
+
 def authenticate_user(db: Session, email: str, password: str) -> dict:
     safe_email = email.lower().strip()
 

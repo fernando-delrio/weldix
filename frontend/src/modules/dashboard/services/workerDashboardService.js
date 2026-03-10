@@ -1,84 +1,47 @@
+import { API_BASE_URL } from '../../core/lib/api'
 import { mapWorkerDashboardModel } from '../lib/workerDashboardModel'
 
-const MOCK_DELAY_MS = 260
+const TOKEN_KEY = 'weldix_access_token'
 
-function buildDateLabel() {
-  const now = new Date()
-  const formatted = new Intl.DateTimeFormat('es-ES', {
-    weekday: 'long',
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  }).format(now)
+const authHeaders = () => ({
+  Authorization: `Bearer ${localStorage.getItem(TOKEN_KEY) ?? ''}`,
+})
 
-  return formatted.charAt(0).toUpperCase() + formatted.slice(1)
-}
-
-function buildMockRawDashboard() {
-  return {
-    greeting: {
-      greetingLabel: 'Buenos dias',
-      operatorName: 'Javier Martin',
-      dateLabel: buildDateLabel(),
-      shiftLabel: 'Turno manana',
-    },
-    metrics: [
-      { key: 'pending', label: 'Pendientes', value: 2, tone: 'warning' },
-      { key: 'in_progress', label: 'En proceso', value: 1, tone: 'info' },
-      { key: 'week', label: 'Esta semana', value: 4, tone: 'success' },
-    ],
-    activeJob: {
-      id: 'ORD-2024-087',
-      status: 'En proceso',
-      statusTone: 'info',
-      dueLabel: 'Entrega hoy',
-      dueTone: 'danger',
-      title: 'Estructura metalica nave industrial',
-      client: 'Construcciones Lopez S.L.',
-      progress: 65,
-      stages: ['Inicio', 'Proceso', 'Control', 'Listo', 'Entregado'],
-      currentStage: 1,
-    },
-    todayJobs: [
-      {
-        id: 'ORD-2024-089',
-        title: 'Escalera acero inoxidable',
-        area: 'Soldadura fina',
-        due: 'Entrega: 21 Feb',
-        status: 'Pendiente',
-        tone: 'warning',
-      },
-      {
-        id: 'ORD-2024-085',
-        title: 'Deposito agua 5000L',
-        area: 'Agro Hermanos Perez',
-        due: 'Entrega: 20 Feb',
-        status: 'Control',
-        tone: 'secondary',
-      },
-    ],
-    stock: [
-      {
-        id: 'wire-32',
-        name: 'Varilla soldadura 3.2mm',
-        stockLabel: 'Stock: 12 ud',
-        minimumLabel: 'Minimo: 50 ud',
-        level: 18,
-        tone: 'danger',
-      },
-      {
-        id: 'sheet-3',
-        name: 'Chapa acero 3mm',
-        stockLabel: 'Stock: 36 kg',
-        minimumLabel: 'Minimo: 10 kg',
-        level: 72,
-        tone: 'success',
-      },
-    ],
-  }
-}
+const jsonHeaders = () => ({
+  ...authHeaders(),
+  'Content-Type': 'application/json',
+})
 
 export async function getWorkerDashboard() {
-  await new Promise((resolve) => window.setTimeout(resolve, MOCK_DELAY_MS))
-  return mapWorkerDashboardModel(buildMockRawDashboard())
+  const res = await fetch(`${API_BASE_URL}/dashboard/worker`, { headers: authHeaders() })
+  if (!res.ok) throw new Error('Error al cargar el panel de trabajo')
+  const data = await res.json()
+  return mapWorkerDashboardModel(data)
+}
+
+export async function advanceJobStatus(jobId, newEstado, newProgreso) {
+  const res = await fetch(`${API_BASE_URL}/trabajos/${jobId}/estado`, {
+    method: 'PATCH',
+    headers: jsonHeaders(),
+    body: JSON.stringify({ estado: newEstado, progreso: newProgreso }),
+  })
+  if (!res.ok) throw new Error('Error al actualizar el estado del trabajo')
+  return res.json()
+}
+
+export async function createJob(data) {
+  const res = await fetch(`${API_BASE_URL}/trabajos`, {
+    method: 'POST',
+    headers: jsonHeaders(),
+    body: JSON.stringify(data),
+  })
+  if (!res.ok) throw new Error('Error al crear el trabajo')
+  return res.json()
+}
+
+export async function getOperarios() {
+  const res = await fetch(`${API_BASE_URL}/auth/users`, { headers: authHeaders() })
+  if (!res.ok) throw new Error('Error al obtener operarios')
+  const users = await res.json()
+  return users.filter((u) => u.role === 'operario')
 }

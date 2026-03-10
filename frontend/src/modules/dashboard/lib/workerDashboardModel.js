@@ -26,35 +26,35 @@ function sanitizeTodayJob(job, index) {
 
 function sanitizeStockItem(item, index) {
   return {
-    id:           item?.id           || `stock-${index}`,
-    name:         item?.name         || 'Material sin nombre',
-    stockLabel:   item?.stockLabel   || '-',
-    minimumLabel: item?.minimumLabel || '-',
+    id:           item?.id            || `stock-${index}`,
+    name:         item?.name          || 'Material sin nombre',
+    stockLabel:   item?.stock_label   || '-',
+    minimumLabel: item?.minimum_label || '-',
     level:        clamp100(Number.isFinite(item?.level) ? item.level : 0),
-    tone:         item?.tone         || 'neutral',
+    tone:         item?.tone          || 'neutral',
   }
 }
 
 const mapGreeting = (raw) => ({
-  greetingLabel: raw?.greeting?.greetingLabel || 'Buenos dias',
-  operatorName:  raw?.greeting?.operatorName  || 'Operario',
-  dateLabel:     raw?.greeting?.dateLabel     || '',
-  shiftLabel:    raw?.greeting?.shiftLabel    || '',
+  greetingLabel: raw?.greeting?.greeting_label || 'Buenos días',
+  operatorName:  raw?.greeting?.operator_name  || 'Operario',
+  dateLabel:     raw?.greeting?.date_label     || '',
+  shiftLabel:    raw?.greeting?.shift_label    || '',
 })
 
 const mapActiveJob = (activeJob) =>
   activeJob
     ? {
-        id:           activeJob.id           || 'ORD-0000-000',
-        status:       activeJob.status       || 'En proceso',
-        statusTone:   activeJob.statusTone   || 'info',
-        dueLabel:     activeJob.dueLabel     || 'Sin fecha',
-        dueTone:      activeJob.dueTone      || 'neutral',
-        title:        activeJob.title        || 'Trabajo activo',
-        client:       activeJob.client       || 'Cliente no definido',
+        id:           activeJob.id            || 0,
+        status:       activeJob.status        || 'En proceso',
+        statusTone:   activeJob.status_tone   || 'info',
+        dueLabel:     activeJob.due_label     || 'Sin fecha',
+        dueTone:      activeJob.due_tone      || 'neutral',
+        title:        activeJob.title         || 'Trabajo activo',
+        client:       activeJob.client        || 'Cliente no definido',
         progress:     clamp100(Number(activeJob.progress) || 0),
         stages:       safeArray(activeJob.stages),
-        currentStage: Number.isFinite(activeJob.currentStage) ? activeJob.currentStage : 0,
+        currentStage: Number.isFinite(activeJob.current_stage) ? activeJob.current_stage : 0,
       }
     : null
 
@@ -63,8 +63,8 @@ export function mapWorkerDashboardModel(raw) {
   return {
     greeting:  mapGreeting(raw),
     metrics:   safeArray(raw?.metrics).map(sanitizeMetric),
-    activeJob: mapActiveJob(raw?.activeJob),
-    todayJobs: safeArray(raw?.todayJobs).map(sanitizeTodayJob),
+    activeJob: mapActiveJob(raw?.active_job),
+    todayJobs: safeArray(raw?.today_jobs).map(sanitizeTodayJob),
     stock:     safeArray(raw?.stock).map(sanitizeStockItem),
   }
 }

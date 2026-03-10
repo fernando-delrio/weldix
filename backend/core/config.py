@@ -23,7 +23,10 @@ class Settings(BaseSettings):
     login_max_attempts: int = 5
     login_lock_minutes: int = 10
 
-    allowed_origins: list[str] = ["http://localhost:5173"]
+    allowed_origins: list[str] = [
+        "http://localhost:5173",
+        "http://localhost:5174",
+    ]
 
 
 settings = Settings()
