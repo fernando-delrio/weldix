@@ -9,6 +9,7 @@ class MensajeHistorial(BaseModel):
 class ConsultaRequest(BaseModel):
     mensaje: str
     historial: list[MensajeHistorial] | None = None
+    contexto_trabajo: str | None = None   # título, cliente y estado del trabajo activo
 
 
 class ConsultaResponse(BaseModel):

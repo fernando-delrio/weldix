@@ -7,11 +7,11 @@ const jsonHeaders = () => ({
   'Content-Type': 'application/json',
 })
 
-export const consultarIA = async (mensaje, historial = []) => {
+export const consultarIA = async (mensaje, historial = [], contextoTrabajo = null) => {
   const res = await fetch(`${API_BASE_URL}/ia/consulta`, {
     method: 'POST',
     headers: jsonHeaders(),
-    body: JSON.stringify({ mensaje, historial }),
+    body: JSON.stringify({ mensaje, historial, contexto_trabajo: contextoTrabajo }),
   })
   if (!res.ok) {
     const body = await res.json().catch(() => ({}))

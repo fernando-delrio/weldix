@@ -1,4 +1,5 @@
 import { getStatusConfig } from '../../core/lib/statusConfig'
+import { useIaContext } from '../../ia/lib/IaContext'
 import { toneFor } from '../lib/tones'
 import PanelCard from './PanelCard'
 import StageProgress from './StageProgress'
@@ -14,10 +15,16 @@ const advanceButton = ({ nextLabel, onComplete }) =>
     </button>
   )
 
-function ActiveJobCard({ job, onComplete, onRegisterMaterial }) {
+const ActiveJobCard = ({ job, onComplete, onRegisterMaterial }) => {
   const statusTone = toneFor(job.statusTone)
   const dueTone    = toneFor(job.dueTone)
   const { nextLabel } = getStatusConfig(job.status)
+  const { openChat } = useIaContext()
+
+  const handleAskIA = () => {
+    const contexto = `OT #${job.id} — ${job.title}\nCliente: ${job.client}\nEstado: ${job.status}\nProgreso: ${job.progress}%\nFecha entrega: ${job.dueLabel}`
+    openChat(contexto)
+  }
 
   return (
     <PanelCard className="border-sky-500/55">
@@ -46,6 +53,13 @@ function ActiveJobCard({ job, onComplete, onRegisterMaterial }) {
           className="h-11 rounded-xl border border-slate-700 bg-slate-900/80 text-sm font-semibold text-slate-300 transition hover:border-slate-500 hover:text-slate-200"
         >
           Registrar materiales usados
+        </button>
+        <button
+          type="button"
+          onClick={handleAskIA}
+          className="h-11 rounded-xl border border-sky-700/40 bg-sky-500/5 text-sm font-semibold text-sky-400 transition hover:border-sky-500/60 hover:bg-sky-500/10"
+        >
+          🔧 Consultar IA sobre este trabajo
         </button>
       </div>
 
