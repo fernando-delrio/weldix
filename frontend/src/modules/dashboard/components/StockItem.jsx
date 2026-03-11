@@ -1,6 +1,6 @@
 import { toneFor } from '../lib/tones'
 
-function StockItem({ item }) {
+const StockItem = ({ item }) => {
   const tone = toneFor(item.tone)
 
   return (

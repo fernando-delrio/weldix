@@ -1,7 +1,7 @@
 import AppShell from '../../core/components/AppShell'
 import PanelCard from './PanelCard'
 
-function AppSectionPlaceholderPage({ title, description }) {
+const AppSectionPlaceholderPage = ({ title, description }) => {
   return (
     <AppShell>
       <div className="mx-auto w-full max-w-[680px] space-y-3 pb-5">

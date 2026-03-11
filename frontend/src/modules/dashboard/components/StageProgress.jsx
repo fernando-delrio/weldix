@@ -1,6 +1,6 @@
 import { cx } from '../../core/lib/cx'
 
-function StageProgress({ stages, currentStage }) {
+const StageProgress = ({ stages, currentStage }) => {
   const totalStages = stages.length || 1
 
   return (

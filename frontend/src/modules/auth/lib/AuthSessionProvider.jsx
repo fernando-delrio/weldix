@@ -5,7 +5,7 @@ import { API_BASE_URL } from '../../core/lib/api'
 
 const TOKEN_STORAGE_KEY = 'weldix_access_token'
 
-export function AuthSessionProvider({ children }) {
+export const AuthSessionProvider = ({ children }) => {
   const [token, setToken] = useState('')
   const [profile, setProfile] = useState(null)
   const [isFetchingProfile, setIsFetchingProfile] = useState(false)

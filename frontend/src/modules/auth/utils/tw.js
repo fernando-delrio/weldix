@@ -74,6 +74,4 @@ export const authTw = {
   registerWarning: 'mt-1 rounded-lg border border-sky-900/60 bg-sky-950/30 px-3 py-2 text-xs text-sky-200',
 }
 
-export function cx(...classes) {
-  return classes.filter(Boolean).join(' ')
-}
+export const cx = (...classes) => classes.filter(Boolean).join(' ')

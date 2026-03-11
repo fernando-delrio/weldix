@@ -17,7 +17,7 @@ const unauthenticated = ({ token }, location) =>
 const loadingProfile = ({ isFetchingProfile, profile }) =>
   (isFetchingProfile || !profile) && <Splash text="Cargando perfil..." />
 
-function ProtectedRoute() {
+const ProtectedRoute = () => {
   const session = useAuthSession()
   const location = useLocation()
 
