@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-function formatClock(value) {
+const formatClock = (value) => {
   return new Intl.DateTimeFormat('es-ES', {
     hour: '2-digit',
     minute: '2-digit',
@@ -8,7 +8,7 @@ function formatClock(value) {
   }).format(value)
 }
 
-export function useClock(intervalMs = 30_000) {
+export const useClock = (intervalMs = 30_000) => {
   const [timeLabel, setTimeLabel] = useState(() => formatClock(new Date()))
 
   useEffect(() => {

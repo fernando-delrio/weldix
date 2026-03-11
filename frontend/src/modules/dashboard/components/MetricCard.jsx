@@ -1,6 +1,6 @@
 import { toneFor } from '../lib/tones'
 
-function MetricCard({ item }) {
+const MetricCard = ({ item }) => {
   const tone = toneFor(item.tone)
 
   return (

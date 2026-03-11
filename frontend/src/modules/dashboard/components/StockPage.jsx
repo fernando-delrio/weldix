@@ -1,6 +1,6 @@
 import AppSectionPlaceholderPage from './AppSectionPlaceholderPage'
 
-function StockPage() {
+const StockPage = () => {
   return (
     <AppSectionPlaceholderPage
       title="Stock"

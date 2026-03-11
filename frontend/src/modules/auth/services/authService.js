@@ -5,7 +5,7 @@ const assertResponseOk = (res, data) => {
   if (!res.ok) throw new Error(data.detail || 'Error en la solicitud')
 }
 
-async function request(path, body) {
+const request = async (path, body) => {
   const res = await fetch(`${API_BASE_URL}${path}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

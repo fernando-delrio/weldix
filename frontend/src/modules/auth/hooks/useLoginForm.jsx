@@ -8,7 +8,7 @@ const navigateToAppIfAuthenticated = (me, navigate) => {
   me?.role && navigate('/app/inicio', { replace: true })
 }
 
-export function useLoginForm() {
+export const useLoginForm = () => {
   const navigate = useNavigate()
   const { saveToken, refreshProfile } = useAuthSession()
 

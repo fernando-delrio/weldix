@@ -37,6 +37,6 @@ export const toneClasses = {
   },
 }
 
-export function toneFor(key) {
+export const toneFor = (key) => {
   return toneClasses[key] || toneClasses.neutral
 }
