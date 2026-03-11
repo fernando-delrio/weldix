@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 import { authService } from '../services/authService'
 
-export function useRegisterForm() {
+export const useRegisterForm = () => {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')

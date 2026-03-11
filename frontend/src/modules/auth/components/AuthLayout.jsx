@@ -14,7 +14,7 @@ const feedbackMessage = ({ feedback, error }) =>
     </p>
   )
 
-function AuthLayout({ mode, title, subtitle, feedback, error, children }) {
+const AuthLayout = ({ mode, title, subtitle, feedback, error, children }) => {
   return (
     <main className={authTw.pageRoot}>
       <div className={authTw.twoColumnGrid}>

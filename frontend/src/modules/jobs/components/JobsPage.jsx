@@ -43,7 +43,7 @@ const jobsList = ({ isLoading, error, filteredJobs }) =>
     </div>
   )
 
-function JobsPage() {
+const JobsPage = () => {
   const state = useJobs()
   const { activeFilter, setActiveFilter } = state
 

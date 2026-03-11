@@ -2,7 +2,7 @@ import { Link, useLocation } from 'react-router-dom'
 
 import { cx } from '../lib/cx'
 
-function BottomNav({ items }) {
+const BottomNav = ({ items }) => {
   const location = useLocation()
 
   return (

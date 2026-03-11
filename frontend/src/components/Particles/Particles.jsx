@@ -5,18 +5,67 @@ import './Particles.css'
 
 const defaultColors = ['#ffffff', '#ffffff', '#ffffff']
 
+// ── Conversión de color ───────────────────────────────────────────────────────
+// Cada paso tiene un nombre que dice qué hace — Decompose Conditional (Shvets §10)
+const expandShortHex    = (hex) => hex.split('').map((c) => c + c).join('')
+const normalizeHex      = (hex) => hex.length === 3 ? expandShortHex(hex) : hex
+
 const hexToRgb = (hex) => {
-  hex = hex.replace(/^#/, '')
-  if (hex.length === 3) {
-    hex = hex.split('').map((c) => c + c).join('')
-  }
-  const int = parseInt(hex, 16)
-  const r = ((int >> 16) & 255) / 255
-  const g = ((int >> 8) & 255) / 255
-  const b = (int & 255) / 255
-  return [r, g, b]
+  const full = normalizeHex(hex.replace(/^#/, ''))
+  const int  = parseInt(full, 16)
+  return [((int >> 16) & 255) / 255, ((int >> 8) & 255) / 255, (int & 255) / 255]
 }
 
+// ── Generación de partículas ──────────────────────────────────────────────────
+const randomInRange     = ()      => Math.random() * 2 - 1
+const isOutsideSphere   = (len)   => len > 1 || len === 0
+const resolvedPalette   = (cols)  => cols?.length > 0 ? cols : defaultColors
+const randomFromPalette = (pal)   => hexToRgb(pal[Math.floor(Math.random() * pal.length)])
+
+// Rejection sampling: intenta un punto; si cae fuera de la esfera, se llama a
+// sí misma — recursión en lugar de do/while para evitar variables mutables.
+const randomUnitPoint = () => {
+  const x   = randomInRange(), y = randomInRange(), z = randomInRange()
+  const len = x * x + y * y + z * z
+  return isOutsideSphere(len) ? randomUnitPoint() : [x, y, z]
+}
+
+// Construye los tres Float32Arrays que necesita la geometría WebGL.
+// Usamos Array.from({ length: count }) para iterar sin for/let.
+const buildParticleArrays = (count, palette) => {
+  const positions = new Float32Array(count * 3)
+  const randoms   = new Float32Array(count * 4)
+  const colors    = new Float32Array(count * 3)
+
+  Array.from({ length: count }, (_, i) => {
+    const [x, y, z] = randomUnitPoint()
+    const r = Math.cbrt(Math.random())
+    positions.set([x * r, y * r, z * r], i * 3)
+    randoms.set([Math.random(), Math.random(), Math.random(), Math.random()], i * 4)
+    colors.set(randomFromPalette(palette), i * 3)
+  })
+
+  return { positions, randoms, colors }
+}
+
+// ── Loop de animación — cada comportamiento tiene nombre ──────────────────────
+const applyHoverOffset = (particles, mouse, factor) => {
+  particles.position.x = -mouse.x * factor
+  particles.position.y = -mouse.y * factor
+}
+
+const resetOffset = (particles) => {
+  particles.position.x = 0
+  particles.position.y = 0
+}
+
+const applyRotation = (particles, elapsed, speed) => {
+  particles.rotation.x  = Math.sin(elapsed * 0.0002) * 0.1
+  particles.rotation.y  = Math.cos(elapsed * 0.0005) * 0.15
+  particles.rotation.z += 0.01 * speed
+}
+
+// ── Shaders GLSL (no son JS — se mantienen como están) ───────────────────────
 const vertex = /* glsl */ `
   attribute vec3 position;
   attribute vec4 random;
@@ -82,6 +131,7 @@ const fragment = /* glsl */ `
   }
 `
 
+// ── Componente principal ──────────────────────────────────────────────────────
 const Particles = ({
   particleCount = 200,
   particleSpread = 10,
@@ -98,7 +148,7 @@ const Particles = ({
   className = '',
 }) => {
   const containerRef = useRef(null)
-  const mouseRef = useRef({ x: 0, y: 0 })
+  const mouseRef     = useRef({ x: 0, y: 0 })
 
   useEffect(() => {
     const container = containerRef.current
@@ -113,9 +163,7 @@ const Particles = ({
     camera.position.set(0, 0, cameraDistance)
 
     const resize = () => {
-      const width = container.clientWidth
-      const height = container.clientHeight
-      renderer.setSize(width, height)
+      renderer.setSize(container.clientWidth, container.clientHeight)
       camera.perspective({ aspect: gl.canvas.width / gl.canvas.height })
     }
     window.addEventListener('resize', resize, false)
@@ -123,90 +171,63 @@ const Particles = ({
 
     const handleMouseMove = (e) => {
       const rect = container.getBoundingClientRect()
-      const x = ((e.clientX - rect.left) / rect.width) * 2 - 1
-      const y = -(((e.clientY - rect.top) / rect.height) * 2 - 1)
-      mouseRef.current = { x, y }
+      mouseRef.current = {
+        x: ((e.clientX - rect.left) / rect.width) * 2 - 1,
+        y: -(((e.clientY - rect.top) / rect.height) * 2 - 1),
+      }
     }
     if (moveParticlesOnHover) container.addEventListener('mousemove', handleMouseMove)
 
-    const count = particleCount
-    const positions = new Float32Array(count * 3)
-    const randoms = new Float32Array(count * 4)
-    const colors = new Float32Array(count * 3)
-    const palette = particleColors && particleColors.length > 0 ? particleColors : defaultColors
-
-    for (let i = 0; i < count; i++) {
-      let x, y, z, len
-      do {
-        x = Math.random() * 2 - 1
-        y = Math.random() * 2 - 1
-        z = Math.random() * 2 - 1
-        len = x * x + y * y + z * z
-      } while (len > 1 || len === 0)
-      const r = Math.cbrt(Math.random())
-      positions.set([x * r, y * r, z * r], i * 3)
-      randoms.set([Math.random(), Math.random(), Math.random(), Math.random()], i * 4)
-      const col = hexToRgb(palette[Math.floor(Math.random() * palette.length)])
-      colors.set(col, i * 3)
-    }
+    const palette = resolvedPalette(particleColors)
+    const { positions, randoms, colors } = buildParticleArrays(particleCount, palette)
 
     const geometry = new Geometry(gl, {
       position: { size: 3, data: positions },
-      random: { size: 4, data: randoms },
-      color: { size: 3, data: colors },
+      random:   { size: 4, data: randoms },
+      color:    { size: 3, data: colors },
     })
 
     const program = new Program(gl, {
       vertex,
       fragment,
       uniforms: {
-        uTime: { value: 0 },
-        uSpread: { value: particleSpread },
-        uBaseSize: { value: particleBaseSize * pixelRatio },
+        uTime:           { value: 0 },
+        uSpread:         { value: particleSpread },
+        uBaseSize:       { value: particleBaseSize * pixelRatio },
         uSizeRandomness: { value: sizeRandomness },
         uAlphaParticles: { value: alphaParticles ? 1 : 0 },
       },
       transparent: true,
-      depthTest: false,
+      depthTest:   false,
     })
 
     const particles = new Mesh(gl, { mode: gl.POINTS, geometry, program })
 
-    let animationFrameId
-    let lastTime = performance.now()
-    let elapsed = 0
+    
+    const raf = { id: null, lastTime: performance.now(), elapsed: 0 }
 
     const update = (t) => {
-      animationFrameId = requestAnimationFrame(update)
-      const delta = t - lastTime
-      lastTime = t
-      elapsed += delta * speed
+      raf.id       = requestAnimationFrame(update)
+      raf.elapsed += (t - raf.lastTime) * speed
+      raf.lastTime = t
 
-      program.uniforms.uTime.value = elapsed * 0.001
+      program.uniforms.uTime.value = raf.elapsed * 0.001
 
-      if (moveParticlesOnHover) {
-        particles.position.x = -mouseRef.current.x * particleHoverFactor
-        particles.position.y = -mouseRef.current.y * particleHoverFactor
-      } else {
-        particles.position.x = 0
-        particles.position.y = 0
-      }
+      moveParticlesOnHover
+        ? applyHoverOffset(particles, mouseRef.current, particleHoverFactor)
+        : resetOffset(particles)
 
-      if (!disableRotation) {
-        particles.rotation.x = Math.sin(elapsed * 0.0002) * 0.1
-        particles.rotation.y = Math.cos(elapsed * 0.0005) * 0.15
-        particles.rotation.z += 0.01 * speed
-      }
+      !disableRotation && applyRotation(particles, raf.elapsed, speed)
 
       renderer.render({ scene: particles, camera })
     }
 
-    animationFrameId = requestAnimationFrame(update)
+    raf.id = requestAnimationFrame(update)
 
     return () => {
       window.removeEventListener('resize', resize)
       if (moveParticlesOnHover) container.removeEventListener('mousemove', handleMouseMove)
-      cancelAnimationFrame(animationFrameId)
+      cancelAnimationFrame(raf.id)
       if (container.contains(gl.canvas)) container.removeChild(gl.canvas)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
