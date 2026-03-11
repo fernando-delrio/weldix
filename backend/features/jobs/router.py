@@ -14,9 +14,10 @@ router = APIRouter(prefix="/trabajos", tags=["trabajos"])
 @router.get("", response_model=list[JobResponse])
 def list_jobs(
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
-    jobs = service.get_all_jobs(db)
+    # Admin ve todos los trabajos; el operario solo ve los suyos
+    jobs = service.get_all_jobs(db) if current_user.role == "admin" else service.get_jobs_for_user(db, current_user.id)
     return [JobResponse.from_orm_job(j) for j in jobs]
 
 
@@ -61,10 +62,10 @@ def update_estado(
     job_id: int,
     body: UpdateEstadoRequest,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
     try:
-        job = service.update_estado(db, job_id, body.estado, body.progreso)
+        job = service.update_estado(db, job_id, body.estado, body.progreso, current_user.id)
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
     return JobResponse.from_orm_job(job)

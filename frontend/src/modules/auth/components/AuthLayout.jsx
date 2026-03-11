@@ -79,9 +79,6 @@ function AuthLayout({ mode, title, subtitle, feedback, error, children }) {
               <Link to="/login" className={modeButtonClass(mode, 'login')}>
                 Iniciar sesion
               </Link>
-              <Link to="/register" className={modeButtonClass(mode, 'register')}>
-                Crear cuenta
-              </Link>
             </div>
 
             <h1 className={authTw.panelTitle}>{title}</h1>

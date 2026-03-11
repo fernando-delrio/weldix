@@ -4,7 +4,7 @@ import IaChatPanel from '../../ia/components/IaChatPanel'
 import { IaProvider, useIaContext } from '../../ia/lib/IaContext'
 import AppHeader from './AppHeader'
 import BottomNav from './BottomNav'
-import { APP_SHELL_NAV_ITEMS } from '../lib/navigation'
+import { getNavItems } from '../lib/navigation'
 
 const IaFab = () => {
   const { openChat } = useIaContext()
@@ -25,7 +25,9 @@ const AppShellInner = ({ children }) => {
   const timeLabel = useClock()
   const { isOpen } = useIaContext()
 
-  const roleLabel = (profile?.role || 'operario').toUpperCase()
+  const role      = profile?.role || 'operario'
+  const roleLabel = role.toUpperCase()
+  const navItems  = getNavItems(role)
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-slate-950 text-slate-100">
@@ -42,7 +44,7 @@ const AppShellInner = ({ children }) => {
         {children}
       </main>
 
-      <BottomNav items={APP_SHELL_NAV_ITEMS} />
+      <BottomNav items={navItems} />
       <IaFab />
       {isOpen && <IaChatPanel />}
     </div>

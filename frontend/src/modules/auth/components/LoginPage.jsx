@@ -49,7 +49,7 @@ const LoginPage = () => {
           />
         </div>
 
-        <p className={authTw.helperTextRight}>Olvidaste tu contrasena?</p>
+        <p className={authTw.helperTextRight}>¿Olvidaste tu contraseña?</p>
 
         <button
           type="submit"

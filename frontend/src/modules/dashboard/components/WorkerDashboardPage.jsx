@@ -3,6 +3,7 @@ import { useState } from 'react'
 import AppShell from '../../core/components/AppShell'
 import { useAuthSession } from '../../auth/hooks/useAuthSession'
 import { useWorkerDashboard } from '../hooks/useWorkerDashboard'
+import AdminJobsSection from '../../admin/components/AdminJobsSection'
 import ActiveJobCard from './ActiveJobCard'
 import MetricCard from './MetricCard'
 import NewJobModal from './NewJobModal'
@@ -53,8 +54,8 @@ const adminNewJobButton = ({ isAdmin, onOpen }) =>
     </button>
   )
 
-const startByOrtButton = ({ hasActiveJob, onOpen }) =>
-  !hasActiveJob && (
+const startByOrtButton = ({ isAdmin, hasActiveJob, onOpen }) =>
+  !isAdmin && !hasActiveJob && (
     <button
       type="button"
       onClick={onOpen}
@@ -69,12 +70,19 @@ const activeJobSection = ({ activeJob, onComplete, onOpenMaterialModal }) =>
     ? <ActiveJobCard job={activeJob} onComplete={onComplete} onRegisterMaterial={onOpenMaterialModal} />
     : <PanelCard><p className="text-sm text-slate-400">Sin trabajo activo en este momento.</p></PanelCard>
 
-const pendingJobsSection = ({ todayJobs }) =>
+const pendingJobsSection = ({ todayJobs, onStartJob, canStart }) =>
   todayJobs.length > 0 && (
     <section>
       <SectionHeader title="Pendientes asignados" />
       <div className="space-y-2">
-        {todayJobs.map((job) => <TodayJobItem key={job.id} job={job} />)}
+        {todayJobs.map((job) => (
+          <TodayJobItem
+            key={job.id}
+            job={job}
+            onStart={() => onStartJob(job.id)}
+            canStart={canStart}
+          />
+        ))}
       </div>
     </section>
   )
@@ -123,26 +131,37 @@ const WorkerDashboardPage = () => {
               </div>
             </section>
 
-            <section className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
-              {dashboard.metrics.map((metric) => (
-                <MetricCard key={metric.key} item={metric} />
-              ))}
-            </section>
+            {!isAdmin && (
+              <section className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
+                {dashboard.metrics.map((metric) => (
+                  <MetricCard key={metric.key} item={metric} />
+                ))}
+              </section>
+            )}
 
-            <section>
-              <SectionHeader title="Trabajo activo" />
-              {activeJobSection({
-                activeJob: dashboard.activeJob,
-                onComplete: markActiveJobCompleted,
-                onOpenMaterialModal: () => setShowMaterialModal(true),
-              })}
-              {startByOrtButton({
-                hasActiveJob: Boolean(dashboard.activeJob),
-                onOpen: () => setShowOrtModal(true),
-              })}
-            </section>
+            {!isAdmin && (
+              <section>
+                <SectionHeader title="Trabajo activo" />
+                {activeJobSection({
+                  activeJob: dashboard.activeJob,
+                  onComplete: markActiveJobCompleted,
+                  onOpenMaterialModal: () => setShowMaterialModal(true),
+                })}
+                {startByOrtButton({
+                  isAdmin,
+                  hasActiveJob: Boolean(dashboard.activeJob),
+                  onOpen: () => setShowOrtModal(true),
+                })}
+              </section>
+            )}
 
-            {pendingJobsSection({ todayJobs: dashboard.todayJobs })}
+            {!isAdmin && pendingJobsSection({
+              todayJobs: dashboard.todayJobs,
+              onStartJob: startPendingJob,
+              canStart: !dashboard.activeJob,
+            })}
+
+            {isAdmin && <AdminJobsSection />}
           </>
         )}
       </div>

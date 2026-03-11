@@ -38,10 +38,33 @@ def _format_stock(stock_items: list) -> str:
     return "\n".join(lines)
 
 
+def _format_jobs(jobs: list) -> str:
+    if not jobs:
+        return "No hay trabajos registrados en el sistema."
+
+    counts: dict[str, int] = {}
+    for j in jobs:
+        counts[j.estado] = counts.get(j.estado, 0) + 1
+
+    order  = ["pendiente", "en_proceso", "control", "listo", "entregado"]
+    labels = {"pendiente": "Pendiente", "en_proceso": "En proceso", "control": "Control", "listo": "Listo", "entregado": "Entregado"}
+    summary = ", ".join(f"{labels.get(s, s)}: {counts[s]}" for s in order if s in counts)
+
+    lines = [f"Resumen: {summary}"]
+    active = [j for j in jobs if j.estado in ("pendiente", "en_proceso", "control")]
+    if active:
+        lines.append("Detalle de trabajos activos:")
+        for j in active:
+            operario = j.operario.full_name if j.operario else "Sin asignar"
+            lines.append(f"  - {j.code or 'Sin código'} | {j.titulo} | {labels.get(j.estado, j.estado)} | Operario: {operario}")
+    return "\n".join(lines)
+
+
 def consultar(
     mensaje: str,
     historial: list[dict] | None = None,
     stock_items: list | None = None,
+    jobs_items: list | None = None,
     contexto_trabajo: str | None = None,
 ) -> str:
     if not settings.mistral_api_key:
@@ -49,6 +72,9 @@ def consultar(
 
     # Construir system prompt enriquecido con contexto dinámico
     system_content = _SYSTEM_PROMPT
+
+    if jobs_items is not None:
+        system_content += f"\n\n## Estado actual de los trabajos del taller:\n{_format_jobs(jobs_items)}"
 
     if stock_items is not None:
         system_content += f"\n\n## Stock actual del taller:\n{_format_stock(stock_items)}"

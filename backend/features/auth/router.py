@@ -5,7 +5,7 @@ from backend.core.database import get_db
 from .dependencies import get_current_user, require_role
 from .model import User
 from .registration import SignupData, SignupStrategyFactory
-from .schemas import AdminSignupRequest, ChangePasswordRequest, LoginRequest, MeResponse, SignupRequest, TokenResponse, UpdateProfileRequest
+from .schemas import AdminSignupRequest, ChangePasswordRequest, LoginRequest, MeResponse, TokenResponse, UpdateProfileRequest
 from .service import authenticate_user, change_password, update_profile
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -13,20 +13,9 @@ public_signup_strategy = SignupStrategyFactory.for_public_signup()
 admin_signup_strategy = SignupStrategyFactory.for_admin_signup()
 
 
-@router.post("/signup", response_model=MeResponse)
-def signup(body: SignupRequest, db: Session = Depends(get_db)):
-    try:
-        user = public_signup_strategy.signup(
-            db=db,
-            data=SignupData(
-                email=body.email,
-                password=body.password,
-                full_name=body.full_name,
-            ),
-        )
-    except ValueError as exc:
-        raise HTTPException(status_code=409, detail=str(exc))
-    return MeResponse(id=user.id, email=user.email, full_name=user.full_name, role=user.role)
+@router.post("/signup", status_code=403)
+def signup():
+    raise HTTPException(status_code=403, detail="El registro público está desactivado. Contacta con el administrador.")
 
 
 @router.post("/admin/signup", response_model=MeResponse)
@@ -42,6 +31,7 @@ def signup_admin(
                 email=body.email,
                 password=body.password,
                 full_name=body.full_name,
+                role=body.role,
             ),
         )
     except ValueError as exc:

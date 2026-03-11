@@ -19,6 +19,8 @@ class Settings(BaseSettings):
     seed_admin_password: str | None = None
     seed_admin_full_name: str = "Admin Weldix"
 
+    seed_demo_data: bool = True  # Poner False en .env para desactivar datos de prueba
+
     
     login_max_attempts: int = 5
     login_lock_minutes: int = 10

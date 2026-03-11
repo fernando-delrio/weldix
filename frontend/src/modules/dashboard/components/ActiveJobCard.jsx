@@ -18,11 +18,11 @@ const advanceButton = ({ nextLabel, onComplete }) =>
 const ActiveJobCard = ({ job, onComplete, onRegisterMaterial }) => {
   const statusTone = toneFor(job.statusTone)
   const dueTone    = toneFor(job.dueTone)
-  const { nextLabel } = getStatusConfig(job.status)
+  const { nextLabel } = getStatusConfig(job.statusKey)
   const { openChat } = useIaContext()
 
   const handleAskIA = () => {
-    const contexto = `OT #${job.id} — ${job.title}\nCliente: ${job.client}\nEstado: ${job.status}\nProgreso: ${job.progress}%\nFecha entrega: ${job.dueLabel}`
+    const contexto = `${job.code ?? `OT #${job.id}`} — ${job.title}\nCliente: ${job.client}\nEstado: ${job.status}\nProgreso: ${job.progress}%\nFecha entrega: ${job.dueLabel}`
     openChat(contexto)
   }
 
@@ -32,7 +32,7 @@ const ActiveJobCard = ({ job, onComplete, onRegisterMaterial }) => {
         <span className={`rounded-md border px-2 py-1 text-[0.62rem] font-bold uppercase tracking-[0.16em] ${statusTone.badge}`}>
           {job.status}
         </span>
-        <p className="text-[0.62rem] font-semibold uppercase tracking-[0.14em] text-slate-500">#{job.id}</p>
+        <p className="text-[0.62rem] font-semibold uppercase tracking-[0.14em] text-slate-500">{job.code ?? `#${job.id}`}</p>
       </div>
 
       <h3 className="mt-3 text-2xl font-bold leading-tight text-slate-100">{job.title}</h3>

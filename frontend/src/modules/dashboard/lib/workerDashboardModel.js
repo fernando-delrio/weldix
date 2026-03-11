@@ -18,6 +18,7 @@ function sanitizeMetric(metric, index) {
 function sanitizeTodayJob(job, index) {
   return {
     id:     job?.id    || `job-${index}`,
+    code:   job?.code  || null,
     title:  job?.title || 'Trabajo sin titulo',
     area:   job?.area  || '',
     due:    job?.due   || '-',
@@ -48,7 +49,9 @@ const mapActiveJob = (activeJob) =>
   activeJob
     ? {
         id:           activeJob.id            || 0,
-        status:       activeJob.status        || 'En proceso',
+        code:         activeJob.code          || null,
+        statusKey:    activeJob.status        || 'en_proceso',
+        status:       getStatusConfig(activeJob.status).label || 'En proceso',
         statusTone:   activeJob.status_tone   || 'info',
         dueLabel:     activeJob.due_label     || 'Sin fecha',
         dueTone:      activeJob.due_tone      || 'neutral',

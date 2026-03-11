@@ -12,6 +12,7 @@ class SignupData:
     email: str
     password: str
     full_name: str | None
+    role: str = "operario"
 
 
 class SignupStrategy(ABC):
@@ -28,7 +29,7 @@ class SignupStrategy(ABC):
             email=safe_email,
             password=data.password,
             full_name=data.full_name,
-            role=self.role,
+            role=data.role,
         )
 
 

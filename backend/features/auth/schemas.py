@@ -11,6 +11,7 @@ class AdminSignupRequest(BaseModel):
     email: EmailStr
     full_name: str | None = None
     password: str = Field(min_length=8)
+    role: str = "operario"
 
 
 class LoginRequest(BaseModel):
