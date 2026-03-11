@@ -12,6 +12,10 @@ def get_all_jobs(db: Session) -> list[Job]:
     return db.query(Job).order_by(Job.created_at.desc()).all()
 
 
+def get_jobs_for_user(db: Session, user_id: int) -> list[Job]:
+    return db.query(Job).filter(Job.operario_id == user_id).order_by(Job.created_at.desc()).all()
+
+
 def get_job_by_id(db: Session, job_id: int) -> Job:
     job = db.query(Job).filter(Job.id == job_id).first()
     if not job:
@@ -45,8 +49,15 @@ def create_job(db: Session, data: CreateJobRequest) -> Job:
     return job
 
 
-def update_estado(db: Session, job_id: int, estado: str, progreso: int) -> Job:
+def _is_starting_job(current_estado: str, new_estado: str) -> bool:
+    return current_estado == 'pendiente' and new_estado == 'en_proceso'
+
+
+def update_estado(db: Session, job_id: int, estado: str, progreso: int, current_user_id: int | None = None) -> Job:
     job = get_job_by_id(db, job_id)
+    # Auto-asignar operario al iniciar: si no tenía asignado, queda bloqueado a quien lo inicia
+    if _is_starting_job(job.estado, estado) and not job.operario_id and current_user_id:
+        job.operario_id = current_user_id
     job.estado   = estado
     job.progreso = _clamp_progress(progreso)
     db.commit()

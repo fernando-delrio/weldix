@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Date, DateTime, ForeignKey, Integer, String, Text, func
+from sqlalchemy.orm import relationship
 
 from backend.core.database import Base
 
@@ -16,3 +17,5 @@ class Job(Base):
     progreso    = Column(Integer, nullable=False, default=0)
     descripcion = Column(Text, nullable=True)
     created_at  = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+    operario    = relationship("User", foreign_keys=[operario_id], lazy="select")
