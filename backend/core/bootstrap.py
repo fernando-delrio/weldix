@@ -55,6 +55,8 @@ _SEED_JOBS = [
 
 
 def seed_jobs() -> None:
+    if not settings.seed_demo_data:
+        return
     db = SessionLocal()
     try:
         if db.query(Job).count() > 0:

@@ -19,7 +19,7 @@ const TodayJobItem = ({ job, onStart, canStart }) => {
     <article className="rounded-xl border border-cyan-900/50 bg-slate-900/65 p-3">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-[0.62rem] uppercase tracking-[0.12em] text-slate-500">#{job.id}</p>
+          <p className="text-[0.62rem] uppercase tracking-[0.12em] text-slate-500">{job.code ?? `#${job.id}`}</p>
           <h4 className="mt-1 text-lg font-semibold text-slate-100">{job.title}</h4>
           <p className="text-sm text-slate-400">{job.area}</p>
         </div>

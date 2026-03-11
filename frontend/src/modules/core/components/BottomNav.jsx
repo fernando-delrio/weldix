@@ -7,7 +7,7 @@ function BottomNav({ items }) {
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-cyan-950/70 bg-slate-950/95 backdrop-blur">
-      <div className="mx-auto grid h-[72px] w-full max-w-[980px] grid-cols-4 px-2">
+      <div className="mx-auto h-[72px] w-full max-w-[980px] px-2" style={{ display: 'grid', gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))` }}>
         {items.map((item) => {
           const isActive =
             location.pathname === item.to || location.pathname.startsWith(`${item.to}/`)

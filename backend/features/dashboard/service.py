@@ -61,6 +61,7 @@ def _build_active_job(job: Job) -> dict:
     due_label, due_tone = _due_info(job.fecha_inicio)
     return {
         'id':            job.id,
+        'code':          job.code,
         'status':        job.estado,
         'status_tone':   _ESTADO_TONE.get(job.estado, 'neutral'),
         'due_label':     due_label,
@@ -77,6 +78,7 @@ def _build_today_job(job: Job) -> dict:
     due_label, _ = _due_info(job.fecha_inicio)
     return {
         'id':     job.id,
+        'code':   job.code,
         'title':  job.titulo,
         'due':    due_label,
         'status': job.estado,
@@ -87,16 +89,16 @@ def _build_today_job(job: Job) -> dict:
 def get_worker_dashboard(db: Session, user: User) -> dict:
     now = datetime.now()
 
+    # Solo los trabajos del propio operario — no ve los de otros ni los sin asignar
     jobs = (
         db.query(Job)
-        .filter((Job.operario_id == user.id) | (Job.operario_id == None))  # noqa: E711
+        .filter(Job.operario_id == user.id)
         .order_by(Job.created_at.desc())
         .all()
     )
 
     active_job = next((j for j in jobs if j.estado in ('en_proceso', 'control')), None)
-    # Solo pendientes explícitamente asignados al usuario (Fase 4 añadirá asignación real)
-    today_jobs = [j for j in jobs if j.estado == 'pendiente' and j.operario_id == user.id][:5]
+    today_jobs = [j for j in jobs if j.estado == 'pendiente'][:5]
 
     stock = db.query(Material).order_by(Material.name).all()
 
