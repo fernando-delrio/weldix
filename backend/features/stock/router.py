@@ -5,7 +5,7 @@ from backend.core.database import get_db
 from backend.features.auth.dependencies import get_current_user, require_role
 from backend.features.auth.model import User
 
-from .schemas import CreateMaterialRequest, StockItemResponse, UpdateMaterialRequest
+from .schemas import ConsumeMaterialRequest, CreateMaterialRequest, StockItemResponse, UpdateMaterialRequest
 from . import service
 
 router = APIRouter(prefix="/stock", tags=["stock"])
@@ -28,12 +28,27 @@ def create_material(
     return StockItemResponse.from_orm_material(service.create_material(db, body))
 
 
+# Endpoint exclusivo para operarios: descuenta cantidad consumida con validación server-side
+@router.post("/{material_id}/consume", response_model=StockItemResponse)
+def consume_material(
+    material_id: int,
+    body: ConsumeMaterialRequest,
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+):
+    try:
+        return StockItemResponse.from_orm_material(service.consume_material(db, material_id, body.consumed))
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+# PATCH solo para admin: edición libre de campos (nombre, cantidad, mínimo, unidad)
 @router.patch("/{material_id}", response_model=StockItemResponse)
 def update_material(
     material_id: int,
     body: UpdateMaterialRequest,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    _: User = Depends(require_role("admin")),
 ):
     try:
         return StockItemResponse.from_orm_material(service.update_material(db, material_id, body))
