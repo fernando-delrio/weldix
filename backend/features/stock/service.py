@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
 from .model import Material
-from .schemas import CreateMaterialRequest, UpdateMaterialRequest
+from .schemas import CreateMaterialRequest, UpdateMaterialRequest, ConsumeMaterialRequest
 
 
 def get_all_materials(db: Session) -> list[Material]:
@@ -34,6 +34,16 @@ def update_material(db: Session, material_id: int, data: UpdateMaterialRequest) 
     if data.quantity is not None: material.quantity = data.quantity
     if data.minimum  is not None: material.minimum  = data.minimum
     if data.unit     is not None: material.unit     = data.unit
+    db.commit()
+    db.refresh(material)
+    return material
+
+
+def consume_material(db: Session, material_id: int, consumed: float) -> Material:
+    material = get_material_by_id(db, material_id)
+    if consumed > material.quantity:
+        raise ValueError("No hay suficiente stock disponible")
+    material.quantity = max(0.0, material.quantity - consumed)
     db.commit()
     db.refresh(material)
     return material
