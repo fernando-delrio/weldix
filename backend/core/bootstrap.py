@@ -90,7 +90,16 @@ def seed_stock() -> None:
         db.close()
 
 
+def _check_security_warnings() -> None:
+    if settings.jwt_secret_key == "dev-secret-change-me":
+        logger.warning(
+            "⚠️  JWT_SECRET_KEY usa el valor por defecto de desarrollo. "
+            "Define una clave segura en .env antes de desplegar a producción."
+        )
+
+
 def run_startup_tasks() -> None:
+    _check_security_warnings()
     init_schema()
     seed_admin()
     seed_jobs()

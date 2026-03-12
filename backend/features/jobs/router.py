@@ -48,12 +48,15 @@ def find_job_by_code(
 def get_job(
     job_id: int,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
     try:
         job = service.get_job_by_id(db, job_id)
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
+    # Un operario no puede leer trabajos ajenos (solo los asignados o sin asignar/pendientes)
+    if current_user.role != "admin" and job.operario_id and job.operario_id != current_user.id:
+        raise HTTPException(status_code=403, detail="No tienes acceso a este trabajo")
     return JobResponse.from_orm_job(job)
 
 
@@ -65,7 +68,9 @@ def update_estado(
     current_user: User = Depends(get_current_user),
 ):
     try:
-        job = service.update_estado(db, job_id, body.estado, body.progreso, current_user.id)
+        job = service.update_estado(db, job_id, body.estado, body.progreso, current_user.id, current_user.role)
+    except PermissionError as exc:
+        raise HTTPException(status_code=403, detail=str(exc))
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
     return JobResponse.from_orm_job(job)

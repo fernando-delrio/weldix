@@ -54,3 +54,7 @@ class UpdateMaterialRequest(BaseModel):
     quantity: Optional[float] = Field(default=None, ge=0)
     minimum:  Optional[float] = Field(default=None, ge=0)
     unit:     Optional[str]   = None
+
+
+class ConsumeMaterialRequest(BaseModel):
+    consumed: float = Field(gt=0)

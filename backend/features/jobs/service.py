@@ -53,8 +53,11 @@ def _is_starting_job(current_estado: str, new_estado: str) -> bool:
     return current_estado == 'pendiente' and new_estado == 'en_proceso'
 
 
-def update_estado(db: Session, job_id: int, estado: str, progreso: int, current_user_id: int | None = None) -> Job:
+def update_estado(db: Session, job_id: int, estado: str, progreso: int, current_user_id: int | None = None, current_user_role: str = 'operario') -> Job:
     job = get_job_by_id(db, job_id)
+    # Un operario solo puede modificar sus propios trabajos
+    if current_user_role != 'admin' and job.operario_id and job.operario_id != current_user_id:
+        raise PermissionError("No tienes permiso para modificar este trabajo")
     # Auto-asignar operario al iniciar: si no tenía asignado, queda bloqueado a quien lo inicia
     if _is_starting_job(job.estado, estado) and not job.operario_id and current_user_id:
         job.operario_id = current_user_id
