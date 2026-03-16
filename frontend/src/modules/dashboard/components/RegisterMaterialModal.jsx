@@ -5,7 +5,7 @@
 // - Soporte para consumo de múltiples materiales en una sola acción
 // - Validación de unidades (no mezclar kg con ud)
 
-import { useState } from 'react'
+import { useRegisterMaterialForm } from '../hooks/useRegisterMaterialForm'
 
 const labelBase  = 'mt-3 text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-slate-400'
 const selectBase = 'w-full rounded-lg border border-slate-700 bg-slate-900/70 px-3.5 py-2.5 text-sm text-slate-100 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20'
@@ -14,19 +14,6 @@ const inputBase  = 'w-full rounded-lg border border-slate-700 bg-slate-900/70 px
 // ── Colores por tono de stock ────────────────────────────────────────────────
 const TONE_COLOR = { success: 'text-emerald-400', warning: 'text-yellow-400', danger: 'text-rose-400' }
 const toneColor  = (tone) => TONE_COLOR[tone] ?? 'text-slate-400'
-
-// ── Validaciones nombradas ───────────────────────────────────────────────────
-const parsedQty       = (consumed)       => parseFloat(consumed)
-const isInvalidQty    = (qty)            => !qty || qty <= 0
-const exceedsStock    = (item, qty)      => item && qty > item.quantity
-const noItemSelected  = (item)           => !item
-
-const validationError = (consumed, item) => {
-  const qty = parsedQty(consumed)
-  return isInvalidQty(qty)       ? 'Introduce una cantidad válida'
-    : exceedsStock(item, qty)    ? 'No hay suficiente stock disponible'
-    : null
-}
 
 // ── Subcomponentes ───────────────────────────────────────────────────────────
 const StockBadge = ({ item }) => (
@@ -47,34 +34,7 @@ const errorBanner = ({ error }) =>
 
 // ── Componente principal ─────────────────────────────────────────────────────
 const RegisterMaterialModal = ({ stock, onClose, onConfirm }) => {
-  const [materialId, setMaterialId] = useState(stock[0]?.id ?? '')
-  const [consumed, setConsumed]     = useState('')
-  const [isLoading, setIsLoading]   = useState(false)
-  const [error, setError]           = useState('')
-
-  const selectedItem  = stock.find((s) => s.id === Number(materialId))
-  const clearError    = () => setError('')
-
-  const handleConfirm = async () => {
-    const validError = validationError(consumed, selectedItem)
-    const onError    = (msg) => setError(msg)
-
-    return validError
-      ? onError(validError)
-      : executeConfirm()
-  }
-
-  const executeConfirm = async () => {
-    setIsLoading(true)
-    clearError()
-    try {
-      await onConfirm(Number(materialId), parsedQty(consumed))
-      onClose()
-    } catch {
-      setError('Error al registrar el material. Inténtalo de nuevo.')
-      setIsLoading(false)
-    }
-  }
+  const form = useRegisterMaterialForm({ stock, onConfirm, onClose })
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
@@ -95,39 +55,39 @@ const RegisterMaterialModal = ({ stock, onClose, onConfirm }) => {
         <div className="grid gap-1">
           <label className={labelBase}>Material</label>
           <select
-            value={materialId}
-            onChange={(e) => { setMaterialId(e.target.value); clearError() }}
+            value={form.materialId}
+            onChange={(e) => { form.setMaterialId(e.target.value); form.clearError() }}
             className={selectBase}
           >
             {stock.map((item) => (
               <option key={item.id} value={item.id}>{item.name}</option>
             ))}
           </select>
-          {stockAvailability({ item: selectedItem })}
+          {stockAvailability({ item: form.selectedItem })}
         </div>
 
         <div className="mt-3 grid gap-1">
-          <label className={labelBase}>Cantidad consumida ({selectedItem?.unit ?? 'ud'})</label>
+          <label className={labelBase}>Cantidad consumida ({form.selectedItem?.unit ?? 'ud'})</label>
           <input
             type="number"
             min="0.1"
             step="0.1"
-            value={consumed}
-            onChange={(e) => { setConsumed(e.target.value); clearError() }}
+            value={form.consumed}
+            onChange={(e) => { form.setConsumed(e.target.value); form.clearError() }}
             placeholder="0"
             className={inputBase}
           />
         </div>
 
-        {errorBanner({ error })}
+        {errorBanner({ error: form.error })}
 
         <button
           type="button"
-          onClick={handleConfirm}
-          disabled={isLoading || !consumed}
+          onClick={form.confirm}
+          disabled={form.isLoading || !form.consumed}
           className="mt-5 h-12 w-full rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 text-sm font-bold tracking-[0.1em] text-white transition hover:from-sky-400 hover:to-blue-500 disabled:opacity-60"
         >
-          {isLoading ? 'Guardando...' : 'Confirmar uso'}
+          {form.isLoading ? 'Guardando...' : 'Confirmar uso'}
         </button>
       </div>
     </div>
