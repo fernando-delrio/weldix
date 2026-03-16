@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { toneFor } from '../../dashboard/lib/tones'
 
 const progressBar = ({ progress }) =>
@@ -13,14 +14,15 @@ const progressBar = ({ progress }) =>
     </div>
   )
 
-function JobCard({ job }) {
+const JobCard = ({ job }) => {
   const tone = toneFor(job.tone)
 
   return (
-    <article className="rounded-xl border border-cyan-900/50 bg-slate-900/65 p-4">
+    <Link to={`/app/trabajos/${job.id}`} className="block">
+    <article className="rounded-xl border border-cyan-900/50 bg-slate-900/65 p-4 transition hover:border-cyan-700/60 hover:bg-slate-900/80">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-[0.62rem] uppercase tracking-[0.12em] text-slate-500">#{job.id}</p>
+          <p className="text-[0.62rem] uppercase tracking-[0.12em] text-slate-500">{job.code ?? `#${job.id}`}</p>
           <h4 className="mt-1 truncate text-lg font-semibold text-slate-100">{job.title}</h4>
           <p className="mt-0.5 text-sm text-slate-400">{job.client}</p>
         </div>
@@ -38,6 +40,7 @@ function JobCard({ job }) {
 
       {progressBar(job)}
     </article>
+    </Link>
   )
 }
 
