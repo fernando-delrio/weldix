@@ -7,7 +7,7 @@ const authHeaders = () => ({
   'Content-Type': 'application/json',
 })
 
-export async function updateProfile(full_name) {
+export const updateProfile = async (full_name) => {
   const res = await fetch(`${API_BASE_URL}/auth/me`, {
     method: 'PATCH',
     headers: authHeaders(),
@@ -17,7 +17,7 @@ export async function updateProfile(full_name) {
   return res.json()
 }
 
-export async function changePassword(current_password, new_password) {
+export const changePassword = async (current_password, new_password) => {
   const res = await fetch(`${API_BASE_URL}/auth/me/password`, {
     method: 'POST',
     headers: authHeaders(),

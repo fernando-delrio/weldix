@@ -5,18 +5,17 @@ import { advanceJobStatus, consumeMaterial, getWorkerDashboard } from '../servic
 
 
 const hasActiveJob  = (dashboard) => Boolean(dashboard?.activeJob)
-const canAdvanceJob = (dashboard) => hasActiveJob(dashboard) && Boolean(getStatusConfig(dashboard.activeJob.status).next)
-const findStockItem = (stock, id) => stock?.find((s) => s.id === id)
-const decreasedQty  = (item, consumed) => Math.max(0, item.quantity - consumed)
+const canAdvanceJob = (dashboard) => hasActiveJob(dashboard) && Boolean(getStatusConfig(dashboard.activeJob.statusKey).next)
 
-const executeAdvance = async ({ id, status }, refresh) => {
-  const { next, nextProgress } = getStatusConfig(status)
+const executeAdvance = async ({ id, statusKey }, refresh) => {
+  const { next, nextProgress } = getStatusConfig(statusKey)
   await advanceJobStatus(id, next, nextProgress)
   await refresh()
 }
 
-const executeMaterialUsage = async (item, materialId, consumed, refresh) => {
-  await consumeMaterial(materialId, decreasedQty(item, consumed))
+// El servidor valida el stock disponible — solo enviamos la cantidad consumida
+const executeMaterialUsage = async (materialId, consumed, refresh) => {
+  await consumeMaterial(materialId, consumed)
   await refresh()
 }
 
@@ -53,9 +52,8 @@ export const useWorkerDashboard = () => {
   }, [refresh])
 
   const registerMaterialUsage = useCallback(async (materialId, consumed) => {
-    const item = findStockItem(dashboard?.stock, materialId)
-    return item && executeMaterialUsage(item, materialId, consumed, refresh)
-  }, [dashboard, refresh])
+    return executeMaterialUsage(materialId, consumed, refresh)
+  }, [refresh])
 
   const isEmpty = useMemo(() => !dashboard, [dashboard])
 
