@@ -20,7 +20,7 @@ const submitBtn   = ({ label, loading }) => (
   </button>
 )
 
-function ProfilePage() {
+const ProfilePage = () => {
   const state = useProfile()
 
   return (

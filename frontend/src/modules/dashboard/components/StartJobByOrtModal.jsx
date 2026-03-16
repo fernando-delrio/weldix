@@ -1,6 +1,5 @@
-import { useState } from 'react'
 import { cx } from '../../core/lib/cx'
-import { getJobByCode } from '../services/workerDashboardService'
+import { useStartByOrtForm } from '../hooks/useStartByOrtForm'
 
 const fieldBase =
   'flex min-h-[48px] items-center rounded-lg border border-slate-700 bg-slate-900/70 transition focus-within:border-sky-500 focus-within:ring-2 focus-within:ring-sky-500/20'
@@ -26,39 +25,7 @@ const errorBanner = ({ error }) =>
   error && <p className="mt-3 text-sm text-rose-400">{error}</p>
 
 const StartJobByOrtModal = ({ onClose, onStart }) => {
-  const [code, setCode]           = useState('')
-  const [job, setJob]             = useState(null)
-  const [isSearching, setIsSearching] = useState(false)
-  const [isStarting, setIsStarting]   = useState(false)
-  const [error, setError]         = useState('')
-
-  const search = async (e) => {
-    e.preventDefault()
-    if (!code.trim()) return
-    setIsSearching(true)
-    setError('')
-    setJob(null)
-    try {
-      const found = await getJobByCode(code.trim())
-      setJob(found)
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setIsSearching(false)
-    }
-  }
-
-  const confirm = async () => {
-    if (!job) return
-    setIsStarting(true)
-    try {
-      await onStart(job.id)
-      onClose()
-    } catch {
-      setError('Error al iniciar el trabajo. Inténtalo de nuevo.')
-      setIsStarting(false)
-    }
-  }
+  const form = useStartByOrtForm({ onStart, onClose })
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
@@ -84,38 +51,38 @@ const StartJobByOrtModal = ({ onClose, onStart }) => {
           Introduce el número de OT que te ha asignado el jefe de taller.
         </p>
 
-        <form onSubmit={search} className="grid gap-1">
+        <form onSubmit={form.search} className="grid gap-1">
           <label className={labelBase}>Número de OT</label>
           <div className={cx(fieldBase, 'gap-0')}>
             <input
               type="text"
-              value={code}
-              onChange={(e) => { setCode(e.target.value); setJob(null); setError('') }}
+              value={form.code}
+              onChange={(e) => { form.setCode(e.target.value) }}
               placeholder="ORD-2026-001"
               autoFocus
               className={inputBase}
             />
             <button
               type="submit"
-              disabled={isSearching || !code.trim()}
+              disabled={form.isSearching || !form.code.trim()}
               className="shrink-0 rounded-r-lg border-l border-slate-700 px-4 text-[0.7rem] font-bold uppercase tracking-widest text-sky-300 transition hover:bg-sky-500/10 disabled:opacity-40"
             >
-              {isSearching ? '...' : 'Buscar'}
+              {form.isSearching ? '...' : 'Buscar'}
             </button>
           </div>
         </form>
 
-        {errorBanner({ error })}
-        {jobPreview({ job })}
+        {errorBanner({ error: form.error })}
+        {jobPreview({ job: form.job })}
 
-        {job && (
+        {form.job && (
           <button
             type="button"
-            onClick={confirm}
-            disabled={isStarting}
+            onClick={form.confirm}
+            disabled={form.isStarting}
             className="mt-4 h-12 w-full rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 text-sm font-bold tracking-[0.1em] text-white transition hover:from-sky-400 hover:to-blue-500 disabled:opacity-60"
           >
-            {isStarting ? 'Iniciando...' : 'Confirmar e iniciar'}
+            {form.isStarting ? 'Iniciando...' : 'Confirmar e iniciar'}
           </button>
         )}
       </div>
