@@ -50,6 +50,4 @@ export const STATUS_CONFIG = {
   },
 }
 
-export function getStatusConfig(status) {
-  return STATUS_CONFIG[status] ?? STATUS_CONFIG.pendiente
-}
+export const getStatusConfig = (status) => STATUS_CONFIG[status] ?? STATUS_CONFIG.pendiente

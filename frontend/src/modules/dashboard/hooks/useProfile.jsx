@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { useAuthSession } from '../../auth/hooks/useAuthSession'
 import { changePassword, updateProfile } from '../services/profileService'
 
-export function useProfile() {
+export const useProfile = () => {
   const { profile, refreshProfile, token } = useAuthSession()
 
   const [fullName, setFullName]         = useState(profile?.full_name ?? '')

@@ -1,8 +1,5 @@
-import { useEffect, useState } from 'react'
 import { cx } from '../../core/lib/cx'
-import { createJob, getOperarios } from '../services/workerDashboardService'
-
-const JOB_TYPES = ['Inox', 'Caldereria Industrial', 'Estructura Metalica', 'Otro']
+import { JOB_TYPES, useNewJobForm } from '../hooks/useNewJobForm'
 
 const fieldBase =
   'flex min-h-[48px] items-center rounded-lg border border-slate-700 bg-slate-900/70 transition focus-within:border-sky-500 focus-within:ring-2 focus-within:ring-sky-500/20'
@@ -15,43 +12,8 @@ const submitLabel = ({ isSubmitting }) => isSubmitting ? 'CREANDO...' : 'CREAR T
 const errorBanner = ({ error }) =>
   error && <p className="mt-2 text-sm text-rose-400">{error}</p>
 
-function NewJobModal({ onClose, onCreated }) {
-  const [code, setCode]       = useState('')
-  const [title, setTitle]     = useState('')
-  const [type, setType]       = useState(JOB_TYPES[0])
-  const [client, setClient]   = useState('')
-  const [due, setDue]         = useState('')
-  const [operarioId, setOperarioId] = useState('')
-  const [operarios, setOperarios]   = useState([])
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError]     = useState('')
-
-  useEffect(() => {
-    getOperarios()
-      .then(setOperarios)
-      .catch(() => {})
-  }, [])
-
-  const handleSubmit = async (event) => {
-    event.preventDefault()
-    setIsSubmitting(true)
-    setError('')
-    try {
-      const job = await createJob({
-        code:        code || null,
-        titulo:      title,
-        cliente:     client,
-        descripcion: type,
-        fecha_inicio: due || null,
-        operario_id: operarioId ? Number(operarioId) : null,
-      })
-      onCreated({ id: job.id, title: job.titulo, code: job.code })
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
+const NewJobModal = ({ onClose, onCreated }) => {
+  const form = useNewJobForm({ onCreated })
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
@@ -73,13 +35,13 @@ function NewJobModal({ onClose, onCreated }) {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="grid gap-1">
+        <form onSubmit={form.submit} className="grid gap-1">
           <label className={labelBase}>Nº OT</label>
           <div className={fieldBase}>
             <input
               type="text"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
+              value={form.code}
+              onChange={(e) => form.setCode(e.target.value)}
               placeholder="ORD-2024-XXX"
               className={inputBase}
             />
@@ -89,8 +51,8 @@ function NewJobModal({ onClose, onCreated }) {
           <div className={fieldBase}>
             <input
               type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              value={form.title}
+              onChange={(e) => form.setTitle(e.target.value)}
               placeholder="Descripcion del trabajo"
               required
               className={inputBase}
@@ -100,8 +62,8 @@ function NewJobModal({ onClose, onCreated }) {
           <label className={labelBase}>Tipo</label>
           <div className={cx(fieldBase, 'px-3.5')}>
             <select
-              value={type}
-              onChange={(e) => setType(e.target.value)}
+              value={form.type}
+              onChange={(e) => form.setType(e.target.value)}
               className="w-full bg-transparent text-[0.95rem] text-slate-100 outline-none"
             >
               {JOB_TYPES.map((t) => (
@@ -116,8 +78,8 @@ function NewJobModal({ onClose, onCreated }) {
           <div className={fieldBase}>
             <input
               type="text"
-              value={client}
-              onChange={(e) => setClient(e.target.value)}
+              value={form.client}
+              onChange={(e) => form.setClient(e.target.value)}
               placeholder="Nombre del cliente"
               required
               className={inputBase}
@@ -128,8 +90,8 @@ function NewJobModal({ onClose, onCreated }) {
           <div className={fieldBase}>
             <input
               type="date"
-              value={due}
-              onChange={(e) => setDue(e.target.value)}
+              value={form.due}
+              onChange={(e) => form.setDue(e.target.value)}
               className={cx(inputBase, 'text-slate-400')}
             />
           </div>
@@ -137,12 +99,12 @@ function NewJobModal({ onClose, onCreated }) {
           <label className={labelBase}>Asignar a operario</label>
           <div className={cx(fieldBase, 'px-3.5')}>
             <select
-              value={operarioId}
-              onChange={(e) => setOperarioId(e.target.value)}
+              value={form.operarioId}
+              onChange={(e) => form.setOperarioId(e.target.value)}
               className="w-full bg-transparent text-[0.95rem] text-slate-100 outline-none"
             >
               <option value="" className="bg-slate-900">Sin asignar</option>
-              {operarios.map((op) => (
+              {form.operarios.map((op) => (
                 <option key={op.id} value={op.id} className="bg-slate-900">
                   {op.full_name || op.email}
                 </option>
@@ -150,14 +112,14 @@ function NewJobModal({ onClose, onCreated }) {
             </select>
           </div>
 
-          {errorBanner({ error })}
+          {errorBanner({ error: form.error })}
 
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={form.isSubmitting}
             className="mt-4 h-12 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 text-sm font-bold tracking-[0.1em] text-white transition hover:from-sky-400 hover:to-blue-500 disabled:opacity-60"
           >
-            {submitLabel({ isSubmitting })}
+            {submitLabel({ isSubmitting: form.isSubmitting })}
           </button>
         </form>
       </div>

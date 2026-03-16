@@ -12,14 +12,14 @@ const jsonHeaders = () => ({
   'Content-Type': 'application/json',
 })
 
-export async function getWorkerDashboard() {
+export const getWorkerDashboard = async () => {
   const res = await fetch(`${API_BASE_URL}/dashboard/worker`, { headers: authHeaders() })
   if (!res.ok) throw new Error('Error al cargar el panel de trabajo')
   const data = await res.json()
   return mapWorkerDashboardModel(data)
 }
 
-export async function advanceJobStatus(jobId, newEstado, newProgreso) {
+export const advanceJobStatus = async (jobId, newEstado, newProgreso) => {
   const res = await fetch(`${API_BASE_URL}/trabajos/${jobId}/estado`, {
     method: 'PATCH',
     headers: jsonHeaders(),
@@ -29,7 +29,7 @@ export async function advanceJobStatus(jobId, newEstado, newProgreso) {
   return res.json()
 }
 
-export async function createJob(data) {
+export const createJob = async (data) => {
   const res = await fetch(`${API_BASE_URL}/trabajos`, {
     method: 'POST',
     headers: jsonHeaders(),
@@ -39,7 +39,7 @@ export async function createJob(data) {
   return res.json()
 }
 
-export async function getJobByCode(code) {
+export const getJobByCode = async (code) => {
   const res = await fetch(
     `${API_BASE_URL}/trabajos/buscar?code=${encodeURIComponent(code.toUpperCase())}`,
     { headers: authHeaders() },
@@ -51,17 +51,21 @@ export async function getJobByCode(code) {
   return res.json()
 }
 
-export const consumeMaterial = async (materialId, newQuantity) => {
-  const res = await fetch(`${API_BASE_URL}/stock/${materialId}`, {
-    method: 'PATCH',
+// Usa el endpoint /consume — el servidor valida y descuenta server-side
+export const consumeMaterial = async (materialId, consumed) => {
+  const res = await fetch(`${API_BASE_URL}/stock/${materialId}/consume`, {
+    method: 'POST',
     headers: jsonHeaders(),
-    body: JSON.stringify({ quantity: newQuantity }),
+    body: JSON.stringify({ consumed }),
   })
-  if (!res.ok) throw new Error('Error al actualizar el stock')
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}))
+    throw new Error(body.detail ?? 'Error al actualizar el stock')
+  }
   return res.json()
 }
 
-export async function getOperarios() {
+export const getOperarios = async () => {
   const res = await fetch(`${API_BASE_URL}/auth/users`, { headers: authHeaders() })
   if (!res.ok) throw new Error('Error al obtener operarios')
   const users = await res.json()
