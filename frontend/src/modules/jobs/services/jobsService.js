@@ -34,3 +34,9 @@ export const advanceJobStatus = async (id, estado, progreso) => {
   if (!res.ok) throw new Error('No se pudo actualizar el estado del trabajo')
   return res.json()
 }
+
+export const getJobHistory = async (id) => {
+  const res = await fetch(`${API_BASE_URL}/trabajos/${id}/historial`, { headers: authHeaders() })
+  if (!res.ok) throw new Error('No se pudo cargar el historial')
+  return res.json()
+}

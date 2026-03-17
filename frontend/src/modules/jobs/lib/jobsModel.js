@@ -43,3 +43,13 @@ export const sanitizeJobDetail = (job) => ({
 
 // Transforma la lista cruda del backend en el modelo que usan los componentes
 export const mapJobsModel = (rawList) => safeArray(rawList).map(sanitizeJob)
+
+// Normaliza un evento crudo del historial
+export const sanitizeEvent = (event) => ({
+  id:          event.id,
+  tipo:        event.tipo,
+  descripcion: event.descripcion,
+  usuario:     event.usuario,
+  date:        formatFullDate(event.created_at),
+  time:        new Date(event.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }),
+})

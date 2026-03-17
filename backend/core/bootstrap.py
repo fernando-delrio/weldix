@@ -2,6 +2,7 @@ import logging
 from datetime import date
 
 from backend.features.auth.model import User
+from backend.features.historial.model import JobEvent  # noqa: F401 — necesario para create_all
 from backend.features.jobs.model import Job
 from backend.features.stock.model import Material
 

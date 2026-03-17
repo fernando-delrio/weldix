@@ -72,8 +72,30 @@ const advanceButton = ({ canAdvance, isAdvancing, advance, job }) => {
   )
 }
 
+// Línea de tiempo del historial — un punto por evento
+const historyTimeline = ({ history }) =>
+  history.length > 0 && (
+    <section className={cardBase}>
+      <h2 className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">Historial</h2>
+      <ol className="mt-4 space-y-4">
+        {history.map((event) => (
+          <li key={event.id} className="flex gap-3">
+            <div className="flex flex-col items-center">
+              <div className="h-2.5 w-2.5 shrink-0 rounded-full bg-sky-500 mt-0.5" />
+              <div className="w-px flex-1 bg-slate-700" />
+            </div>
+            <div className="pb-2">
+              <p className="text-sm text-slate-200">{event.descripcion}</p>
+              <p className="mt-0.5 text-[0.68rem] text-slate-500">{event.date} · {event.time} · {event.usuario}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </section>
+  )
+
 const jobContent = (state, navigate) => {
-  const { isLoading, error, job, isAdvancing, advance, canAdvance } = state
+  const { isLoading, error, job, history, isAdvancing, advance, canAdvance } = state
   if (isLoading || error || !job) return null
 
   const statusCfg = getStatusConfig(job.statusKey)
@@ -111,6 +133,8 @@ const jobContent = (state, navigate) => {
       </section>
 
       {descriptionSection(job)}
+
+      {historyTimeline({ history })}
 
       {advanceButton({ canAdvance, isAdvancing, advance, job })}
     </div>

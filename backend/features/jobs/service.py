@@ -1,5 +1,7 @@
 from sqlalchemy.orm import Session
 
+from backend.features.historial.service import add_event
+
 from .model import Job
 from .schemas import CreateJobRequest, UpdateJobRequest
 
@@ -46,6 +48,7 @@ def create_job(db: Session, data: CreateJobRequest) -> Job:
     db.add(job)
     db.commit()
     db.refresh(job)
+    add_event(db, job.id, "creado", f"Trabajo {job.code} creado", "Sistema")
     return job
 
 
@@ -53,7 +56,7 @@ def _is_starting_job(current_estado: str, new_estado: str) -> bool:
     return current_estado == 'pendiente' and new_estado == 'en_proceso'
 
 
-def update_estado(db: Session, job_id: int, estado: str, progreso: int, current_user_id: int | None = None, current_user_role: str = 'operario') -> Job:
+def update_estado(db: Session, job_id: int, estado: str, progreso: int, current_user_id: int | None = None, current_user_role: str = 'operario', current_user_name: str = 'Operario') -> Job:
     job = get_job_by_id(db, job_id)
     # Un operario solo puede modificar sus propios trabajos
     if current_user_role != 'admin' and job.operario_id and job.operario_id != current_user_id:
@@ -65,6 +68,7 @@ def update_estado(db: Session, job_id: int, estado: str, progreso: int, current_
     job.progreso = _clamp_progress(progreso)
     db.commit()
     db.refresh(job)
+    add_event(db, job.id, "estado_cambiado", f"Estado cambiado a '{estado}'", current_user_name)
     return job
 
 
