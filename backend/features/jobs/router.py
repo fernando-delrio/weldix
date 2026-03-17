@@ -68,7 +68,7 @@ def update_estado(
     current_user: User = Depends(get_current_user),
 ):
     try:
-        job = service.update_estado(db, job_id, body.estado, body.progreso, current_user.id, current_user.role)
+        job = service.update_estado(db, job_id, body.estado, body.progreso, current_user.id, current_user.role, current_user.full_name)
     except PermissionError as exc:
         raise HTTPException(status_code=403, detail=str(exc))
     except ValueError as exc:

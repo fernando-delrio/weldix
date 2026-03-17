@@ -4,8 +4,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 
-import { getJobById, advanceJobStatus } from '../services/jobsService'
-import { sanitizeJobDetail } from '../lib/jobsModel'
+import { getJobById, advanceJobStatus, getJobHistory } from '../services/jobsService'
+import { sanitizeJobDetail, sanitizeEvent } from '../lib/jobsModel'
 import { getStatusConfig } from '../../core/lib/statusConfig'
 
 // Helpers de validación nombrados — sigue la convención CLAUDE.md §4
@@ -13,10 +13,11 @@ const hasNextStatus    = (job)         => Boolean(getStatusConfig(job.statusKey)
 const canAdvanceJob    = (job)         => Boolean(job) && hasNextStatus(job)
 const nextStateFor     = (job)         => getStatusConfig(job.statusKey)
 
-const executeLoad = async (id, setJob, setError) => {
+const executeLoad = async (id, setJob, setHistory, setError) => {
   try {
-    const raw = await getJobById(id)
+    const [raw, events] = await Promise.all([getJobById(id), getJobHistory(id)])
     setJob(sanitizeJobDetail(raw))
+    setHistory(events.map(sanitizeEvent))
   } catch (err) {
     setError(err.message || 'No se pudo cargar el trabajo.')
   }
@@ -35,15 +36,16 @@ const executeAdvance = async (job, reload, setError) => {
 export const useJobDetail = () => {
   const { id } = useParams()
 
-  const [job, setJob]           = useState(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [job, setJob]               = useState(null)
+  const [history, setHistory]       = useState([])
+  const [isLoading, setIsLoading]   = useState(true)
   const [isAdvancing, setIsAdvancing] = useState(false)
-  const [error, setError]       = useState('')
+  const [error, setError]           = useState('')
 
   const load = useCallback(async () => {
     setIsLoading(true)
     setError('')
-    await executeLoad(id, setJob, setError)
+    await executeLoad(id, setJob, setHistory, setError)
     setIsLoading(false)
   }, [id])
 
@@ -56,5 +58,5 @@ export const useJobDetail = () => {
     setIsAdvancing(false)
   }
 
-  return { job, isLoading, isAdvancing, error, advance, canAdvance: canAdvanceJob(job) }
+  return { job, history, isLoading, isAdvancing, error, advance, canAdvance: canAdvanceJob(job) }
 }
