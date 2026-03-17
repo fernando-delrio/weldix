@@ -5,10 +5,10 @@ import { getJobs } from '../services/jobsService'
 export const STATUS_FILTERS = ['todos', 'pendiente', 'en_proceso', 'control', 'listo', 'entregado']
 
 const showingAll     = (filter) => filter === 'todos'
-const filterByStatus = (jobs, filter) => jobs.filter((job) => job.status === filter)
+const filterByStatus = (jobs, filter) => jobs.filter((job) => job.statusKey === filter)
 const applyFilter    = (jobs, filter) => showingAll(filter) ? jobs : filterByStatus(jobs, filter)
 
-export function useJobs() {
+export const useJobs = () => {
   const [jobs, setJobs] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')

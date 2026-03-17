@@ -8,6 +8,7 @@ import WorkerDashboardPage from './modules/dashboard/components/WorkerDashboardP
 import ProfilePage from './modules/dashboard/components/ProfilePage'
 import StockPage from './modules/dashboard/components/StockPage'
 import JobsPage from './modules/jobs/components/JobsPage'
+import JobDetailPage from './modules/jobs/components/JobDetailPage'
 import LoginPage from './modules/auth/components/LoginPage'
 
 const Splash = ({ text }) => (
@@ -22,12 +23,12 @@ const stillBootstrapping = ({ isSessionBootstrapped }) =>
 const redirectByAuthState = ({ token }) =>
   <Navigate to={token ? '/app/inicio' : '/login'} replace />
 
-function RootRedirect() {
+const RootRedirect = () => {
   const session = useAuthSession()
   return stillBootstrapping(session) || redirectByAuthState(session)
 }
 
-function AppRoutes() {
+const AppRoutes = () => {
   return (
     <BrowserRouter>
       <AuthSessionProvider>
@@ -38,6 +39,7 @@ function AppRoutes() {
           <Route element={<ProtectedRoute />}>
             <Route path="/app/inicio" element={<WorkerDashboardPage />} />
             <Route path="/app/trabajos" element={<JobsPage />} />
+            <Route path="/app/trabajos/:id" element={<JobDetailPage />} />
             <Route path="/app/stock" element={<StockPage />} />
             <Route path="/app/admin" element={<AdminDashboardPage />} />
             <Route path="/app/perfil" element={<ProfilePage />} />
