@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(source .venv/Scripts/activate)",
+      "Bash(pip install:*)",
+      "Bash(npm install:*)",
+      "Bash(python -c \":*)",
+      "Bash(npm run:*)",
+      "Bash(ls \"c:/Users/FeR/OneDrive/Escritorio/full stack/Weldix/\"*.db)",
+      "Bash(taskkill /f /im python.exe)"
+    ]
+  }
+}

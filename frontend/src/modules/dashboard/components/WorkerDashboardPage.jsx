@@ -4,11 +4,13 @@ import AppShell from '../../core/components/AppShell'
 import { useAuthSession } from '../../auth/hooks/useAuthSession'
 import { useWorkerDashboard } from '../hooks/useWorkerDashboard'
 import AdminJobsSection from '../../admin/components/AdminJobsSection'
+import JornadaButton from '../../fichaje/components/JornadaButton'
 import ActiveJobCard from './ActiveJobCard'
 import MetricCard from './MetricCard'
 import NewJobModal from './NewJobModal'
 import RegisterMaterialModal from './RegisterMaterialModal'
 import StartJobByOrtModal from './StartJobByOrtModal'
+import RegistroHorasOT from '../../registro_horas/components/RegistroHorasOT'
 import PanelCard from './PanelCard'
 import SectionHeader from './SectionHeader'
 import TodayJobItem from './TodayJobItem'
@@ -66,9 +68,14 @@ const startByOrtButton = ({ isAdmin, hasActiveJob, onOpen }) =>
   )
 
 const activeJobSection = ({ activeJob, onComplete, onOpenMaterialModal }) =>
-  activeJob
-    ? <ActiveJobCard job={activeJob} onComplete={onComplete} onRegisterMaterial={onOpenMaterialModal} />
-    : <PanelCard><p className="text-sm text-slate-400">Sin trabajo activo en este momento.</p></PanelCard>
+  activeJob ? (
+    <>
+      <ActiveJobCard job={activeJob} onComplete={onComplete} onRegisterMaterial={onOpenMaterialModal} />
+      <RegistroHorasOT jobId={activeJob.id} />
+    </>
+  ) : (
+    <PanelCard><p className="text-sm text-slate-400">Sin trabajo activo en este momento.</p></PanelCard>
+  )
 
 const pendingJobsSection = ({ todayJobs, onStartJob, canStart }) =>
   todayJobs.length > 0 && (
@@ -129,6 +136,8 @@ const WorkerDashboardPage = () => {
                 </div>
                 {adminNewJobButton({ isAdmin, onOpen: () => setShowModal(true) })}
               </div>
+              {/* Fichaje de jornada — solo visible para operarios */}
+              {!isAdmin && <JornadaButton />}
             </section>
 
             {!isAdmin && (

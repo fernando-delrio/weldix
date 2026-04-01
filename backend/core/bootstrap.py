@@ -2,6 +2,10 @@ import logging
 from datetime import date
 
 from backend.features.auth.model import User
+from backend.features.equipos.model import Equipo    # noqa: F401 — necesario para create_all
+from backend.features.fichaje.model import Fichaje          # noqa: F401 — necesario para create_all
+from backend.features.fotos.model import Foto               # noqa: F401 — necesario para create_all
+from backend.features.registro_horas.model import RegistroHoras  # noqa: F401 — necesario para create_all
 from backend.features.historial.model import JobEvent  # noqa: F401 — necesario para create_all
 from backend.features.jobs.model import Job
 from backend.features.stock.model import Material
@@ -99,9 +103,33 @@ def _check_security_warnings() -> None:
         )
 
 
+_SEED_EQUIPOS = [
+    {"nombre": "Soldadora MIG Lincoln 300A",  "tipo": "Soldadora",     "estado": "operativo",   "intervalo_dias": 90},
+    {"nombre": "Cortadora plasma CNC",         "tipo": "Cortadora",     "estado": "en_revision", "intervalo_dias": 60},
+    {"nombre": "Grua puente 5T",               "tipo": "Elevacion",     "estado": "operativo",   "intervalo_dias": 180},
+    {"nombre": "Soldadora TIG Fronius 200",    "tipo": "Soldadora",     "estado": "operativo",   "intervalo_dias": 90},
+    {"nombre": "Amoladora angular 230mm",      "tipo": "Herramienta",   "estado": "averiado",    "intervalo_dias": 30},
+]
+
+
+def seed_equipos() -> None:
+    if not settings.seed_demo_data:
+        return
+    db = SessionLocal()
+    try:
+        if db.query(Equipo).count() > 0:
+            return
+        for data in _SEED_EQUIPOS:
+            db.add(Equipo(**data))
+        db.commit()
+    finally:
+        db.close()
+
+
 def run_startup_tasks() -> None:
     _check_security_warnings()
     init_schema()
     seed_admin()
     seed_jobs()
     seed_stock()
+    seed_equipos()

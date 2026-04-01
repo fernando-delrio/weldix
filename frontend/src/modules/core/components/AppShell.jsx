@@ -1,9 +1,11 @@
 import { useAuthSession } from '../../auth/hooks/useAuthSession'
 import { useClock } from '../hooks/useClock'
+import { useSearch } from '../hooks/useSearch'
 import IaChatPanel from '../../ia/components/IaChatPanel'
 import { IaProvider, useIaContext } from '../../ia/lib/IaContext'
 import AppHeader from './AppHeader'
 import BottomNav from './BottomNav'
+import SearchModal from './SearchModal'
 import { getNavItems } from '../lib/navigation'
 
 const IaFab = () => {
@@ -23,7 +25,8 @@ const IaFab = () => {
 const AppShellInner = ({ children }) => {
   const { profile, clearSession } = useAuthSession()
   const timeLabel = useClock()
-  const { isOpen } = useIaContext()
+  const { isOpen: iaIsOpen } = useIaContext()
+  const search = useSearch()
 
   const role      = profile?.role || 'operario'
   const roleLabel = role.toUpperCase()
@@ -38,6 +41,7 @@ const AppShellInner = ({ children }) => {
         roleLabel={roleLabel}
         timeLabel={timeLabel}
         onLogout={clearSession}
+        onSearchOpen={search.open}
       />
 
       <main className="relative mx-auto w-full max-w-[980px] px-4 pb-[98px] pt-[82px] sm:px-6">
@@ -46,7 +50,8 @@ const AppShellInner = ({ children }) => {
 
       <BottomNav items={navItems} />
       <IaFab />
-      {isOpen && <IaChatPanel />}
+      {iaIsOpen && <IaChatPanel />}
+      <SearchModal {...search} />
     </div>
   )
 }

@@ -1,3 +1,6 @@
+from datetime import date
+
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from backend.features.historial.service import add_event
@@ -8,6 +11,14 @@ from .schemas import CreateJobRequest, UpdateJobRequest
 
 def _clamp_progress(value: int) -> int:
     return max(0, min(value, 100))
+
+
+def _generate_code(db: Session) -> str:
+    """Auto-genera el código ORD-YYYY-NNN si el admin no lo rellena."""
+    year = date.today().year
+    prefix = f"ORD-{year}-"
+    count = db.query(Job).filter(Job.code.like(f"{prefix}%")).count()
+    return f"{prefix}{count + 1:03d}"
 
 
 def get_all_jobs(db: Session) -> list[Job]:
@@ -36,7 +47,7 @@ def get_job_by_code(db: Session, code: str) -> Job:
 
 def create_job(db: Session, data: CreateJobRequest) -> Job:
     job = Job(
-        code=data.code,
+        code=data.code or _generate_code(db),
         titulo=data.titulo,
         cliente=data.cliente,
         estado=data.estado,
@@ -89,3 +100,19 @@ def delete_job(db: Session, job_id: int) -> None:
     job = get_job_by_id(db, job_id)
     db.delete(job)
     db.commit()
+
+
+def search_jobs(db: Session, q: str, user_id: int | None, user_role: str) -> list[Job]:
+    """Búsqueda rápida — ILIKE en título, cliente y código OT. Limitado a 10 resultados."""
+    term = f"%{q.strip()}%"
+    query = db.query(Job).filter(
+        or_(
+            Job.titulo.ilike(term),
+            Job.cliente.ilike(term),
+            Job.code.ilike(term),
+        )
+    )
+    # El operario solo puede ver sus propios trabajos
+    if user_role != "admin":
+        query = query.filter(Job.operario_id == user_id)
+    return query.order_by(Job.created_at.desc()).limit(10).all()
