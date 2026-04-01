@@ -3,6 +3,7 @@ import { useState } from 'react'
 import AppShell from '../../core/components/AppShell'
 import PanelCard from '../../dashboard/components/PanelCard'
 import NewJobModal from '../../dashboard/components/NewJobModal'
+import FichajesAdminSection from '../../fichaje/components/FichajesAdminSection'
 import { useAdminDashboard } from '../hooks/useAdminDashboard'
 import AdminUserRow from './AdminUserRow'
 import CreateUserModal from './CreateUserModal'
@@ -100,15 +101,19 @@ const AdminDashboardPage = () => {
         {feedbackBanner({ feedback })}
 
         {!isLoading && dashboard && (
-          <section className="space-y-3">
-            {sectionHeader({
-              title: 'Usuarios',
-              action: newUserButton({ onClick: () => setShowUserModal(true) }),
-            })}
-            {dashboard.users.map((user) => (
-              <AdminUserRow key={user.id} user={user} />
-            ))}
-          </section>
+          <>
+            <FichajesAdminSection />
+
+            <section className="space-y-3">
+              {sectionHeader({
+                title: 'Usuarios',
+                action: newUserButton({ onClick: () => setShowUserModal(true) }),
+              })}
+              {dashboard.users.map((user) => (
+                <AdminUserRow key={user.id} user={user} />
+              ))}
+            </section>
+          </>
         )}
       </div>
 

@@ -40,3 +40,9 @@ export const getJobHistory = async (id) => {
   if (!res.ok) throw new Error('No se pudo cargar el historial')
   return res.json()
 }
+
+export const searchJobs = async (q) => {
+  const res = await fetch(`${API_BASE_URL}/trabajos/buscar-rapido?q=${encodeURIComponent(q)}`, { headers: authHeaders() })
+  if (!res.ok) throw new Error('Error al buscar trabajos')
+  return res.json()
+}

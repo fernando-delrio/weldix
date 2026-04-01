@@ -5,14 +5,16 @@ const NAV_ITEMS_OPERARIO = [
   { key: 'inicio',   label: 'Inicio',   to: '/app/inicio',   icon: 'IN' },
   { key: 'trabajos', label: 'Trabajos', to: '/app/trabajos', icon: 'TB' },
   { key: 'stock',    label: 'Stock',    to: '/app/stock',    icon: 'ST' },
+  { key: 'equipos',  label: 'Equipos',  to: '/app/equipos',  icon: 'EQ' },
   { key: 'perfil',   label: 'Perfil',   to: '/app/perfil',   icon: 'PF' },
 ]
 
 const NAV_ITEMS_ADMIN = [
-  { key: 'inicio',  label: 'Inicio',  to: '/app/inicio',  icon: 'IN' },
-  { key: 'stock',   label: 'Stock',   to: '/app/stock',   icon: 'ST' },
-  { key: 'admin',   label: 'Admin',   to: '/app/admin',   icon: 'AD' },
-  { key: 'perfil',  label: 'Perfil',  to: '/app/perfil',  icon: 'PF' },
+  { key: 'inicio',   label: 'Inicio',   to: '/app/inicio',   icon: 'IN' },
+  { key: 'stock',    label: 'Stock',    to: '/app/stock',    icon: 'ST' },
+  { key: 'equipos',  label: 'Equipos',  to: '/app/equipos',  icon: 'EQ' },
+  { key: 'admin',    label: 'Admin',    to: '/app/admin',    icon: 'AD' },
+  { key: 'perfil',   label: 'Perfil',   to: '/app/perfil',   icon: 'PF' },
 ]
 
 export const getNavItems = (role) => role === 'admin' ? NAV_ITEMS_ADMIN : NAV_ITEMS_OPERARIO

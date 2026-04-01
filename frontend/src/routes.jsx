@@ -7,6 +7,7 @@ import AdminDashboardPage from './modules/admin/components/AdminDashboardPage'
 import WorkerDashboardPage from './modules/dashboard/components/WorkerDashboardPage'
 import ProfilePage from './modules/dashboard/components/ProfilePage'
 import StockPage from './modules/dashboard/components/StockPage'
+import EquiposPage from './modules/equipos/components/EquiposPage'
 import JobsPage from './modules/jobs/components/JobsPage'
 import JobDetailPage from './modules/jobs/components/JobDetailPage'
 import LoginPage from './modules/auth/components/LoginPage'
@@ -41,6 +42,7 @@ const AppRoutes = () => {
             <Route path="/app/trabajos" element={<JobsPage />} />
             <Route path="/app/trabajos/:id" element={<JobDetailPage />} />
             <Route path="/app/stock" element={<StockPage />} />
+            <Route path="/app/equipos" element={<EquiposPage />} />
             <Route path="/app/admin" element={<AdminDashboardPage />} />
             <Route path="/app/perfil" element={<ProfilePage />} />
           </Route>

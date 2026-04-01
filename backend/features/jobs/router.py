@@ -31,6 +31,16 @@ def create_job(
     return JobResponse.from_orm_job(job)
 
 
+@router.get("/buscar-rapido", response_model=list[JobResponse])
+def search_jobs_global(
+    q: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    jobs = service.search_jobs(db, q, current_user.id, current_user.role)
+    return [JobResponse.from_orm_job(j) for j in jobs]
+
+
 @router.get("/buscar", response_model=JobResponse)
 def find_job_by_code(
     code: str,

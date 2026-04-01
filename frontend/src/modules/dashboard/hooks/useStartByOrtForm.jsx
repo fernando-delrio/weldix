@@ -36,5 +36,23 @@ export const useStartByOrtForm = ({ onStart, onClose }) => {
     }
   }
 
-  return { code, setCode, job, isSearching, isStarting, error, search, confirm }
+  // searchByCode permite disparar la búsqueda directamente con un código
+  // (usado desde el QR scanner para no requerir submit del formulario)
+  const searchByCode = async (rawCode) => {
+    const trimmed = rawCode.trim()
+    if (!trimmed) return
+    setIsSearching(true)
+    setError('')
+    setJob(null)
+    try {
+      const found = await getJobByCode(trimmed)
+      setJob(found)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setIsSearching(false)
+    }
+  }
+
+  return { code, setCode, job, isSearching, isStarting, error, search, searchByCode, confirm }
 }
