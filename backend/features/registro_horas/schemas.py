@@ -1,6 +1,12 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from pydantic import BaseModel
+
+
+def _utc(dt: datetime | None) -> datetime | None:
+    if dt is None or dt.tzinfo is not None:
+        return dt
+    return dt.replace(tzinfo=timezone.utc)
 
 
 class IniciarRegistroRequest(BaseModel):
@@ -24,8 +30,8 @@ class RegistroHorasResponse(BaseModel):
             id=r.id,
             job_id=r.job_id,
             operario_id=r.operario_id,
-            inicio=r.inicio,
-            fin=r.fin,
+            inicio=_utc(r.inicio),
+            fin=_utc(r.fin),
             horas=r.horas,
             operario_nombre=r.operario.full_name if r.operario else None,
             job_code=r.job.code if r.job else None,
