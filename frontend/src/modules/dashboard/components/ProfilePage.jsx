@@ -1,4 +1,6 @@
 import AppShell from '../../core/components/AppShell'
+import { useAuthSession } from '../../auth/hooks/useAuthSession'
+import FichajeCalendar from '../../fichaje/components/FichajeCalendar'
 import { useProfile } from '../hooks/useProfile'
 
 const roleLabel = (role) => role === 'admin' ? 'Administrador' : 'Operario'
@@ -21,7 +23,9 @@ const submitBtn   = ({ label, loading }) => (
 )
 
 const ProfilePage = () => {
-  const state = useProfile()
+  const state   = useProfile()
+  const { profile } = useAuthSession()
+  const isOperario = profile?.role !== 'admin'
 
   return (
     <AppShell>
@@ -62,6 +66,14 @@ const ProfilePage = () => {
             {submitBtn({ label: 'Guardar nombre', loading: state.isSavingProfile })}
           </form>
         </section>
+
+        {/* Calendario de fichajes — solo operarios */}
+        {isOperario && (
+          <section>
+            <h2 className="mb-3 text-xs font-bold uppercase tracking-[0.16em] text-slate-400">Mis jornadas</h2>
+            <FichajeCalendar />
+          </section>
+        )}
 
         {/* Cambiar contraseña */}
         <section className={cardBase}>

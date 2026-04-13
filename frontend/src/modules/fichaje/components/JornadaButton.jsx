@@ -1,62 +1,89 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useJornada } from '../hooks/useJornada'
 
 // ── Helpers de formato ────────────────────────────────────────────────────────
 const fmtHora  = (iso) => new Date(iso).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
 const fmtFecha = (iso) => new Date(iso).toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' })
-const fmtHoras = (h)   => {
+const fmtHoras = (h) => {
   if (!h && h !== 0) return '—'
   const hrs  = Math.floor(h)
   const mins = Math.round((h - hrs) * 60)
   return hrs > 0 ? `${hrs}h ${mins}min` : `${mins}min`
 }
 
-// ── Modal de historial de jornadas ────────────────────────────────────────────
-const HistorialModal = ({ historial, onClose }) => (
-  <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center" onClick={onClose}>
-    <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" />
-    <div
-      className="relative z-10 w-full max-w-[480px] rounded-t-2xl border border-slate-700/80 bg-slate-900 shadow-2xl sm:rounded-2xl"
-      onClick={(e) => e.stopPropagation()}
-    >
-      <div className="flex items-center justify-between border-b border-slate-800 px-5 py-4">
-        <h2 className="text-sm font-bold uppercase tracking-[0.16em] text-slate-200">Historial de jornadas</h2>
-        <button type="button" onClick={onClose} className="grid h-7 w-7 place-items-center rounded-lg border border-slate-700 text-slate-400 hover:text-slate-200 text-xs">✕</button>
-      </div>
+// Agrupa los fichajes por día local y suma horas — un día = una fila en el historial
+const agruparPorDia = (fichajes) =>
+  Object.values(
+    fichajes.reduce((acc, f) => {
+      const clave = new Date(f.inicio).toLocaleDateString('es-ES', {
+        year: 'numeric', month: '2-digit', day: '2-digit',
+      })
+      const dia = acc[clave] ?? { clave, fechaIso: f.inicio, horasTotal: 0, abierto: false }
+      return {
+        ...acc,
+        [clave]: {
+          ...dia,
+          abierto:    dia.abierto || f.fin === null,
+          horasTotal: dia.horasTotal + (f.fin !== null ? (f.horas ?? 0) : 0),
+        },
+      }
+    }, {})
+  ).sort((a, b) => new Date(b.fechaIso) - new Date(a.fechaIso))
 
-      <div className="max-h-[60vh] overflow-y-auto">
-        {historial.length === 0 ? (
-          <p className="p-5 text-sm text-slate-500">Sin jornadas registradas aún.</p>
-        ) : (
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-slate-800">
-                <th className="px-5 py-2.5 text-left text-[0.6rem] font-bold uppercase tracking-widest text-slate-500">Día</th>
-                <th className="py-2.5 text-left text-[0.6rem] font-bold uppercase tracking-widest text-slate-500">Entrada</th>
-                <th className="py-2.5 text-left text-[0.6rem] font-bold uppercase tracking-widest text-slate-500">Salida</th>
-                <th className="py-2.5 pr-5 text-right text-[0.6rem] font-bold uppercase tracking-widest text-slate-500">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              {historial.map((f) => (
-                <tr key={f.id} className="border-b border-slate-800/50 last:border-0">
-                  <td className="px-5 py-3 text-xs text-slate-300">{fmtFecha(f.inicio)}</td>
-                  <td className="py-3 text-xs font-mono text-emerald-300">{fmtHora(f.inicio)}</td>
-                  <td className="py-3 text-xs font-mono text-slate-400">
-                    {f.fin ? fmtHora(f.fin) : <span className="text-emerald-400 animate-pulse">En curso</span>}
-                  </td>
-                  <td className="py-3 pr-5 text-right text-xs font-semibold text-slate-200">
-                    {f.horas != null ? fmtHoras(f.horas) : '—'}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+// ── Subcomponentes de estado de horas en el historial ─────────────────────────
+const enCursoSinHoras  = ({ horas, abierto }) => abierto && horas === 0 && <span className="text-emerald-400 animate-pulse text-xs">En curso</span>
+const sinDatos         = ({ horas, abierto }) => !abierto && horas === 0 && <span className="text-slate-500 text-xs font-semibold">—</span>
+const conHoras         = ({ horas, abierto }) => horas > 0 && (
+  <span className={`font-mono text-xs font-bold ${horas >= 8 ? 'text-emerald-300' : 'text-amber-300'}`}>
+    {fmtHoras(horas)}{abierto ? ' +' : ''}
+  </span>
+)
+
+const horasBadge = (d) => enCursoSinHoras(d) || sinDatos(d) || conHoras(d)
+
+// ── Modal de historial de jornadas — agrupado por día ─────────────────────────
+const HistorialModal = ({ historial, onClose }) => {
+  const dias = agruparPorDia(historial)
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center" onClick={onClose}>
+      <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" />
+      <div
+        className="relative z-10 w-full max-w-[480px] rounded-t-2xl border border-slate-700/80 bg-slate-900 shadow-2xl sm:rounded-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-slate-800 px-5 py-4">
+          <h2 className="text-sm font-bold uppercase tracking-[0.16em] text-slate-200">Historial de jornadas</h2>
+          <button type="button" onClick={onClose} className="grid h-7 w-7 place-items-center rounded-lg border border-slate-700 text-slate-400 hover:text-slate-200 text-xs">✕</button>
+        </div>
+
+        <div className="max-h-[60vh] overflow-y-auto">
+          {dias.length === 0
+            ? <p className="p-5 text-sm text-slate-500">Sin jornadas registradas aún.</p>
+            : (
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-slate-800">
+                    <th className="px-5 py-2.5 text-left text-[0.6rem] font-bold uppercase tracking-widest text-slate-500">Día</th>
+                    <th className="py-2.5 pr-5 text-right text-[0.6rem] font-bold uppercase tracking-widest text-slate-500">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {dias.map((d) => (
+                    <tr key={d.clave} className="border-b border-slate-800/50 last:border-0">
+                      <td className="px-5 py-3 text-xs text-slate-300">{fmtFecha(d.fechaIso)}</td>
+                      <td className="py-3 pr-5 text-right">{horasBadge(d)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )
+          }
+        </div>
       </div>
     </div>
-  </div>
-)
+  )
+}
 
 // ── Resumen de jornada recién cerrada ─────────────────────────────────────────
 const ResumenCierre = ({ jornada }) =>
@@ -82,29 +109,25 @@ const JornadaButton = () => {
 
   const [historialAbierto, setHistorialAbierto] = useState(false)
 
-  // Cargar historial al abrir el modal
   const abrirHistorial = () => {
     cargarHistorial()
     setHistorialAbierto(true)
   }
 
-  // ── Estado: cargando ──────────────────────────────────────────────────────
-  if (isLoading) return <div className="mt-3 h-10 w-full animate-pulse rounded-xl bg-slate-800" />
+  const loadingState = ({ isLoading }) => isLoading && <div className="mt-3 h-10 w-full animate-pulse rounded-xl bg-slate-800" />
 
   return (
+    loadingState({ isLoading }) ||
     <div className="mt-3 space-y-2">
 
       {/* Jornada ACTIVA */}
       {jornadaActiva && (
         <div className="flex flex-wrap items-center gap-2">
-          {/* Hora de entrada real — el dato que importa para el ministerio */}
           <div className="flex items-center gap-2 rounded-lg border border-emerald-700/50 bg-emerald-500/10 px-3 py-2">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
             <span className="text-[0.65rem] text-emerald-500 uppercase tracking-widest">Entrada</span>
             <span className="font-mono text-sm font-bold text-emerald-300">{horaEntrada}</span>
-            {elapsed && (
-              <span className="text-[0.62rem] text-emerald-600">· {elapsed}</span>
-            )}
+            {elapsed && <span className="text-[0.62rem] text-emerald-600">· {elapsed}</span>}
           </div>
 
           <button
@@ -130,7 +153,6 @@ const JornadaButton = () => {
             {isSubmitting ? '...' : 'Iniciar jornada'}
           </button>
 
-          {/* Enlace al historial */}
           <button
             type="button"
             onClick={abrirHistorial}
@@ -141,7 +163,6 @@ const JornadaButton = () => {
         </div>
       )}
 
-      {/* También visible con jornada activa */}
       {jornadaActiva && (
         <button
           type="button"
@@ -152,7 +173,6 @@ const JornadaButton = () => {
         </button>
       )}
 
-      {/* Resumen de la jornada recién cerrada */}
       <ResumenCierre jornada={jornadaCerrada} />
 
       {error && <p className="text-[0.65rem] text-rose-400">{error}</p>}
