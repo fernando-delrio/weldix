@@ -9,3 +9,12 @@ body {
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Rajdhani', system-ui, sans-serif;
 }
+
+/* ── Animación modal bottom-sheet ───────────────────────────────── */
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+.modal-slide-up {
+  animation: slideUp 350ms cubic-bezier(0.32, 0.72, 0, 1);
+}
