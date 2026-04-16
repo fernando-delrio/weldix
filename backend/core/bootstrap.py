@@ -2,12 +2,26 @@ import logging
 from datetime import date
 
 from backend.features.auth.model import User
-from backend.features.equipos.model import Equipo    # noqa: F401 — necesario para create_all
-from backend.features.fichaje.model import Fichaje          # noqa: F401 — necesario para create_all
-from backend.features.fotos.model import Foto               # noqa: F401 — necesario para create_all
-from backend.features.registro_horas.model import RegistroHoras  # noqa: F401 — necesario para create_all
-from backend.features.historial.model import JobEvent  # noqa: F401 — necesario para create_all
+from backend.features.equipos.model import (  # noqa: F401 — necesario para create_all
+    Equipo,
+)
+from backend.features.fichaje.model import (  # noqa: F401 — necesario para create_all
+    Fichaje,
+)
+from backend.features.fotos.model import Foto  # noqa: F401 — necesario para create_all
+from backend.features.historial.model import (  # noqa: F401 — necesario para create_all
+    JobEvent,
+)
 from backend.features.jobs.model import Job
+from backend.features.registro_horas.model import (  # noqa: F401 — necesario para create_all
+    RegistroHoras,
+)
+from backend.features.rrhh.model import (  # noqa: F401 — necesario para create_all
+    ConfiguracionLaboral,
+    DocumentoJustificante,
+    Festivo,
+    SolicitudAusencia,
+)
 from backend.features.stock.model import Material
 
 from .config import settings
@@ -28,12 +42,18 @@ def seed_admin() -> None:
         return
 
     if not settings.seed_admin_email or not settings.seed_admin_password:
-        logger.warning("seed_admin_on_startup=true but seed_admin_email/password are missing. Skipping admin seed.")
+        logger.warning(
+            "seed_admin_on_startup=true but seed_admin_email/password are missing. Skipping admin seed."
+        )
         return
 
     db = SessionLocal()
     try:
-        existing = db.query(User).filter(User.email == settings.seed_admin_email.lower().strip()).first()
+        existing = (
+            db.query(User)
+            .filter(User.email == settings.seed_admin_email.lower().strip())
+            .first()
+        )
         if existing:
             return
 
@@ -50,12 +70,60 @@ def seed_admin() -> None:
 
 
 _SEED_JOBS = [
-    {"code": "ORD-2026-001", "titulo": "Estructura metalica nave industrial", "cliente": "Construcciones Lopez S.L.", "estado": "en_proceso", "fecha_inicio": date(2026, 3, 18), "progreso": 65,  "descripcion": None},
-    {"code": "ORD-2026-002", "titulo": "Escalera acero inoxidable",           "cliente": "Reformas Garcia",           "estado": "pendiente",  "fecha_inicio": date(2026, 3, 21), "progreso": 0,   "descripcion": None},
-    {"code": "ORD-2026-003", "titulo": "Deposito agua 5000L",                 "cliente": "Agro Hermanos Perez",       "estado": "control",    "fecha_inicio": date(2026, 3, 20), "progreso": 90,  "descripcion": None},
-    {"code": "ORD-2026-004", "titulo": "Barandilla terraza inox",             "cliente": "Comunidad Residencial Norte","estado": "listo",     "fecha_inicio": date(2026, 3, 15), "progreso": 100, "descripcion": None},
-    {"code": "ORD-2026-005", "titulo": "Tolva acero carbono 3T",              "cliente": "Agro Hermanos Perez",       "estado": "entregado",  "fecha_inicio": date(2026, 3, 10), "progreso": 100, "descripcion": None},
-    {"code": "ORD-2026-006", "titulo": "Soporte maquinaria CNC",              "cliente": "Talleres Mendez",           "estado": "pendiente",  "fecha_inicio": date(2026, 3, 28), "progreso": 0,   "descripcion": None},
+    {
+        "code": "ORD-2026-001",
+        "titulo": "Estructura metalica nave industrial",
+        "cliente": "Construcciones Lopez S.L.",
+        "estado": "en_proceso",
+        "fecha_inicio": date(2026, 3, 18),
+        "progreso": 65,
+        "descripcion": None,
+    },
+    {
+        "code": "ORD-2026-002",
+        "titulo": "Escalera acero inoxidable",
+        "cliente": "Reformas Garcia",
+        "estado": "pendiente",
+        "fecha_inicio": date(2026, 3, 21),
+        "progreso": 0,
+        "descripcion": None,
+    },
+    {
+        "code": "ORD-2026-003",
+        "titulo": "Deposito agua 5000L",
+        "cliente": "Agro Hermanos Perez",
+        "estado": "control",
+        "fecha_inicio": date(2026, 3, 20),
+        "progreso": 90,
+        "descripcion": None,
+    },
+    {
+        "code": "ORD-2026-004",
+        "titulo": "Barandilla terraza inox",
+        "cliente": "Comunidad Residencial Norte",
+        "estado": "listo",
+        "fecha_inicio": date(2026, 3, 15),
+        "progreso": 100,
+        "descripcion": None,
+    },
+    {
+        "code": "ORD-2026-005",
+        "titulo": "Tolva acero carbono 3T",
+        "cliente": "Agro Hermanos Perez",
+        "estado": "entregado",
+        "fecha_inicio": date(2026, 3, 10),
+        "progreso": 100,
+        "descripcion": None,
+    },
+    {
+        "code": "ORD-2026-006",
+        "titulo": "Soporte maquinaria CNC",
+        "cliente": "Talleres Mendez",
+        "estado": "pendiente",
+        "fecha_inicio": date(2026, 3, 28),
+        "progreso": 0,
+        "descripcion": None,
+    },
 ]
 
 
@@ -74,12 +142,12 @@ def seed_jobs() -> None:
 
 
 _SEED_STOCK = [
-    {"name": "Varilla soldadura 3.2mm", "quantity": 12,  "minimum": 50,  "unit": "ud"},
-    {"name": "Chapa acero 3mm",         "quantity": 36,  "minimum": 10,  "unit": "kg"},
-    {"name": "Electrodo basico 4mm",    "quantity": 80,  "minimum": 100, "unit": "ud"},
-    {"name": "Hilo MIG 0.8mm",          "quantity": 3,   "minimum": 5,   "unit": "kg"},
-    {"name": "Disco corte 230mm",       "quantity": 25,  "minimum": 20,  "unit": "ud"},
-    {"name": "Gas argon 99.9%",         "quantity": 2,   "minimum": 3,   "unit": "bote"},
+    {"name": "Varilla soldadura 3.2mm", "quantity": 12, "minimum": 50, "unit": "ud"},
+    {"name": "Chapa acero 3mm", "quantity": 36, "minimum": 10, "unit": "kg"},
+    {"name": "Electrodo basico 4mm", "quantity": 80, "minimum": 100, "unit": "ud"},
+    {"name": "Hilo MIG 0.8mm", "quantity": 3, "minimum": 5, "unit": "kg"},
+    {"name": "Disco corte 230mm", "quantity": 25, "minimum": 20, "unit": "ud"},
+    {"name": "Gas argon 99.9%", "quantity": 2, "minimum": 3, "unit": "bote"},
 ]
 
 
@@ -104,11 +172,36 @@ def _check_security_warnings() -> None:
 
 
 _SEED_EQUIPOS = [
-    {"nombre": "Soldadora MIG Lincoln 300A",  "tipo": "Soldadora",     "estado": "operativo",   "intervalo_dias": 90},
-    {"nombre": "Cortadora plasma CNC",         "tipo": "Cortadora",     "estado": "en_revision", "intervalo_dias": 60},
-    {"nombre": "Grua puente 5T",               "tipo": "Elevacion",     "estado": "operativo",   "intervalo_dias": 180},
-    {"nombre": "Soldadora TIG Fronius 200",    "tipo": "Soldadora",     "estado": "operativo",   "intervalo_dias": 90},
-    {"nombre": "Amoladora angular 230mm",      "tipo": "Herramienta",   "estado": "averiado",    "intervalo_dias": 30},
+    {
+        "nombre": "Soldadora MIG Lincoln 300A",
+        "tipo": "Soldadora",
+        "estado": "operativo",
+        "intervalo_dias": 90,
+    },
+    {
+        "nombre": "Cortadora plasma CNC",
+        "tipo": "Cortadora",
+        "estado": "en_revision",
+        "intervalo_dias": 60,
+    },
+    {
+        "nombre": "Grua puente 5T",
+        "tipo": "Elevacion",
+        "estado": "operativo",
+        "intervalo_dias": 180,
+    },
+    {
+        "nombre": "Soldadora TIG Fronius 200",
+        "tipo": "Soldadora",
+        "estado": "operativo",
+        "intervalo_dias": 90,
+    },
+    {
+        "nombre": "Amoladora angular 230mm",
+        "tipo": "Herramienta",
+        "estado": "averiado",
+        "intervalo_dias": 30,
+    },
 ]
 
 

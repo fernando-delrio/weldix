@@ -7,11 +7,16 @@ const jsonHeaders = () => ({
   'Content-Type': 'application/json',
 })
 
-export const consultarIA = async (mensaje, historial = [], contextoTrabajo = null) => {
+// contextoSeccion: string con resumen de la sección activa (stock bajo, trabajo activo, saldo RRHH, etc.)
+export const consultarIA = async (mensaje, historial = [], contextoSeccion = null) => {
   const res = await fetch(`${API_BASE_URL}/ia/consulta`, {
     method: 'POST',
     headers: jsonHeaders(),
-    body: JSON.stringify({ mensaje, historial, contexto_trabajo: contextoTrabajo }),
+    body: JSON.stringify({
+      mensaje,
+      historial,
+      contexto_seccion: contextoSeccion,
+    }),
   })
   if (!res.ok) {
     const body = await res.json().catch(() => ({}))

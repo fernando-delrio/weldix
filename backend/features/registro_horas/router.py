@@ -5,13 +5,15 @@ from backend.core.database import get_db
 from backend.features.auth.dependencies import get_current_user, require_role
 from backend.features.auth.model import User
 
-from .schemas import HorasOTResponse, IniciarRegistroRequest, RegistroHorasResponse
 from . import service
+from .schemas import HorasOTResponse, IniciarRegistroRequest, RegistroHorasResponse
 
 router = APIRouter(tags=["registro-horas"])
 
 
-@router.post("/registro-horas/iniciar", response_model=RegistroHorasResponse, status_code=201)
+@router.post(
+    "/registro-horas/iniciar", response_model=RegistroHorasResponse, status_code=201
+)
 def iniciar_registro(
     body: IniciarRegistroRequest,
     db: Session = Depends(get_db),
@@ -25,7 +27,9 @@ def iniciar_registro(
     return RegistroHorasResponse.from_orm(r)
 
 
-@router.post("/registro-horas/{registro_id}/finalizar", response_model=RegistroHorasResponse)
+@router.post(
+    "/registro-horas/{registro_id}/finalizar", response_model=RegistroHorasResponse
+)
 def finalizar_registro(
     registro_id: int,
     db: Session = Depends(get_db),

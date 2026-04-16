@@ -33,7 +33,7 @@ async def guardar_foto(
 
     # Nombre único: uuid + extensión original
     extension = (file.filename or "foto.jpg").rsplit(".", 1)[-1].lower()
-    filename  = f"{uuid.uuid4().hex}.{extension}"
+    filename = f"{uuid.uuid4().hex}.{extension}"
 
     MEDIA_DIR.mkdir(parents=True, exist_ok=True)
     dest = MEDIA_DIR / filename

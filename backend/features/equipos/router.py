@@ -5,8 +5,13 @@ from backend.core.database import get_db
 from backend.features.auth.dependencies import get_current_user, require_role
 from backend.features.auth.model import User
 
-from .schemas import CreateEquipoRequest, EquipoResponse, UpdateEquipoEstadoRequest, UpdateEquipoRequest
 from . import service
+from .schemas import (
+    CreateEquipoRequest,
+    EquipoResponse,
+    UpdateEquipoEstadoRequest,
+    UpdateEquipoRequest,
+)
 
 router = APIRouter(prefix="/equipos", tags=["equipos"])
 

@@ -5,8 +5,8 @@ from backend.core.database import get_db
 from backend.features.auth.dependencies import get_current_user, require_role
 from backend.features.auth.model import User
 
-from .schemas import FichajeResponse
 from . import service
+from .schemas import FichajeResponse, ForzarCierreRequest
 
 router = APIRouter(prefix="/fichajes", tags=["fichajes"])
 
@@ -68,6 +68,21 @@ def list_all_fichajes(
     """Admin: todos los fichajes de todos los operarios."""
     fichajes = service.get_todos_los_fichajes(db)
     return [FichajeResponse.from_orm_fichaje(f) for f in fichajes]
+
+
+@router.post("/{fichaje_id}/forzar-cierre", response_model=FichajeResponse)
+def forzar_cierre(
+    fichaje_id: int,
+    body: ForzarCierreRequest,
+    db: Session = Depends(get_db),
+    _: User = Depends(require_role("admin")),
+):
+    """Admin: cierra manualmente una jornada huérfana con las horas reales declaradas."""
+    try:
+        fichaje = service.forzar_cierre_jornada(db, fichaje_id, body.horas_reales)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    return FichajeResponse.from_orm_fichaje(fichaje)
 
 
 @router.get("/operario/{operario_id}", response_model=list[FichajeResponse])

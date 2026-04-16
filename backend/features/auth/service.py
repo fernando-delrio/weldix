@@ -4,9 +4,9 @@ from typing import Dict, Tuple
 from sqlalchemy.orm import Session
 
 from backend.core.config import settings
-from backend.core.security import hash_password, verify_password, create_access_token
-from .model import User
+from backend.core.security import create_access_token, hash_password, verify_password
 
+from .model import User
 
 # { email: (attempts, locked_until_utc) }
 _login_state: Dict[str, Tuple[int, datetime | None]] = {}
@@ -38,7 +38,9 @@ def _reset_attempts(email: str):
         _login_state[email] = (0, None)
 
 
-def create_user(db: Session, email: str, password: str, full_name: str | None, role: str) -> User:
+def create_user(
+    db: Session, email: str, password: str, full_name: str | None, role: str
+) -> User:
     normalized_role = role if role in ("admin", "operario") else "operario"
 
     user = User(
@@ -60,7 +62,9 @@ def update_profile(db: Session, user: User, full_name: str) -> User:
     return user
 
 
-def change_password(db: Session, user: User, current_password: str, new_password: str) -> None:
+def change_password(
+    db: Session, user: User, current_password: str, new_password: str
+) -> None:
     if not verify_password(current_password, user.password_hash):
         raise ValueError("Contraseña actual incorrecta")
     user.password_hash = hash_password(new_password)

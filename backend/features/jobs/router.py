@@ -5,8 +5,13 @@ from backend.core.database import get_db
 from backend.features.auth.dependencies import get_current_user, require_role
 from backend.features.auth.model import User
 
-from .schemas import CreateJobRequest, JobResponse, UpdateEstadoRequest, UpdateJobRequest
 from . import service
+from .schemas import (
+    CreateJobRequest,
+    JobResponse,
+    UpdateEstadoRequest,
+    UpdateJobRequest,
+)
 
 router = APIRouter(prefix="/trabajos", tags=["trabajos"])
 
@@ -17,7 +22,11 @@ def list_jobs(
     current_user: User = Depends(get_current_user),
 ):
     # Admin ve todos los trabajos; el operario solo ve los suyos
-    jobs = service.get_all_jobs(db) if current_user.role == "admin" else service.get_jobs_for_user(db, current_user.id)
+    jobs = (
+        service.get_all_jobs(db)
+        if current_user.role == "admin"
+        else service.get_jobs_for_user(db, current_user.id)
+    )
     return [JobResponse.from_orm_job(j) for j in jobs]
 
 
@@ -65,7 +74,11 @@ def get_job(
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
     # Un operario no puede leer trabajos ajenos (solo los asignados o sin asignar/pendientes)
-    if current_user.role != "admin" and job.operario_id and job.operario_id != current_user.id:
+    if (
+        current_user.role != "admin"
+        and job.operario_id
+        and job.operario_id != current_user.id
+    ):
         raise HTTPException(status_code=403, detail="No tienes acceso a este trabajo")
     return JobResponse.from_orm_job(job)
 
@@ -78,7 +91,15 @@ def update_estado(
     current_user: User = Depends(get_current_user),
 ):
     try:
-        job = service.update_estado(db, job_id, body.estado, body.progreso, current_user.id, current_user.role, current_user.full_name)
+        job = service.update_estado(
+            db,
+            job_id,
+            body.estado,
+            body.progreso,
+            current_user.id,
+            current_user.role,
+            current_user.full_name,
+        )
     except PermissionError as exc:
         raise HTTPException(status_code=403, detail=str(exc))
     except ValueError as exc:

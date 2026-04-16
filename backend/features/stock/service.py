@@ -1,7 +1,11 @@
 from sqlalchemy.orm import Session
 
 from .model import Material
-from .schemas import CreateMaterialRequest, UpdateMaterialRequest, ConsumeMaterialRequest
+from .schemas import (
+    ConsumeMaterialRequest,
+    CreateMaterialRequest,
+    UpdateMaterialRequest,
+)
 
 
 def get_all_materials(db: Session) -> list[Material]:
@@ -28,12 +32,18 @@ def create_material(db: Session, data: CreateMaterialRequest) -> Material:
     return material
 
 
-def update_material(db: Session, material_id: int, data: UpdateMaterialRequest) -> Material:
+def update_material(
+    db: Session, material_id: int, data: UpdateMaterialRequest
+) -> Material:
     material = get_material_by_id(db, material_id)
-    if data.name     is not None: material.name     = data.name
-    if data.quantity is not None: material.quantity = data.quantity
-    if data.minimum  is not None: material.minimum  = data.minimum
-    if data.unit     is not None: material.unit     = data.unit
+    if data.name is not None:
+        material.name = data.name
+    if data.quantity is not None:
+        material.quantity = data.quantity
+    if data.minimum is not None:
+        material.minimum = data.minimum
+    if data.unit is not None:
+        material.unit = data.unit
     db.commit()
     db.refresh(material)
     return material

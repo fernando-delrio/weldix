@@ -11,6 +11,7 @@ import EquiposPage from './modules/equipos/components/EquiposPage'
 import JobsPage from './modules/jobs/components/JobsPage'
 import JobDetailPage from './modules/jobs/components/JobDetailPage'
 import LoginPage from './modules/auth/components/LoginPage'
+import RrhhPage from './modules/rrhh/components/RrhhPage'
 
 const Splash = ({ text }) => (
   <main className="grid min-h-screen place-items-center bg-slate-950 text-slate-300">
@@ -44,6 +45,7 @@ const AppRoutes = () => {
             <Route path="/app/stock" element={<StockPage />} />
             <Route path="/app/equipos" element={<EquiposPage />} />
             <Route path="/app/admin" element={<AdminDashboardPage />} />
+            <Route path="/app/rrhh" element={<RrhhPage />} />
             <Route path="/app/perfil" element={<ProfilePage />} />
           </Route>
 

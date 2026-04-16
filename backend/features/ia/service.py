@@ -17,14 +17,19 @@ Tu función es ayudar a soldadores, caldereros y técnicos con:
 - Seguridad en el taller: EPI obligatorios, gases de protección, ventilación, riesgos eléctricos, ATEX
 - Calderería: trazado, corte por plasma/oxicorte, doblado, rolado, ensamblaje
 - Gestión de órdenes de trabajo: cómo avanzar estados, registrar materiales, interpretar una OT
+- RRHH del taller: consultas sobre días de vacaciones disponibles, solicitudes de ausencia, permisos
+  retribuidos (matrimonio, nacimiento, fallecimiento familiar), bajas médicas, jornada y turnos.
+  Para cálculo de vacaciones: el convenio general reconoce 22 días laborables anuales como mínimo.
+  Los días laborables son de lunes a viernes, excluyendo festivos nacionales, autonómicos y locales.
 
 Responde siempre en español, de forma clara, directa y práctica. Cuando des parámetros técnicos,
 sé específico con valores concretos.
 
 REGLA ESTRICTA — FUERA DE ÁMBITO:
 Si la pregunta NO está relacionada con soldadura, calderería, materiales metálicos, órdenes de trabajo,
-seguridad en el taller, normativa de soldadura o gestión de producción industrial, responde ÚNICAMENTE con:
-"Solo puedo ayudarte con consultas técnicas del taller: soldadura, materiales, OTs o seguridad."
+seguridad en el taller, normativa de soldadura, gestión de producción industrial o RRHH del taller
+(vacaciones, ausencias, permisos, jornada), responde ÚNICAMENTE con:
+"Solo puedo ayudarte con consultas técnicas del taller: soldadura, materiales, OTs, seguridad o RRHH."
 No añadas nada más. No expliques por qué. No ofrezcas alternativas fuera del taller."""
 
 
@@ -34,7 +39,9 @@ def _format_stock(stock_items: list) -> str:
     lines = []
     for m in stock_items:
         alerta = " ⚠ STOCK BAJO" if m.quantity < m.minimum else ""
-        lines.append(f"- {m.name}: {m.quantity} {m.unit} (mínimo requerido: {m.minimum}){alerta}")
+        lines.append(
+            f"- {m.name}: {m.quantity} {m.unit} (mínimo requerido: {m.minimum}){alerta}"
+        )
     return "\n".join(lines)
 
 
@@ -46,9 +53,17 @@ def _format_jobs(jobs: list) -> str:
     for j in jobs:
         counts[j.estado] = counts.get(j.estado, 0) + 1
 
-    order  = ["pendiente", "en_proceso", "control", "listo", "entregado"]
-    labels = {"pendiente": "Pendiente", "en_proceso": "En proceso", "control": "Control", "listo": "Listo", "entregado": "Entregado"}
-    summary = ", ".join(f"{labels.get(s, s)}: {counts[s]}" for s in order if s in counts)
+    order = ["pendiente", "en_proceso", "control", "listo", "entregado"]
+    labels = {
+        "pendiente": "Pendiente",
+        "en_proceso": "En proceso",
+        "control": "Control",
+        "listo": "Listo",
+        "entregado": "Entregado",
+    }
+    summary = ", ".join(
+        f"{labels.get(s, s)}: {counts[s]}" for s in order if s in counts
+    )
 
     lines = [f"Resumen: {summary}"]
     active = [j for j in jobs if j.estado in ("pendiente", "en_proceso", "control")]
@@ -56,7 +71,9 @@ def _format_jobs(jobs: list) -> str:
         lines.append("Detalle de trabajos activos:")
         for j in active:
             operario = j.operario.full_name if j.operario else "Sin asignar"
-            lines.append(f"  - {j.code or 'Sin código'} | {j.titulo} | {labels.get(j.estado, j.estado)} | Operario: {operario}")
+            lines.append(
+                f"  - {j.code or 'Sin código'} | {j.titulo} | {labels.get(j.estado, j.estado)} | Operario: {operario}"
+            )
     return "\n".join(lines)
 
 
@@ -66,6 +83,8 @@ def consultar(
     stock_items: list | None = None,
     jobs_items: list | None = None,
     contexto_trabajo: str | None = None,
+    user_context: str | None = None,
+    contexto_seccion: str | None = None,
 ) -> str:
     if not settings.mistral_api_key:
         raise ValueError("MISTRAL_API_KEY no configurada")
@@ -73,14 +92,24 @@ def consultar(
     # Construir system prompt enriquecido con contexto dinámico
     system_content = _SYSTEM_PROMPT
 
+    # Perfil del usuario + datos RRHH personales
+    if user_context:
+        system_content += f"\n\n## Perfil del usuario que consulta:\n{user_context}"
+
     if jobs_items is not None:
         system_content += f"\n\n## Estado actual de los trabajos del taller:\n{_format_jobs(jobs_items)}"
 
     if stock_items is not None:
-        system_content += f"\n\n## Stock actual del taller:\n{_format_stock(stock_items)}"
+        system_content += (
+            f"\n\n## Stock actual del taller:\n{_format_stock(stock_items)}"
+        )
 
-    if contexto_trabajo:
-        system_content += f"\n\n## Trabajo activo del operario que consulta:\n{contexto_trabajo}"
+    # Contexto de la sección que está viendo el usuario (legacy: trabajo activo)
+    seccion_ctx = contexto_seccion or contexto_trabajo
+    if seccion_ctx:
+        system_content += (
+            f"\n\n## Contexto de la sección activa del usuario:\n{seccion_ctx}"
+        )
 
     client = Mistral(api_key=settings.mistral_api_key)
 

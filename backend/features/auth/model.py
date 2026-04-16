@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String, DateTime, func
+from sqlalchemy import Column, DateTime, Integer, String, func
+
 from backend.core.database import Base
 
 
@@ -12,4 +13,6 @@ class User(Base):
     role = Column(String(30), nullable=False, default="operario")  # admin | operario
     password_hash = Column(String(255), nullable=False)
 
-    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )

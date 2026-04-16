@@ -4,12 +4,12 @@ from pydantic import BaseModel
 
 
 class FotoResponse(BaseModel):
-    id:         int
-    job_id:     int
-    filename:   str
+    id: int
+    job_id: int
+    filename: str
     # url pública que el frontend usa directamente para mostrar la imagen
-    url:        str
-    etiqueta:   str | None
+    url: str
+    etiqueta: str | None
     created_at: datetime
     uploader_nombre: str | None = None
 
