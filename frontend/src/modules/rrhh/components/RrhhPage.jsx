@@ -304,7 +304,6 @@ const SolicitudCard = ({ solicitud, onCancelar, onRevisar, isAdmin }) => {
 
 // ── Modal de nueva solicitud con calendario ───────────────────────────────────
 const NuevaSolicitudModal = ({ tipos, saldo, onClose, onSubmit, isSubmitting, error }) => {
-  const hoy = hoyStr()
   const [tipo,        setTipo]        = useState(tipos[0]?.valor ?? '')
   const [fechaInicio, setFechaInicio] = useState(null)
   const [fechaFin,    setFechaFin]    = useState(null)
@@ -556,7 +555,7 @@ const RrhhPage = () => {
       })
     }
     return () => setPageContext(null)
-  }, [isAdmin, saldo, solicitudes.length, pendientes.length])
+  }, [isAdmin, saldo, solicitudes.length, pendientes.length, setPageContext])
 
   const solicitudesFiltradas = filtro === 'todos'
     ? solicitudes

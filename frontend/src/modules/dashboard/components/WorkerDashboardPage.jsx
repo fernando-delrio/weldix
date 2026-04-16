@@ -139,7 +139,7 @@ const WorkerDashboardPage = () => {
       })
     }
     return () => setPageContext(null)
-  }, [dashboard, isAdmin])
+  }, [dashboard, isAdmin, setPageContext])
 
   const handleCreated = (newJob) => {
     setShowModal(false)

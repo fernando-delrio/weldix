@@ -25,4 +25,5 @@ export const IaProvider = ({ children }) => {
   )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useIaContext = () => useContext(IaContext)

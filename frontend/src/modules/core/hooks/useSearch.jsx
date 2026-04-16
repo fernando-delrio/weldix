@@ -3,7 +3,7 @@
 // Aquí lo implementamos con useEffect + setTimeout: cada vez que cambia `query`,
 // el efecto agenda una búsqueda en 300ms. Si `query` cambia antes de que pasen
 // los 300ms, el cleanup cancela el timer anterior y arranca uno nuevo.
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { searchJobs } from '../../jobs/services/jobsService'
 import { mapJobsModel } from '../../jobs/lib/jobsModel'
@@ -33,6 +33,7 @@ export const useSearch = () => {
 
   // Debounce: buscar 300ms después de que el usuario deja de escribir
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (isQueryTooShort(query)) { setResults([]); return }
 
     setIsSearching(true)

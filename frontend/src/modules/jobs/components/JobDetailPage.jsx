@@ -158,8 +158,9 @@ const JobDetailPage = () => {
   const { setPageContext } = useIaContext()
 
   // Inyectar contexto del trabajo en la IA cuando carga el detalle
+  const { job } = state
+
   useEffect(() => {
-    const { job } = state
     if (!job) return
     setPageContext({
       seccion: `Trabajo ${job.code ?? ''}`,
@@ -172,7 +173,7 @@ const JobDetailPage = () => {
       ],
     })
     return () => setPageContext(null)
-  }, [state.job])
+  }, [job, setPageContext])
 
   return (
     <AppShell>
