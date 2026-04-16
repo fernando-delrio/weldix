@@ -5,14 +5,14 @@ const NAV_ITEMS_OPERARIO = [
   { key: 'inicio',   label: 'Inicio',   to: '/app/inicio',   icon: 'IN' },
   { key: 'trabajos', label: 'Trabajos', to: '/app/trabajos', icon: 'TB' },
   { key: 'stock',    label: 'Stock',    to: '/app/stock',    icon: 'ST' },
-  { key: 'equipos',  label: 'Equipos',  to: '/app/equipos',  icon: 'EQ' },
+  { key: 'rrhh',    label: 'RRHH',     to: '/app/rrhh',     icon: 'RH' },
   { key: 'perfil',   label: 'Perfil',   to: '/app/perfil',   icon: 'PF' },
 ]
 
 const NAV_ITEMS_ADMIN = [
   { key: 'inicio',   label: 'Inicio',   to: '/app/inicio',   icon: 'IN' },
   { key: 'stock',    label: 'Stock',    to: '/app/stock',    icon: 'ST' },
-  { key: 'equipos',  label: 'Equipos',  to: '/app/equipos',  icon: 'EQ' },
+  { key: 'rrhh',    label: 'RRHH',     to: '/app/rrhh',     icon: 'RH' },
   { key: 'admin',    label: 'Admin',    to: '/app/admin',    icon: 'AD' },
   { key: 'perfil',   label: 'Perfil',   to: '/app/perfil',   icon: 'PF' },
 ]

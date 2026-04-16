@@ -7,42 +7,42 @@ from backend.features.stock.schemas import StockItemResponse
 
 class GreetingSchema(BaseModel):
     greeting_label: str
-    operator_name:  str
-    date_label:     str
-    shift_label:    str
+    operator_name: str
+    date_label: str
+    shift_label: str
 
 
 class MetricSchema(BaseModel):
-    key:   str
+    key: str
     label: str
     value: int
-    tone:  str
+    tone: str
 
 
 class ActiveJobSchema(BaseModel):
-    id:            int
-    status:        str
-    status_tone:   str
-    due_label:     str
-    due_tone:      str
-    title:         str
-    client:        str
-    progress:      int
-    stages:        list[str]
+    id: int
+    status: str
+    status_tone: str
+    due_label: str
+    due_tone: str
+    title: str
+    client: str
+    progress: int
+    stages: list[str]
     current_stage: int
 
 
 class TodayJobSchema(BaseModel):
-    id:     int
-    title:  str
-    due:    str
+    id: int
+    title: str
+    due: str
     status: str
-    tone:   str
+    tone: str
 
 
 class WorkerDashboardResponse(BaseModel):
-    greeting:   GreetingSchema
-    metrics:    list[MetricSchema]
+    greeting: GreetingSchema
+    metrics: list[MetricSchema]
     active_job: Optional[ActiveJobSchema] = None
     today_jobs: list[TodayJobSchema]
-    stock:      list[StockItemResponse]
+    stock: list[StockItemResponse]

@@ -203,7 +203,7 @@ const Particles = ({
 
     const particles = new Mesh(gl, { mode: gl.POINTS, geometry, program })
 
-    
+
     const raf = { id: null, lastTime: performance.now(), elapsed: 0 }
 
     const update = (t) => {

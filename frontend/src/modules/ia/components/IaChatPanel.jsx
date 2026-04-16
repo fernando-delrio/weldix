@@ -34,15 +34,37 @@ const TypingIndicator = () => (
   </div>
 )
 
-const jobContextBanner = ({ jobContext }) =>
-  jobContext && (
+// Banner de sección activa — muestra en qué sección está el usuario
+const sectionBanner = ({ pageContext }) =>
+  pageContext?.seccion && (
     <div className="mx-4 mt-3 rounded-lg border border-sky-700/40 bg-sky-500/10 px-3 py-2">
-      <p className="text-[0.6rem] font-bold uppercase tracking-widest text-sky-400">Contexto del trabajo activo</p>
-      <p className="mt-0.5 text-xs text-slate-300">{jobContext}</p>
+      <p className="text-[0.6rem] font-bold uppercase tracking-widest text-sky-400">
+        Contexto · {pageContext.seccion}
+      </p>
+      {pageContext.resumen && (
+        <p className="mt-0.5 text-xs text-slate-400 line-clamp-2">{pageContext.resumen}</p>
+      )}
     </div>
   )
 
-const emptyState = ({ messages, jobContext }) =>
+// Chips de sugerencias — preguntas rápidas por sección
+const SugerenciasChips = ({ sugerencias, onSelect, visible }) =>
+  visible && sugerencias?.length > 0 && (
+    <div className="px-4 pt-3 pb-1 flex flex-wrap gap-2">
+      {sugerencias.map((s) => (
+        <button
+          key={s}
+          type="button"
+          onClick={() => onSelect(s)}
+          className="rounded-full border border-slate-700 bg-slate-800/60 px-3 py-1 text-xs text-slate-300 transition hover:border-sky-500/60 hover:bg-sky-500/10 hover:text-sky-300"
+        >
+          {s}
+        </button>
+      ))}
+    </div>
+  )
+
+const emptyState = ({ messages, pageContext }) =>
   messages.length === 0 && (
     <div className="flex h-full flex-col items-center justify-center gap-3 px-4 text-center">
       <div className="grid h-12 w-12 place-items-center rounded-xl border border-sky-700/40 bg-sky-500/10 text-2xl">
@@ -50,16 +72,16 @@ const emptyState = ({ messages, jobContext }) =>
       </div>
       <p className="text-sm font-semibold text-slate-300">Asistente técnico Weldix</p>
       <p className="text-xs text-slate-500 leading-relaxed">
-        {jobContext
-          ? 'Pregúntame sobre este trabajo, materiales disponibles o cualquier duda técnica del taller.'
+        {pageContext?.seccion
+          ? `Estás en ${pageContext.seccion}. Pregúntame lo que necesites.`
           : 'Pregúntame sobre técnicas de soldadura, materiales, normas o cualquier duda del taller.'}
       </p>
     </div>
   )
 
 const IaChatPanel = () => {
-  const { jobContext, closeChat } = useIaContext()
-  const { messages, isLoading, error, sendMessage, clearChat } = useIaChat(jobContext)
+  const { pageContext, closeChat } = useIaContext()
+  const { messages, isLoading, error, sendMessage, clearChat } = useIaChat(pageContext)
   const [input, setInput] = useState('')
   const bottomRef = useRef(null)
 
@@ -67,17 +89,20 @@ const IaChatPanel = () => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, isLoading])
 
+  const handleSend = (texto) => {
+    sendMessage(texto)
+    setInput('')
+  }
+
   const handleSubmit = (e) => {
     e.preventDefault()
-    sendMessage(input)
-    setInput('')
+    handleSend(input)
   }
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
-      sendMessage(input)
-      setInput('')
+      handleSend(input)
     }
   }
 
@@ -99,7 +124,9 @@ const IaChatPanel = () => {
             <div className="grid h-7 w-7 place-items-center rounded-lg bg-sky-500/20 text-sm">🔧</div>
             <div>
               <p className="text-sm font-bold text-slate-100">Weldix AI</p>
-              <p className="text-[0.62rem] text-slate-500 uppercase tracking-widest">Asistente de taller</p>
+              <p className="text-[0.62rem] text-slate-500 uppercase tracking-widest">
+                {pageContext?.seccion ? pageContext.seccion : 'Asistente de taller'}
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -115,6 +142,7 @@ const IaChatPanel = () => {
             <button
               type="button"
               onClick={closeChat}
+              aria-label="Cerrar chat"
               className="grid h-7 w-7 place-items-center rounded-lg border border-slate-700 text-slate-400 transition hover:border-slate-500 hover:text-slate-200"
             >
               ✕
@@ -122,11 +150,18 @@ const IaChatPanel = () => {
           </div>
         </div>
 
-        {jobContextBanner({ jobContext })}
+        {sectionBanner({ pageContext })}
+
+        {/* Chips de sugerencias — solo visibles cuando no hay mensajes */}
+        <SugerenciasChips
+          sugerencias={pageContext?.sugerencias}
+          onSelect={handleSend}
+          visible={messages.length === 0}
+        />
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
-          {emptyState({ messages, jobContext })}
+          {emptyState({ messages, pageContext })}
           {messages.map((msg, i) =>
             msg.role === 'user'
               ? <UserBubble key={i} content={msg.content} />
@@ -146,7 +181,7 @@ const IaChatPanel = () => {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Escribe tu consulta técnica..."
+              placeholder="Escribe tu consulta..."
               rows={1}
               className="flex-1 resize-none bg-transparent text-sm text-slate-100 outline-none placeholder:text-slate-500"
               style={{ maxHeight: '96px' }}
@@ -154,6 +189,7 @@ const IaChatPanel = () => {
             <button
               type="submit"
               disabled={isLoading || !input.trim()}
+              aria-label="Enviar mensaje"
               className={cx(
                 'shrink-0 grid h-8 w-8 place-items-center rounded-lg transition',
                 input.trim() && !isLoading

@@ -14,15 +14,15 @@ class IniciarRegistroRequest(BaseModel):
 
 
 class RegistroHorasResponse(BaseModel):
-    id:          int
-    job_id:      int
+    id: int
+    job_id: int
     operario_id: int
-    inicio:      datetime
-    fin:         datetime | None
-    horas:       float | None
+    inicio: datetime
+    fin: datetime | None
+    horas: float | None
     operario_nombre: str | None = None
-    job_code:        str | None = None
-    job_titulo:      str | None = None
+    job_code: str | None = None
+    job_titulo: str | None = None
 
     @classmethod
     def from_orm(cls, r) -> "RegistroHorasResponse":
@@ -41,16 +41,18 @@ class RegistroHorasResponse(BaseModel):
 
 class ResumenHorasOTResponse(BaseModel):
     """Resumen de horas por operario en una OT — para la vista de admin/detalle."""
-    operario_id:     int
+
+    operario_id: int
     operario_nombre: str
-    total_horas:     float
-    num_sesiones:    int
+    total_horas: float
+    num_sesiones: int
 
 
 class HorasOTResponse(BaseModel):
     """Vista completa de horas de una OT: por operario + total global."""
-    job_id:      int
-    job_code:    str | None
+
+    job_id: int
+    job_code: str | None
     total_horas: float
     por_operario: list[ResumenHorasOTResponse]
-    registros:    list[RegistroHorasResponse]
+    registros: list[RegistroHorasResponse]

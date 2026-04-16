@@ -4,8 +4,9 @@ from sqlalchemy.orm import Session
 from backend.core.database import get_db
 from backend.features.auth.dependencies import require_role
 from backend.features.auth.model import User
-from .schemas import AdminDashboardResponse
+
 from . import service
+from .schemas import AdminDashboardResponse
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 

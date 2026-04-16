@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 
 from backend.core.database import get_db
 from backend.core.security import decode_token
+
 from .model import User
 
 bearer = HTTPBearer()

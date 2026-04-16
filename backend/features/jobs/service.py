@@ -26,7 +26,12 @@ def get_all_jobs(db: Session) -> list[Job]:
 
 
 def get_jobs_for_user(db: Session, user_id: int) -> list[Job]:
-    return db.query(Job).filter(Job.operario_id == user_id).order_by(Job.created_at.desc()).all()
+    return (
+        db.query(Job)
+        .filter(Job.operario_id == user_id)
+        .order_by(Job.created_at.desc())
+        .all()
+    )
 
 
 def get_job_by_id(db: Session, job_id: int) -> Job:
@@ -41,7 +46,9 @@ def get_job_by_code(db: Session, code: str) -> Job:
     if not job:
         raise ValueError(f"No se encontró ninguna OT con código {code}")
     if job.estado != "pendiente":
-        raise ValueError(f"La OT {code} ya está en estado '{job.estado}' y no puede iniciarse")
+        raise ValueError(
+            f"La OT {code} ya está en estado '{job.estado}' y no puede iniciarse"
+        )
     return job
 
 
@@ -57,40 +64,65 @@ def create_job(db: Session, data: CreateJobRequest) -> Job:
         descripcion=data.descripcion,
     )
     db.add(job)
+    db.flush()  # obtiene job.id sin commitear — evento y job van en el mismo commit
+    add_event(db, job.id, "creado", f"Trabajo {job.code} creado", "Sistema")
     db.commit()
     db.refresh(job)
-    add_event(db, job.id, "creado", f"Trabajo {job.code} creado", "Sistema")
     return job
 
 
 def _is_starting_job(current_estado: str, new_estado: str) -> bool:
-    return current_estado == 'pendiente' and new_estado == 'en_proceso'
+    return current_estado == "pendiente" and new_estado == "en_proceso"
 
 
-def update_estado(db: Session, job_id: int, estado: str, progreso: int, current_user_id: int | None = None, current_user_role: str = 'operario', current_user_name: str = 'Operario') -> Job:
+def update_estado(
+    db: Session,
+    job_id: int,
+    estado: str,
+    progreso: int,
+    current_user_id: int | None = None,
+    current_user_role: str = "operario",
+    current_user_name: str = "Operario",
+) -> Job:
     job = get_job_by_id(db, job_id)
     # Un operario solo puede modificar sus propios trabajos
-    if current_user_role != 'admin' and job.operario_id and job.operario_id != current_user_id:
+    if (
+        current_user_role != "admin"
+        and job.operario_id
+        and job.operario_id != current_user_id
+    ):
         raise PermissionError("No tienes permiso para modificar este trabajo")
     # Auto-asignar operario al iniciar: si no tenía asignado, queda bloqueado a quien lo inicia
     if _is_starting_job(job.estado, estado) and not job.operario_id and current_user_id:
         job.operario_id = current_user_id
-    job.estado   = estado
+    job.estado = estado
     job.progreso = _clamp_progress(progreso)
+    add_event(
+        db,
+        job.id,
+        "estado_cambiado",
+        f"Estado cambiado a '{estado}'",
+        current_user_name,
+    )
     db.commit()
     db.refresh(job)
-    add_event(db, job.id, "estado_cambiado", f"Estado cambiado a '{estado}'", current_user_name)
     return job
 
 
 def update_job(db: Session, job_id: int, data: UpdateJobRequest) -> Job:
     job = get_job_by_id(db, job_id)
-    if data.titulo       is not None: job.titulo       = data.titulo
-    if data.cliente      is not None: job.cliente      = data.cliente
-    if data.operario_id  is not None: job.operario_id  = data.operario_id
-    if data.fecha_inicio is not None: job.fecha_inicio = data.fecha_inicio
-    if data.progreso     is not None: job.progreso     = _clamp_progress(data.progreso)
-    if data.descripcion  is not None: job.descripcion  = data.descripcion
+    if data.titulo is not None:
+        job.titulo = data.titulo
+    if data.cliente is not None:
+        job.cliente = data.cliente
+    if data.operario_id is not None:
+        job.operario_id = data.operario_id
+    if data.fecha_inicio is not None:
+        job.fecha_inicio = data.fecha_inicio
+    if data.progreso is not None:
+        job.progreso = _clamp_progress(data.progreso)
+    if data.descripcion is not None:
+        job.descripcion = data.descripcion
     db.commit()
     db.refresh(job)
     return job

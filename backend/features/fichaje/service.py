@@ -4,6 +4,10 @@ from sqlalchemy.orm import Session
 
 from .model import Fichaje
 
+# Máximo de horas que puede durar una jornada.
+# Si se supera, probablemente el operario olvidó fichar la salida.
+MAX_HORAS_JORNADA = 16
+
 
 def _now_utc() -> datetime:
     return datetime.now(timezone.utc)
@@ -15,6 +19,11 @@ def _duracion_horas(inicio: datetime, fin: datetime) -> float:
         inicio = inicio.replace(tzinfo=timezone.utc)
     duracion = fin - inicio
     return round(duracion.total_seconds() / 3600, 2)
+
+
+def _es_duracion_valida(inicio: datetime, fin: datetime) -> bool:
+    """Una jornada es válida si dura 16h o menos."""
+    return _duracion_horas(inicio, fin) <= MAX_HORAS_JORNADA
 
 
 def get_jornada_activa(db: Session, operario_id: int) -> Fichaje | None:
@@ -33,7 +42,9 @@ def iniciar_jornada(db: Session, operario_id: int) -> Fichaje:
     """
     activa = get_jornada_activa(db, operario_id)
     if activa:
-        raise ValueError("Ya tienes una jornada abierta. Finalízala antes de iniciar una nueva.")
+        raise ValueError(
+            "Ya tienes una jornada abierta. Finalízala antes de iniciar una nueva."
+        )
 
     fichaje = Fichaje(operario_id=operario_id, inicio=_now_utc())
     db.add(fichaje)
@@ -56,14 +67,53 @@ def finalizar_jornada(db: Session, fichaje_id: int, operario_id: int) -> Fichaje
         raise ValueError("Esta jornada ya está cerrada")
 
     fin = _now_utc()
-    fichaje.fin   = fin
+
+    # Guard: si la jornada lleva más de 16h abierta, es casi seguro que el operario
+    # olvidó fichar la salida. Bloqueamos y pedimos al admin que la cierre manualmente.
+    if not _es_duracion_valida(fichaje.inicio, fin):
+        horas_reales = round(_duracion_horas(fichaje.inicio, fin))
+        raise ValueError(
+            f"Esta jornada lleva {horas_reales}h abierta, lo que supera el límite de "
+            f"{MAX_HORAS_JORNADA}h. Probablemente olvidaste fichar la salida. "
+            f"Contacta con el administrador para que la cierre manualmente."
+        )
+
+    fichaje.fin = fin
     fichaje.horas = _duracion_horas(fichaje.inicio, fin)
     db.commit()
     db.refresh(fichaje)
     return fichaje
 
 
-def get_fichajes_operario(db: Session, operario_id: int, limit: int = 30) -> list[Fichaje]:
+def forzar_cierre_jornada(db: Session, fichaje_id: int, horas_reales: float) -> Fichaje:
+    """
+    Admin: cierra una jornada huérfana estableciendo las horas manualmente.
+    Se usa cuando el operario olvidó fichar la salida y la jornada supera 16h.
+    """
+    fichaje = db.query(Fichaje).filter(Fichaje.id == fichaje_id).first()
+    if not fichaje:
+        raise ValueError(f"Jornada {fichaje_id} no encontrada")
+    if fichaje.fin is not None:
+        raise ValueError("Esta jornada ya está cerrada")
+    if horas_reales <= 0 or horas_reales > MAX_HORAS_JORNADA:
+        raise ValueError(f"Las horas deben estar entre 0 y {MAX_HORAS_JORNADA}")
+
+    # Reconstruimos el fin a partir de las horas reales declaradas por el admin
+    inicio = fichaje.inicio
+    if inicio.tzinfo is None:
+        inicio = inicio.replace(tzinfo=timezone.utc)
+    from datetime import timedelta
+
+    fichaje.fin = inicio + timedelta(hours=horas_reales)
+    fichaje.horas = horas_reales
+    db.commit()
+    db.refresh(fichaje)
+    return fichaje
+
+
+def get_fichajes_operario(
+    db: Session, operario_id: int, limit: int = 30
+) -> list[Fichaje]:
     """Últimas jornadas de un operario, más reciente primero."""
     return (
         db.query(Fichaje)
@@ -76,9 +126,4 @@ def get_fichajes_operario(db: Session, operario_id: int, limit: int = 30) -> lis
 
 def get_todos_los_fichajes(db: Session, limit: int = 100) -> list[Fichaje]:
     """Admin: todos los fichajes de todos los operarios, más reciente primero."""
-    return (
-        db.query(Fichaje)
-        .order_by(Fichaje.inicio.desc())
-        .limit(limit)
-        .all()
-    )
+    return db.query(Fichaje).order_by(Fichaje.inicio.desc()).limit(limit).all()

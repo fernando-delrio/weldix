@@ -12,11 +12,11 @@ def _utc(dt: datetime | None) -> datetime | None:
 
 
 class FichajeResponse(BaseModel):
-    id:          int
+    id: int
     operario_id: int
-    inicio:      datetime
-    fin:         datetime | None
-    horas:       float | None
+    inicio: datetime
+    fin: datetime | None
+    horas: float | None
     operario_nombre: str | None = None
 
     @classmethod
@@ -31,11 +31,16 @@ class FichajeResponse(BaseModel):
         )
 
 
+class ForzarCierreRequest(BaseModel):
+    horas_reales: float  # horas que el admin declara como correctas (0 < horas <= 16)
+
+
 class ResumenJornadaResponse(BaseModel):
     """Agregado de horas por operario — usado en el panel admin."""
-    operario_id:     int
+
+    operario_id: int
     operario_nombre: str
-    total_fichajes:  int
-    total_horas:     float
+    total_fichajes: int
+    total_horas: float
     # el más reciente primero
-    ultimo_fichaje:  datetime | None
+    ultimo_fichaje: datetime | None

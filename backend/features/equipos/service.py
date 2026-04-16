@@ -22,14 +22,14 @@ def _enriquecer(equipo: Equipo) -> dict:
     dias = _dias_desde(equipo.ultimo_mantenimiento)
     alerta = dias is not None and dias > equipo.intervalo_dias
     return {
-        "id":                   equipo.id,
-        "nombre":               equipo.nombre,
-        "tipo":                 equipo.tipo,
-        "descripcion":          equipo.descripcion,
-        "estado":               equipo.estado,
+        "id": equipo.id,
+        "nombre": equipo.nombre,
+        "tipo": equipo.tipo,
+        "descripcion": equipo.descripcion,
+        "estado": equipo.estado,
         "ultimo_mantenimiento": equipo.ultimo_mantenimiento,
-        "intervalo_dias":       equipo.intervalo_dias,
-        "created_at":           equipo.created_at,
+        "intervalo_dias": equipo.intervalo_dias,
+        "created_at": equipo.created_at,
         "dias_desde_mantenimiento": dias,
         "alerta_mantenimiento": alerta,
     }
@@ -76,11 +76,16 @@ def update_equipo(db: Session, equipo_id: int, data: UpdateEquipoRequest) -> dic
     if not equipo:
         raise ValueError(f"Equipo {equipo_id} no encontrado")
 
-    if data.nombre               is not None: equipo.nombre               = data.nombre
-    if data.tipo                 is not None: equipo.tipo                 = data.tipo
-    if data.descripcion          is not None: equipo.descripcion          = data.descripcion
-    if data.ultimo_mantenimiento is not None: equipo.ultimo_mantenimiento = data.ultimo_mantenimiento
-    if data.intervalo_dias       is not None: equipo.intervalo_dias       = data.intervalo_dias
+    if data.nombre is not None:
+        equipo.nombre = data.nombre
+    if data.tipo is not None:
+        equipo.tipo = data.tipo
+    if data.descripcion is not None:
+        equipo.descripcion = data.descripcion
+    if data.ultimo_mantenimiento is not None:
+        equipo.ultimo_mantenimiento = data.ultimo_mantenimiento
+    if data.intervalo_dias is not None:
+        equipo.intervalo_dias = data.intervalo_dias
 
     db.commit()
     db.refresh(equipo)

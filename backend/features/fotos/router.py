@@ -5,8 +5,8 @@ from backend.core.database import get_db
 from backend.features.auth.dependencies import get_current_user
 from backend.features.auth.model import User
 
-from .schemas import FotoResponse
 from . import service
+from .schemas import FotoResponse
 
 router = APIRouter(tags=["fotos"])
 
