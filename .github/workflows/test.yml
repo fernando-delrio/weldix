@@ -26,8 +26,10 @@ jobs:
 
       - name: Run tests
         # DATABASE_URL vacío → SQLite en memoria (conftest.py lo gestiona)
+        # PYTHONPATH=. permite que pytest encuentre el paquete backend desde la raíz
         run: pytest tests/ -v
         env:
+          PYTHONPATH: "."
           SECRET_KEY: "ci-secret-key-not-used-in-production"
           DATABASE_URL: ""
 

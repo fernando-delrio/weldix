@@ -49,6 +49,7 @@ export const useJobDetail = () => {
     setIsLoading(false)
   }, [id])
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { load() }, [load])
 
   const advance = async () => {
