@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import AppShell from '../../core/components/AppShell'
 import { useAuthSession } from '../../auth/hooks/useAuthSession'
 import { useWorkerDashboard } from '../hooks/useWorkerDashboard'
+import { useIaContext } from '../../ia/lib/IaContext'
 import AdminJobsSection from '../../admin/components/AdminJobsSection'
 import JornadaButton from '../../fichaje/components/JornadaButton'
 import ActiveJobCard from './ActiveJobCard'
@@ -105,6 +106,40 @@ const WorkerDashboardPage = () => {
   const [createdFeedback, setCreatedFeedback]   = useState('')
 
   const isAdmin = profile?.role === 'admin'
+  const { setPageContext } = useIaContext()
+
+  // Inyectar contexto del dashboard en la IA cuando cargan los datos
+  useEffect(() => {
+    if (!dashboard) return
+
+    if (!isAdmin) {
+      const activeJobText = dashboard.activeJob
+        ? `Trabajo activo: ${dashboard.activeJob.code} — ${dashboard.activeJob.titulo} (estado: ${dashboard.activeJob.estado})`
+        : 'Sin trabajo activo ahora mismo'
+      setPageContext({
+        seccion: 'Inicio — Panel del operario',
+        resumen: activeJobText,
+        sugerencias: [
+          '¿Cómo avanzo el estado de mi trabajo activo?',
+          '¿Qué hago si detecto un defecto en la soldadura?',
+          '¿Qué EPI necesito para soldar acero inoxidable?',
+          '¿Cómo registro el material que he consumido?',
+        ],
+      })
+    } else {
+      setPageContext({
+        seccion: 'Inicio — Panel del administrador',
+        resumen: `Panel de administración del taller. Gestión de trabajos, operarios y stock.`,
+        sugerencias: [
+          '¿Cuántos trabajos están en proceso ahora?',
+          '¿Qué materiales tienen stock bajo?',
+          '¿Cómo asigno un trabajo a un operario?',
+          'Resume el estado actual del taller',
+        ],
+      })
+    }
+    return () => setPageContext(null)
+  }, [dashboard, isAdmin])
 
   const handleCreated = (newJob) => {
     setShowModal(false)
@@ -121,18 +156,29 @@ const WorkerDashboardPage = () => {
 
         {!isLoading && dashboard && (
           <>
-            <section className="rounded-xl border border-cyan-900/50 bg-slate-900/55 p-4">
+            <section className="rounded-xl border border-white/[0.07] bg-gradient-to-br from-sky-900/20 via-slate-900/60 to-slate-900/80 p-4">
               <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-[0.64rem] font-bold uppercase tracking-[0.2em] text-sky-300">
-                    {dashboard.greeting.greetingLabel}
-                  </p>
-                  <h1 className="mt-1 text-4xl font-extrabold tracking-tight text-slate-100">
-                    {dashboard.greeting.operatorName}
-                  </h1>
-                  <p className="mt-1 text-sm text-slate-400">
-                    {dashboard.greeting.dateLabel} - {dashboard.greeting.shiftLabel}
-                  </p>
+                <div className="flex items-start gap-3">
+                  {/* Avatar con iniciales del operario */}
+                  <div className="mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-sky-500/30 bg-sky-500/10 text-sm font-bold tracking-wide text-sky-300">
+                    {dashboard.greeting.operatorName
+                      .split(' ')
+                      .slice(0, 2)
+                      .map((n) => n[0])
+                      .join('')
+                      .toUpperCase()}
+                  </div>
+                  <div>
+                    <p className="text-[0.64rem] font-bold uppercase tracking-[0.2em] text-sky-300">
+                      {dashboard.greeting.greetingLabel}
+                    </p>
+                    <h1 className="mt-0.5 text-3xl font-extrabold tracking-tight text-slate-100">
+                      {dashboard.greeting.operatorName}
+                    </h1>
+                    <p className="mt-1 text-sm text-slate-400">
+                      {dashboard.greeting.dateLabel} · {dashboard.greeting.shiftLabel}
+                    </p>
+                  </div>
                 </div>
                 {adminNewJobButton({ isAdmin, onOpen: () => setShowModal(true) })}
               </div>

@@ -40,7 +40,9 @@ const RegisterMaterialModal = ({ stock, onClose, onConfirm }) => {
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
       <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" onClick={onClose} aria-hidden="true" />
 
-      <div className="relative z-10 w-full max-w-[420px] rounded-t-2xl border border-slate-700/80 bg-slate-900 p-5 shadow-2xl sm:rounded-2xl">
+      <div className="modal-slide-up relative z-10 w-full max-w-[420px] rounded-t-2xl border border-slate-700/80 bg-slate-900 p-5 shadow-2xl sm:rounded-2xl">
+        {/* Drag handle — indica bottom-sheet en móvil */}
+        <div className="mx-auto mb-4 h-1 w-8 rounded-full bg-slate-600 sm:hidden" aria-hidden="true" />
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-bold tracking-tight text-slate-100">Registrar material usado</h2>
           <button
