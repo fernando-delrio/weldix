@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class AdminJobItem(BaseModel):
@@ -19,6 +19,12 @@ class AdminUserItem(BaseModel):
     email: str
     full_name: str | None
     role: str
+    worker_number: int | None = None
+    pending_vacaciones_count: int = 0
+    pending_vacaciones_dias: int = 0
+    active_jobs_count: int = 0
+    active_jobs: list[dict] = Field(default_factory=list)
+    fichajes: list[dict] = Field(default_factory=list)
 
 
 class AdminMetrics(BaseModel):

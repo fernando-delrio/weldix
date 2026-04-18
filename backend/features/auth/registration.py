@@ -18,7 +18,9 @@ class SignupData:
 class SignupStrategy(ABC):
     role: str = "operario"
 
-    def signup(self, db: Session, data: SignupData) -> User:
+    def signup(
+        self, db: Session, data: SignupData, tenant_id: int | None = None
+    ) -> User:
         safe_email = data.email.lower().strip()
         existing = db.query(User).filter(User.email == safe_email).first()
         if existing:
@@ -30,6 +32,7 @@ class SignupStrategy(ABC):
             password=data.password,
             full_name=data.full_name,
             role=data.role,
+            tenant_id=tenant_id,
         )
 
 

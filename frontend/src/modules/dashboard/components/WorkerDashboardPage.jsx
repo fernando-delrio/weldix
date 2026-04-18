@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 
 import AppShell from '../../core/components/AppShell'
+import OnboardingWizard from '../../core/components/OnboardingWizard'
+import useOnboarding from '../../core/hooks/useOnboarding'
 import { useAuthSession } from '../../auth/hooks/useAuthSession'
 import { useWorkerDashboard } from '../hooks/useWorkerDashboard'
 import { useIaContext } from '../../ia/lib/IaContext'
@@ -99,6 +101,7 @@ const WorkerDashboardPage = () => {
   const { profile } = useAuthSession()
   const { dashboard, isLoading, isEmpty, error, refresh, markActiveJobCompleted, startPendingJob, registerMaterialUsage } =
     useWorkerDashboard()
+  const { show: showOnboarding, complete: completeOnboarding } = useOnboarding(profile)
 
   const [showModal, setShowModal]               = useState(false)
   const [showOrtModal, setShowOrtModal]         = useState(false)
@@ -149,6 +152,7 @@ const WorkerDashboardPage = () => {
 
   return (
     <AppShell>
+      {showOnboarding && <OnboardingWizard onComplete={completeOnboarding} />}
       <div className="mx-auto w-full max-w-[680px] space-y-4 pb-5">
         {loadingState({ isLoading, isEmpty })}
         {errorState({ isLoading, error, refresh })}

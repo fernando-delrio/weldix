@@ -15,6 +15,6 @@ router = APIRouter(prefix="/trabajos", tags=["historial"])
 def get_historial(
     trabajo_id: int,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
-    return get_events_by_job(db, trabajo_id)
+    return get_events_by_job(db, trabajo_id, tenant_id=current_user.tenant_id)

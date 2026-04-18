@@ -1,11 +1,12 @@
-from datetime import datetime, timezone
+import csv
+import io
+from datetime import datetime, timedelta, timezone
 
+from sqlalchemy import extract
 from sqlalchemy.orm import Session
 
 from .model import Fichaje
 
-# Máximo de horas que puede durar una jornada.
-# Si se supera, probablemente el operario olvidó fichar la salida.
 MAX_HORAS_JORNADA = 16
 
 
@@ -14,7 +15,6 @@ def _now_utc() -> datetime:
 
 
 def _duracion_horas(inicio: datetime, fin: datetime) -> float:
-    """Calcula la duración en horas entre dos datetimes, con aware/naive handling."""
     if inicio.tzinfo is None:
         inicio = inicio.replace(tzinfo=timezone.utc)
     duracion = fin - inicio
@@ -22,12 +22,10 @@ def _duracion_horas(inicio: datetime, fin: datetime) -> float:
 
 
 def _es_duracion_valida(inicio: datetime, fin: datetime) -> bool:
-    """Una jornada es válida si dura 16h o menos."""
     return _duracion_horas(inicio, fin) <= MAX_HORAS_JORNADA
 
 
 def get_jornada_activa(db: Session, operario_id: int) -> Fichaje | None:
-    """Jornada abierta (sin fin) del operario. Sólo puede haber una."""
     return (
         db.query(Fichaje)
         .filter(Fichaje.operario_id == operario_id, Fichaje.fin.is_(None))
@@ -35,18 +33,16 @@ def get_jornada_activa(db: Session, operario_id: int) -> Fichaje | None:
     )
 
 
-def iniciar_jornada(db: Session, operario_id: int) -> Fichaje:
-    """
-    Abre una nueva jornada laboral.
-    Regla de negocio: no se puede iniciar si ya hay una jornada abierta.
-    """
+def iniciar_jornada(
+    db: Session, operario_id: int, tenant_id: int | None = None
+) -> Fichaje:
     activa = get_jornada_activa(db, operario_id)
     if activa:
         raise ValueError(
             "Ya tienes una jornada abierta. Finalízala antes de iniciar una nueva."
         )
 
-    fichaje = Fichaje(operario_id=operario_id, inicio=_now_utc())
+    fichaje = Fichaje(tenant_id=tenant_id, operario_id=operario_id, inicio=_now_utc())
     db.add(fichaje)
     db.commit()
     db.refresh(fichaje)
@@ -54,10 +50,6 @@ def iniciar_jornada(db: Session, operario_id: int) -> Fichaje:
 
 
 def finalizar_jornada(db: Session, fichaje_id: int, operario_id: int) -> Fichaje:
-    """
-    Cierra la jornada y calcula las horas.
-    Solo el propio operario puede cerrar su jornada.
-    """
     fichaje = db.query(Fichaje).filter(Fichaje.id == fichaje_id).first()
     if not fichaje:
         raise ValueError(f"Jornada {fichaje_id} no encontrada")
@@ -67,9 +59,6 @@ def finalizar_jornada(db: Session, fichaje_id: int, operario_id: int) -> Fichaje
         raise ValueError("Esta jornada ya está cerrada")
 
     fin = _now_utc()
-
-    # Guard: si la jornada lleva más de 16h abierta, es casi seguro que el operario
-    # olvidó fichar la salida. Bloqueamos y pedimos al admin que la cierre manualmente.
     if not _es_duracion_valida(fichaje.inicio, fin):
         horas_reales = round(_duracion_horas(fichaje.inicio, fin))
         raise ValueError(
@@ -85,12 +74,13 @@ def finalizar_jornada(db: Session, fichaje_id: int, operario_id: int) -> Fichaje
     return fichaje
 
 
-def forzar_cierre_jornada(db: Session, fichaje_id: int, horas_reales: float) -> Fichaje:
-    """
-    Admin: cierra una jornada huérfana estableciendo las horas manualmente.
-    Se usa cuando el operario olvidó fichar la salida y la jornada supera 16h.
-    """
-    fichaje = db.query(Fichaje).filter(Fichaje.id == fichaje_id).first()
+def forzar_cierre_jornada(
+    db: Session, fichaje_id: int, horas_reales: float, tenant_id: int | None = None
+) -> Fichaje:
+    q = db.query(Fichaje).filter(Fichaje.id == fichaje_id)
+    if tenant_id is not None:
+        q = q.filter(Fichaje.tenant_id == tenant_id)
+    fichaje = q.first()
     if not fichaje:
         raise ValueError(f"Jornada {fichaje_id} no encontrada")
     if fichaje.fin is not None:
@@ -98,12 +88,9 @@ def forzar_cierre_jornada(db: Session, fichaje_id: int, horas_reales: float) -> 
     if horas_reales <= 0 or horas_reales > MAX_HORAS_JORNADA:
         raise ValueError(f"Las horas deben estar entre 0 y {MAX_HORAS_JORNADA}")
 
-    # Reconstruimos el fin a partir de las horas reales declaradas por el admin
     inicio = fichaje.inicio
     if inicio.tzinfo is None:
         inicio = inicio.replace(tzinfo=timezone.utc)
-    from datetime import timedelta
-
     fichaje.fin = inicio + timedelta(hours=horas_reales)
     fichaje.horas = horas_reales
     db.commit()
@@ -114,7 +101,6 @@ def forzar_cierre_jornada(db: Session, fichaje_id: int, horas_reales: float) -> 
 def get_fichajes_operario(
     db: Session, operario_id: int, limit: int = 30
 ) -> list[Fichaje]:
-    """Últimas jornadas de un operario, más reciente primero."""
     return (
         db.query(Fichaje)
         .filter(Fichaje.operario_id == operario_id)
@@ -124,6 +110,71 @@ def get_fichajes_operario(
     )
 
 
-def get_todos_los_fichajes(db: Session, limit: int = 100) -> list[Fichaje]:
-    """Admin: todos los fichajes de todos los operarios, más reciente primero."""
-    return db.query(Fichaje).order_by(Fichaje.inicio.desc()).limit(limit).all()
+def get_todos_los_fichajes(
+    db: Session, tenant_id: int | None = None, limit: int = 100
+) -> list[Fichaje]:
+    q = db.query(Fichaje)
+    if tenant_id is not None:
+        q = q.filter(Fichaje.tenant_id == tenant_id)
+    return q.order_by(Fichaje.inicio.desc()).limit(limit).all()
+
+
+def _fmt_dt(value: datetime | None) -> str:
+    if not value:
+        return ""
+    return value.astimezone(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+
+
+def build_fichajes_csv(
+    db: Session,
+    tenant_id: int | None = None,
+    year: int | None = None,
+    month: int | None = None,
+) -> str:
+    """
+    CSV legal para inspeccion/auditoria con jornadas por operario.
+    Se filtra opcionalmente por anio y mes.
+    """
+    from backend.features.auth.model import User
+
+    q = db.query(Fichaje, User).join(User, User.id == Fichaje.operario_id)
+    if tenant_id is not None:
+        q = q.filter(Fichaje.tenant_id == tenant_id, User.tenant_id == tenant_id)
+    if year is not None:
+        q = q.filter(extract("year", Fichaje.inicio) == year)
+    if month is not None:
+        q = q.filter(extract("month", Fichaje.inicio) == month)
+
+    rows = q.order_by(User.full_name.asc().nulls_last(), Fichaje.inicio.desc()).all()
+
+    out = io.StringIO()
+    writer = csv.writer(out)
+    writer.writerow(
+        [
+            "fichaje_id",
+            "worker_number",
+            "operario",
+            "email",
+            "inicio_utc",
+            "fin_utc",
+            "horas",
+            "estado",
+        ]
+    )
+
+    for fichaje, user in rows:
+        estado = "abierta" if fichaje.fin is None else "cerrada"
+        writer.writerow(
+            [
+                fichaje.id,
+                user.worker_number or "",
+                user.full_name or user.email,
+                user.email,
+                _fmt_dt(fichaje.inicio),
+                _fmt_dt(fichaje.fin),
+                "" if fichaje.horas is None else round(float(fichaje.horas), 2),
+                estado,
+            ]
+        )
+
+    return out.getvalue()

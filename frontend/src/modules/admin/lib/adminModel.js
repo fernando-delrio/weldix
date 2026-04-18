@@ -24,10 +24,11 @@ const roleConfig  = (role)  => ROLE_CONFIG[role]  ?? ROLE_CONFIG.operario
 
 const mapJob  = (job)  => ({ ...job,  estadoLabel: ESTADO_LABELS[job.estado] ?? job.estado, toneClasses: toneClasses(job.tone) })
 const mapUser = (user) => ({ ...user, roleConfig: roleConfig(user.role) })
+const sortUsers = (users) => [...users].sort((a, b) => (a.full_name || a.email || '').localeCompare(b.full_name || b.email || '', 'es'))
 
 export const mapAdminDashboard = (data) => ({
   metrics:   data.metrics,
   jobs:      data.jobs.map(mapJob),
-  users:     data.users.map(mapUser),
-  operarios: data.users.filter((u) => u.role === 'operario'),
+  users:     sortUsers(data.users.map(mapUser)),
+  operarios: sortUsers(data.users.filter((u) => u.role === 'operario').map(mapUser)),
 })

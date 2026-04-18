@@ -2,16 +2,19 @@ import { Link, useLocation } from 'react-router-dom'
 import { useAuthSession } from '../../auth/hooks/useAuthSession'
 import { useClock } from '../hooks/useClock'
 import { useSearch } from '../hooks/useSearch'
+import usePwaInstall from '../hooks/usePwaInstall'
 import IaChatPanel from '../../ia/components/IaChatPanel'
 import { IaProvider, useIaContext } from '../../ia/lib/IaContext'
 import BottomNav from './BottomNav'
 import SearchModal from './SearchModal'
+import TrialBanner from './TrialBanner'
 import { getNavItems } from '../lib/navigation'
 import { NavIcon } from '../lib/icons'
 import { cx } from '../lib/cx'
+import useTrialStatus from '../hooks/useTrialStatus'
 
 // ── Sidebar — visible en md+ ────────────────────────────────────────────────
-const Sidebar = ({ navItems, roleLabel, onLogout, onSearchOpen, timeLabel }) => {
+const Sidebar = ({ navItems, roleLabel, onLogout, onSearchOpen, timeLabel, onInstall, canInstall }) => {
   const location = useLocation()
 
   return (
@@ -82,6 +85,21 @@ const Sidebar = ({ navItems, roleLabel, onLogout, onSearchOpen, timeLabel }) => 
           </svg>
           <span className="hidden text-sm font-semibold tracking-wide lg:block">Avisos</span>
         </button>
+
+        {/* Instalar PWA — solo aparece cuando el browser lo permite */}
+        {canInstall && (
+          <button
+            type="button"
+            onClick={onInstall}
+            title="Instalar app"
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sky-400 transition hover:bg-sky-500/10"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor" className="h-5 w-5 shrink-0">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+            </svg>
+            <span className="hidden text-sm font-semibold tracking-wide lg:block">Instalar app</span>
+          </button>
+        )}
 
         {/* Cerrar sesión */}
         <button
@@ -171,6 +189,8 @@ const AppShellInner = ({ children }) => {
   const timeLabel = useClock()
   const { isOpen: iaIsOpen } = useIaContext()
   const search = useSearch()
+  const { canInstall, triggerInstall } = usePwaInstall()
+  const { showBanner, trial, dismiss } = useTrialStatus()
 
   const role      = profile?.role || 'operario'
   const roleLabel = role.toUpperCase()
@@ -197,6 +217,8 @@ const AppShellInner = ({ children }) => {
           timeLabel={timeLabel}
           onLogout={clearSession}
           onSearchOpen={search.open}
+          canInstall={canInstall}
+          onInstall={triggerInstall}
         />
       </div>
 
@@ -211,6 +233,9 @@ const AppShellInner = ({ children }) => {
         'lg:ml-56 lg:px-8',
       ].join(' ')}>
         <div className="mx-auto w-full max-w-[1100px]">
+          {showBanner && (
+            <TrialBanner daysLeft={trial.days_left} onDismiss={dismiss} />
+          )}
           {children}
         </div>
       </main>

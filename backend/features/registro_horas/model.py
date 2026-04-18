@@ -17,6 +17,7 @@ class RegistroHoras(Base):
     __tablename__ = "registro_horas"
 
     id = Column(Integer, primary_key=True, index=True)
+    tenant_id = Column(Integer, ForeignKey("tenants.id"), nullable=True, index=True)
     job_id = Column(Integer, ForeignKey("jobs.id"), nullable=False)
     operario_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     inicio = Column(DateTime(timezone=True), nullable=False, server_default=func.now())

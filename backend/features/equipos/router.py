@@ -19,28 +19,27 @@ router = APIRouter(prefix="/equipos", tags=["equipos"])
 @router.get("", response_model=list[EquipoResponse])
 def list_equipos(
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
-    return service.get_all_equipos(db)
+    return service.get_all_equipos(db, tenant_id=current_user.tenant_id)
 
 
 @router.get("/alertas", response_model=list[EquipoResponse])
 def list_alertas(
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
-    """Equipos que superan su intervalo de mantenimiento configurado."""
-    return service.get_equipos_con_alerta(db)
+    return service.get_equipos_con_alerta(db, tenant_id=current_user.tenant_id)
 
 
 @router.post("", response_model=EquipoResponse, status_code=201)
 def create_equipo(
     body: CreateEquipoRequest,
     db: Session = Depends(get_db),
-    _: User = Depends(require_role("admin")),
+    current_user: User = Depends(require_role("admin")),
 ):
     try:
-        return service.create_equipo(db, body)
+        return service.create_equipo(db, body, tenant_id=current_user.tenant_id)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 
@@ -49,10 +48,10 @@ def create_equipo(
 def get_equipo(
     equipo_id: int,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
     try:
-        return service.get_equipo_by_id(db, equipo_id)
+        return service.get_equipo_by_id(db, equipo_id, tenant_id=current_user.tenant_id)
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
 
@@ -62,10 +61,12 @@ def update_equipo(
     equipo_id: int,
     body: UpdateEquipoRequest,
     db: Session = Depends(get_db),
-    _: User = Depends(require_role("admin")),
+    current_user: User = Depends(require_role("admin")),
 ):
     try:
-        return service.update_equipo(db, equipo_id, body)
+        return service.update_equipo(
+            db, equipo_id, body, tenant_id=current_user.tenant_id
+        )
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
 
@@ -75,10 +76,12 @@ def update_estado(
     equipo_id: int,
     body: UpdateEquipoEstadoRequest,
     db: Session = Depends(get_db),
-    _: User = Depends(require_role("admin")),
+    current_user: User = Depends(require_role("admin")),
 ):
     try:
-        return service.update_estado_equipo(db, equipo_id, body.estado)
+        return service.update_estado_equipo(
+            db, equipo_id, body.estado, tenant_id=current_user.tenant_id
+        )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 
@@ -87,9 +90,9 @@ def update_estado(
 def delete_equipo(
     equipo_id: int,
     db: Session = Depends(get_db),
-    _: User = Depends(require_role("admin")),
+    current_user: User = Depends(require_role("admin")),
 ):
     try:
-        service.delete_equipo(db, equipo_id)
+        service.delete_equipo(db, equipo_id, tenant_id=current_user.tenant_id)
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc))

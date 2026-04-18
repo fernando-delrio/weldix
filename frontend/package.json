@@ -11,6 +11,7 @@
 	},
 	"dependencies": {
 		"@tailwindcss/vite": "^4.1.18",
+		"boxicons": "^2.1.4",
 		"framer-motion": "^12.34.2",
 		"html5-qrcode": "^2.3.8",
 		"ogl": "^1.0.11",
@@ -29,6 +30,9 @@
 		"eslint-plugin-react-refresh": "^0.4.24",
 		"globals": "^16.5.0",
 		"jsrepo": "^3.6.1",
-		"vite": "^7.3.1"
+		"sharp": "^0.34.5",
+		"vite": "^7.3.1",
+		"vite-plugin-pwa": "^1.2.0",
+		"workbox-window": "^7.4.0"
 	}
 }

@@ -8,6 +8,7 @@ class Job(Base):
     __tablename__ = "jobs"
 
     id = Column(Integer, primary_key=True, index=True)
+    tenant_id = Column(Integer, ForeignKey("tenants.id"), nullable=True, index=True)
     code = Column(String(30), nullable=True)
     titulo = Column(String(255), nullable=False)
     cliente = Column(String(255), nullable=False)

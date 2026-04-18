@@ -79,6 +79,9 @@ const AuthLayout = ({ mode, title, subtitle, feedback, error, children }) => {
               <Link to="/login" className={modeButtonClass(mode, 'login')}>
                 Iniciar sesion
               </Link>
+              <Link to="/registro" className={modeButtonClass(mode, 'register')}>
+                Registrar taller
+              </Link>
             </div>
 
             <h1 className={authTw.panelTitle}>{title}</h1>

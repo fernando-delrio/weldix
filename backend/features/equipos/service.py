@@ -15,10 +15,6 @@ def _dias_desde(fecha: date | None) -> int | None:
 
 
 def _enriquecer(equipo: Equipo) -> dict:
-    """
-    Añade días_desde_mantenimiento y alerta_mantenimiento al equipo.
-    Estas propiedades se calculan en tiempo de consulta, no se almacenan en la BD.
-    """
     dias = _dias_desde(equipo.ultimo_mantenimiento)
     alerta = dias is not None and dias > equipo.intervalo_dias
     return {
@@ -35,29 +31,37 @@ def _enriquecer(equipo: Equipo) -> dict:
     }
 
 
-def get_all_equipos(db: Session) -> list[dict]:
-    equipos = db.query(Equipo).order_by(Equipo.nombre.asc()).all()
+def get_all_equipos(db: Session, tenant_id: int | None = None) -> list[dict]:
+    q = db.query(Equipo)
+    if tenant_id is not None:
+        q = q.filter(Equipo.tenant_id == tenant_id)
+    equipos = q.order_by(Equipo.nombre.asc()).all()
     return [_enriquecer(e) for e in equipos]
 
 
-def get_equipos_con_alerta(db: Session) -> list[dict]:
-    """Solo equipos que superan su intervalo de mantenimiento."""
-    todos = get_all_equipos(db)
+def get_equipos_con_alerta(db: Session, tenant_id: int | None = None) -> list[dict]:
+    todos = get_all_equipos(db, tenant_id)
     return [e for e in todos if e["alerta_mantenimiento"]]
 
 
-def get_equipo_by_id(db: Session, equipo_id: int) -> dict:
-    equipo = db.query(Equipo).filter(Equipo.id == equipo_id).first()
+def get_equipo_by_id(db: Session, equipo_id: int, tenant_id: int | None = None) -> dict:
+    q = db.query(Equipo).filter(Equipo.id == equipo_id)
+    if tenant_id is not None:
+        q = q.filter(Equipo.tenant_id == tenant_id)
+    equipo = q.first()
     if not equipo:
         raise ValueError(f"Equipo {equipo_id} no encontrado")
     return _enriquecer(equipo)
 
 
-def create_equipo(db: Session, data: CreateEquipoRequest) -> dict:
+def create_equipo(
+    db: Session, data: CreateEquipoRequest, tenant_id: int | None = None
+) -> dict:
     if data.estado not in ESTADOS_VALIDOS:
         raise ValueError(f"Estado inválido: {data.estado}. Válidos: {ESTADOS_VALIDOS}")
 
     equipo = Equipo(
+        tenant_id=tenant_id,
         nombre=data.nombre,
         tipo=data.tipo,
         descripcion=data.descripcion,
@@ -71,8 +75,13 @@ def create_equipo(db: Session, data: CreateEquipoRequest) -> dict:
     return _enriquecer(equipo)
 
 
-def update_equipo(db: Session, equipo_id: int, data: UpdateEquipoRequest) -> dict:
-    equipo = db.query(Equipo).filter(Equipo.id == equipo_id).first()
+def update_equipo(
+    db: Session, equipo_id: int, data: UpdateEquipoRequest, tenant_id: int | None = None
+) -> dict:
+    q = db.query(Equipo).filter(Equipo.id == equipo_id)
+    if tenant_id is not None:
+        q = q.filter(Equipo.tenant_id == tenant_id)
+    equipo = q.first()
     if not equipo:
         raise ValueError(f"Equipo {equipo_id} no encontrado")
 
@@ -92,11 +101,16 @@ def update_equipo(db: Session, equipo_id: int, data: UpdateEquipoRequest) -> dic
     return _enriquecer(equipo)
 
 
-def update_estado_equipo(db: Session, equipo_id: int, estado: str) -> dict:
+def update_estado_equipo(
+    db: Session, equipo_id: int, estado: str, tenant_id: int | None = None
+) -> dict:
     if estado not in ESTADOS_VALIDOS:
         raise ValueError(f"Estado inválido: {estado}")
 
-    equipo = db.query(Equipo).filter(Equipo.id == equipo_id).first()
+    q = db.query(Equipo).filter(Equipo.id == equipo_id)
+    if tenant_id is not None:
+        q = q.filter(Equipo.tenant_id == tenant_id)
+    equipo = q.first()
     if not equipo:
         raise ValueError(f"Equipo {equipo_id} no encontrado")
 
@@ -106,8 +120,11 @@ def update_estado_equipo(db: Session, equipo_id: int, estado: str) -> dict:
     return _enriquecer(equipo)
 
 
-def delete_equipo(db: Session, equipo_id: int) -> None:
-    equipo = db.query(Equipo).filter(Equipo.id == equipo_id).first()
+def delete_equipo(db: Session, equipo_id: int, tenant_id: int | None = None) -> None:
+    q = db.query(Equipo).filter(Equipo.id == equipo_id)
+    if tenant_id is not None:
+        q = q.filter(Equipo.tenant_id == tenant_id)
+    equipo = q.first()
     if not equipo:
         raise ValueError(f"Equipo {equipo_id} no encontrado")
     db.delete(equipo)

@@ -13,6 +13,7 @@ class Foto(Base):
     __tablename__ = "fotos"
 
     id = Column(Integer, primary_key=True, index=True)
+    tenant_id = Column(Integer, ForeignKey("tenants.id"), nullable=True, index=True)
     job_id = Column(Integer, ForeignKey("jobs.id"), nullable=False)
     uploader_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     filename = Column(String(255), nullable=False)

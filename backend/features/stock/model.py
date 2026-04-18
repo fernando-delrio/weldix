@@ -1,4 +1,4 @@
-from sqlalchemy import Column, DateTime, Float, Integer, String, func
+from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String, func
 
 from backend.core.database import Base
 
@@ -7,6 +7,7 @@ class Material(Base):
     __tablename__ = "stock"
 
     id = Column(Integer, primary_key=True, index=True)
+    tenant_id = Column(Integer, ForeignKey("tenants.id"), nullable=True, index=True)
     name = Column(String(255), nullable=False)
     quantity = Column(Float, nullable=False, default=0)
     minimum = Column(Float, nullable=False, default=0)

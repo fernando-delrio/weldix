@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Date, DateTime, Integer, String, Text, func
+from sqlalchemy import Column, Date, DateTime, ForeignKey, Integer, String, Text, func
 
 from backend.core.database import Base
 
@@ -12,6 +12,7 @@ class Equipo(Base):
     __tablename__ = "equipos"
 
     id = Column(Integer, primary_key=True, index=True)
+    tenant_id = Column(Integer, ForeignKey("tenants.id"), nullable=True, index=True)
     nombre = Column(String(255), nullable=False)
     # tipo libre: "soldadora", "cortadora CNC", "grúa", etc.
     tipo = Column(String(100), nullable=True)

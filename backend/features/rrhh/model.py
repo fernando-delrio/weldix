@@ -26,6 +26,7 @@ class ConfiguracionLaboral(Base):
     __tablename__ = "configuracion_laboral"
 
     id = Column(Integer, primary_key=True, index=True)
+    tenant_id = Column(Integer, ForeignKey("tenants.id"), nullable=True, index=True)
     operario_id = Column(Integer, ForeignKey("users.id"), nullable=False, unique=True)
     dias_vacaciones_anuales = Column(Integer, nullable=False, default=22)
     horas_jornada = Column(Float, nullable=False, default=8.0)
@@ -64,6 +65,7 @@ class SolicitudAusencia(Base):
     __tablename__ = "solicitudes_ausencia"
 
     id = Column(Integer, primary_key=True, index=True)
+    tenant_id = Column(Integer, ForeignKey("tenants.id"), nullable=True, index=True)
     operario_id = Column(Integer, ForeignKey("users.id"), nullable=False)
 
     # Tipo y fechas
