@@ -1,7 +1,12 @@
+from collections import defaultdict
+
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from backend.features.auth.model import User
+from backend.features.fichaje.model import Fichaje
 from backend.features.jobs.model import Job
+from backend.features.rrhh.model import SolicitudAusencia
 
 _ESTADO_TONE = {
     "pendiente": "warning",
@@ -35,19 +40,93 @@ def _job_item(job: Job, users_by_id: dict) -> dict:
 
 
 def _user_item(user: User) -> dict:
-    return {
+    base = {
         "id": user.id,
         "email": user.email,
         "full_name": user.full_name,
         "role": user.role,
+        "worker_number": user.worker_number,
+    }
+    return base
+
+
+def _fichaje_brief(fichaje: Fichaje) -> dict:
+    return {
+        "id": fichaje.id,
+        "inicio": fichaje.inicio,
+        "fin": fichaje.fin,
+        "horas": fichaje.horas,
     }
 
 
-def get_admin_dashboard(db: Session) -> dict:
-    jobs = db.query(Job).order_by(Job.created_at.desc()).all()
-    users = db.query(User).order_by(User.id).all()
+def get_admin_dashboard(db: Session, tenant_id: int | None = None) -> dict:
+    q_jobs = db.query(Job)
+    q_users = db.query(User)
+    if tenant_id is not None:
+        q_jobs = q_jobs.filter(Job.tenant_id == tenant_id)
+        q_users = q_users.filter(User.tenant_id == tenant_id)
 
+    q_fichajes = db.query(Fichaje)
+    q_solicitudes = db.query(SolicitudAusencia)
+    if tenant_id is not None:
+        q_fichajes = q_fichajes.filter(Fichaje.tenant_id == tenant_id)
+        q_solicitudes = q_solicitudes.filter(SolicitudAusencia.tenant_id == tenant_id)
+
+    jobs = q_jobs.order_by(Job.created_at.desc()).all()
+    users = q_users.all()
+    users = sorted(users, key=lambda u: (u.full_name or u.email or "").lower())
     users_by_id = {u.id: u for u in users}
+
+    fichajes = q_fichajes.order_by(Fichaje.inicio.desc()).limit(800).all()
+    fichajes_by_operario: dict[int, list[dict]] = defaultdict(list)
+    for fichaje in fichajes:
+        if len(fichajes_by_operario[fichaje.operario_id]) >= 20:
+            continue
+        fichajes_by_operario[fichaje.operario_id].append(_fichaje_brief(fichaje))
+
+    active_by_operario: dict[int, list[dict]] = defaultdict(list)
+    for job in jobs:
+        if job.operario_id is None:
+            continue
+        if job.estado not in {"en_proceso", "control"}:
+            continue
+        if len(active_by_operario[job.operario_id]) >= 5:
+            continue
+        active_by_operario[job.operario_id].append(
+            {
+                "id": job.id,
+                "code": job.code,
+                "titulo": job.titulo,
+                "estado": job.estado,
+                "tone": _ESTADO_TONE.get(job.estado, "neutral"),
+            }
+        )
+
+    pending_vac_rows = (
+        q_solicitudes.with_entities(
+            SolicitudAusencia.operario_id,
+            func.count(SolicitudAusencia.id),
+            func.coalesce(func.sum(SolicitudAusencia.dias_solicitados), 0),
+        )
+        .filter(SolicitudAusencia.estado == "pendiente")
+        .group_by(SolicitudAusencia.operario_id)
+        .all()
+    )
+    pending_vac_by_operario = {
+        operario_id: {"count": int(count), "dias": int(dias)}
+        for operario_id, count, dias in pending_vac_rows
+    }
+
+    users_payload = []
+    for user in users:
+        item = _user_item(user)
+        vac = pending_vac_by_operario.get(user.id, {"count": 0, "dias": 0})
+        item["pending_vacaciones_count"] = vac["count"]
+        item["pending_vacaciones_dias"] = vac["dias"]
+        item["active_jobs"] = active_by_operario.get(user.id, [])
+        item["active_jobs_count"] = len(item["active_jobs"])
+        item["fichajes"] = fichajes_by_operario.get(user.id, [])
+        users_payload.append(item)
 
     return {
         "metrics": {
@@ -60,5 +139,5 @@ def get_admin_dashboard(db: Session) -> dict:
             "total_operarios": sum(1 for u in users if u.role == "operario"),
         },
         "jobs": [_job_item(j, users_by_id) for j in jobs],
-        "users": [_user_item(u) for u in users],
+        "users": users_payload,
     }

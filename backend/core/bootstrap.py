@@ -1,7 +1,9 @@
 import logging
 from datetime import date
 
-from backend.features.auth.model import User
+from sqlalchemy import text
+
+from backend.features.auth.model import Tenant, User
 from backend.features.equipos.model import (  # noqa: F401 — necesario para create_all
     Equipo,
 )
@@ -31,10 +33,129 @@ from .security import hash_password
 logger = logging.getLogger(__name__)
 
 
+def _sqlite_table_columns(conn, table_name: str) -> set[str]:
+    rows = conn.execute(text(f'PRAGMA table_info("{table_name}")')).fetchall()
+    return {row[1] for row in rows}
+
+
+def _sqlite_add_column_if_missing(
+    conn, table_name: str, column_name: str, ddl_fragment: str
+) -> None:
+    columns = _sqlite_table_columns(conn, table_name)
+    if column_name in columns:
+        return
+    conn.execute(
+        text(f'ALTER TABLE "{table_name}" ADD COLUMN "{column_name}" {ddl_fragment}')
+    )
+    logger.info("SQLite schema sync: added %s.%s", table_name, column_name)
+
+
+def _sync_sqlite_dev_schema() -> None:
+    """
+    Compatibilidad de desarrollo para SQLite sin Alembic.
+    Si el archivo DB viene de una versión antigua, añade columnas nuevas
+    (solo additive changes) para evitar caídas en startup.
+    """
+    if not settings.database_url.startswith("sqlite"):
+        return
+
+    with engine.begin() as conn:
+        table_names = {
+            row[0]
+            for row in conn.execute(
+                text("SELECT name FROM sqlite_master WHERE type='table'")
+            ).fetchall()
+        }
+
+        additions = [
+            ("users", "tenant_id", "INTEGER"),
+            ("users", "worker_number", "INTEGER"),
+            ("users", "onboarding_done", "BOOLEAN NOT NULL DEFAULT 0"),
+            ("tenants", "trial_expires_at", "DATETIME"),
+            ("jobs", "tenant_id", "INTEGER"),
+            ("stock", "tenant_id", "INTEGER"),
+            ("fotos", "tenant_id", "INTEGER"),
+            ("fichajes", "tenant_id", "INTEGER"),
+            ("registro_horas", "tenant_id", "INTEGER"),
+            ("equipos", "tenant_id", "INTEGER"),
+            ("job_events", "tenant_id", "INTEGER"),
+            ("configuracion_laboral", "tenant_id", "INTEGER"),
+            ("solicitudes_ausencia", "tenant_id", "INTEGER"),
+        ]
+
+        for table_name, column_name, ddl_fragment in additions:
+            if table_name not in table_names:
+                continue
+            _sqlite_add_column_if_missing(conn, table_name, column_name, ddl_fragment)
+
+
 def init_schema() -> None:
     if not settings.auto_create_tables:
         return
     Base.metadata.create_all(bind=engine)
+    _sync_sqlite_dev_schema()
+
+
+def _get_or_create_default_tenant(db) -> Tenant:
+    """Obtiene o crea el tenant por defecto para el entorno de desarrollo."""
+    tenant = db.query(Tenant).filter(Tenant.slug == "weldix-default").first()
+    if not tenant:
+        tenant = Tenant(
+            nombre="Weldix (Dev)",
+            slug="weldix-default",
+            plan="pro",
+        )
+        db.add(tenant)
+        db.flush()
+    return tenant
+
+
+def _assign_missing_worker_numbers(db) -> None:
+    """
+    Asigna numero correlativo a operarios sin numero dentro de su tenant.
+    Mantiene los existentes y completa los huecos para reporting anual.
+    """
+    changed = False
+
+    tenant_ids = [
+        row[0]
+        for row in db.query(User.tenant_id)
+        .filter(User.role == "operario", User.tenant_id.isnot(None))
+        .distinct()
+        .all()
+        if row[0] is not None
+    ]
+
+    for tenant_id in tenant_ids:
+        max_row = (
+            db.query(User.worker_number)
+            .filter(
+                User.tenant_id == tenant_id,
+                User.role == "operario",
+                User.worker_number.isnot(None),
+            )
+            .order_by(User.worker_number.desc())
+            .first()
+        )
+        next_number = (max_row[0] if max_row and max_row[0] is not None else 0) + 1
+
+        missing = (
+            db.query(User)
+            .filter(
+                User.tenant_id == tenant_id,
+                User.role == "operario",
+                User.worker_number.is_(None),
+            )
+            .order_by(User.id.asc())
+            .all()
+        )
+        for operario in missing:
+            operario.worker_number = next_number
+            next_number += 1
+            changed = True
+
+    if changed:
+        db.commit()
 
 
 def seed_admin() -> None:
@@ -55,9 +176,33 @@ def seed_admin() -> None:
             .first()
         )
         if existing:
+            # Si el admin ya existe pero no tiene tenant_id, asignárselo
+            if existing.tenant_id is None:
+                tenant = _get_or_create_default_tenant(db)
+                existing.tenant_id = tenant.id
+                # Asignar tenant a todos los datos huérfanos (migraciones de datos existentes)
+                db.query(Job).filter(Job.tenant_id.is_(None)).update(
+                    {"tenant_id": tenant.id}
+                )
+                db.query(Material).filter(Material.tenant_id.is_(None)).update(
+                    {"tenant_id": tenant.id}
+                )
+                db.query(Fichaje).filter(Fichaje.tenant_id.is_(None)).update(
+                    {"tenant_id": tenant.id}
+                )
+                db.query(Equipo).filter(Equipo.tenant_id.is_(None)).update(
+                    {"tenant_id": tenant.id}
+                )
+                db.query(User).filter(User.tenant_id.is_(None)).update(
+                    {"tenant_id": tenant.id}
+                )
+                db.commit()
+            _assign_missing_worker_numbers(db)
             return
 
+        tenant = _get_or_create_default_tenant(db)
         admin = User(
+            tenant_id=tenant.id,
             email=settings.seed_admin_email.lower().strip(),
             full_name=settings.seed_admin_full_name,
             role="admin",
@@ -65,6 +210,7 @@ def seed_admin() -> None:
         )
         db.add(admin)
         db.commit()
+        _assign_missing_worker_numbers(db)
     finally:
         db.close()
 
@@ -134,8 +280,9 @@ def seed_jobs() -> None:
     try:
         if db.query(Job).count() > 0:
             return
+        tenant = _get_or_create_default_tenant(db)
         for data in _SEED_JOBS:
-            db.add(Job(**data))
+            db.add(Job(tenant_id=tenant.id, **data))
         db.commit()
     finally:
         db.close()
@@ -156,8 +303,9 @@ def seed_stock() -> None:
     try:
         if db.query(Material).count() > 0:
             return
+        tenant = _get_or_create_default_tenant(db)
         for data in _SEED_STOCK:
-            db.add(Material(**data))
+            db.add(Material(tenant_id=tenant.id, **data))
         db.commit()
     finally:
         db.close()
@@ -212,8 +360,9 @@ def seed_equipos() -> None:
     try:
         if db.query(Equipo).count() > 0:
             return
+        tenant = _get_or_create_default_tenant(db)
         for data in _SEED_EQUIPOS:
-            db.add(Equipo(**data))
+            db.add(Equipo(tenant_id=tenant.id, **data))
         db.commit()
     finally:
         db.close()
@@ -226,3 +375,8 @@ def run_startup_tasks() -> None:
     seed_jobs()
     seed_stock()
     seed_equipos()
+    db = SessionLocal()
+    try:
+        _assign_missing_worker_numbers(db)
+    finally:
+        db.close()

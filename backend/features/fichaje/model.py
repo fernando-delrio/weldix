@@ -14,6 +14,7 @@ class Fichaje(Base):
     __tablename__ = "fichajes"
 
     id = Column(Integer, primary_key=True, index=True)
+    tenant_id = Column(Integer, ForeignKey("tenants.id"), nullable=True, index=True)
     operario_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     inicio = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
     fin = Column(DateTime(timezone=True), nullable=True)

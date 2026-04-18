@@ -14,6 +14,6 @@ router = APIRouter(prefix="/admin", tags=["admin"])
 @router.get("/dashboard", response_model=AdminDashboardResponse)
 def admin_dashboard(
     db: Session = Depends(get_db),
-    _: User = Depends(require_role("admin")),
+    current_user: User = Depends(require_role("admin")),
 ):
-    return service.get_admin_dashboard(db)
+    return service.get_admin_dashboard(db, tenant_id=current_user.tenant_id)

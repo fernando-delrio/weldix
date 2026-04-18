@@ -10,6 +10,9 @@ class JobEvent(Base):
     __tablename__ = "job_events"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    tenant_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("tenants.id"), nullable=True, index=True
+    )
     trabajo_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("jobs.id", ondelete="CASCADE"), nullable=False
     )

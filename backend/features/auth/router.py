@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from backend.core.database import get_db
+from backend.core.security import create_access_token
 
 from .dependencies import get_current_user, require_role
 from .model import User
@@ -11,21 +13,60 @@ from .schemas import (
     ChangePasswordRequest,
     LoginRequest,
     MeResponse,
+    RegisterWorkspaceRequest,
+    RegisterWorkspaceResponse,
     TokenResponse,
+    TrialStatusResponse,
     UpdateProfileRequest,
 )
-from .service import authenticate_user, change_password, update_profile
+from .service import (
+    authenticate_user,
+    change_password,
+    create_workspace,
+    get_trial_status,
+    update_profile,
+)
 
 router = APIRouter(prefix="/auth", tags=["auth"])
-public_signup_strategy = SignupStrategyFactory.for_public_signup()
 admin_signup_strategy = SignupStrategyFactory.for_admin_signup()
 
 
-@router.post("/signup", status_code=403)
-def signup():
-    raise HTTPException(
-        status_code=403,
-        detail="El registro público está desactivado. Contacta con el administrador.",
+@router.post(
+    "/register-workspace", response_model=RegisterWorkspaceResponse, status_code=201
+)
+def register_workspace(body: RegisterWorkspaceRequest, db: Session = Depends(get_db)):
+    """
+    Registro público: un taller nuevo se registra en Weldix.
+    Crea el Tenant + el primer usuario admin automáticamente.
+    Devuelve un JWT listo para usar — el usuario queda logueado.
+    """
+    if not body.aceptar_terminos:
+        raise HTTPException(
+            status_code=422, detail="Debes aceptar los términos y condiciones"
+        )
+
+    try:
+        tenant, admin = create_workspace(
+            db,
+            nombre_taller=body.nombre_taller,
+            admin_email=body.admin_email,
+            admin_password=body.admin_password,
+            admin_name=body.admin_name,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc))
+
+    token = create_access_token(
+        subject=str(admin.id),
+        extra={"role": admin.role, "email": admin.email},
+    )
+    return RegisterWorkspaceResponse(
+        access_token=token,
+        role=admin.role,
+        user_id=admin.id,
+        email=admin.email,
+        tenant_nombre=tenant.nombre,
+        tenant_slug=tenant.slug,
     )
 
 
@@ -33,8 +74,9 @@ def signup():
 def signup_admin(
     body: AdminSignupRequest,
     db: Session = Depends(get_db),
-    _: User = Depends(require_role("admin")),
+    current_user: User = Depends(require_role("admin")),
 ):
+    """El admin crea un nuevo usuario en su taller."""
     try:
         user = admin_signup_strategy.signup(
             db=db,
@@ -44,11 +86,16 @@ def signup_admin(
                 full_name=body.full_name,
                 role=body.role,
             ),
+            tenant_id=current_user.tenant_id,
         )
     except ValueError as exc:
         raise HTTPException(status_code=409, detail=str(exc))
     return MeResponse(
-        id=user.id, email=user.email, full_name=user.full_name, role=user.role
+        id=user.id,
+        email=user.email,
+        full_name=user.full_name,
+        role=user.role,
+        worker_number=user.worker_number,
     )
 
 
@@ -64,8 +111,31 @@ def login(body: LoginRequest, db: Session = Depends(get_db)):
 @router.get("/me", response_model=MeResponse)
 def me(user: User = Depends(get_current_user)):
     return MeResponse(
-        id=user.id, email=user.email, full_name=user.full_name, role=user.role
+        id=user.id,
+        email=user.email,
+        full_name=user.full_name,
+        role=user.role,
+        onboarding_done=user.onboarding_done,
+        worker_number=user.worker_number,
     )
+
+
+@router.get("/me/trial-status", response_model=TrialStatusResponse)
+def trial_status(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return get_trial_status(db, current_user.tenant_id)
+
+
+@router.post("/me/onboarding-done", status_code=204)
+def mark_onboarding_done(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Marca el onboarding como completado para no volver a mostrarlo."""
+    current_user.onboarding_done = True
+    db.commit()
 
 
 @router.patch("/me", response_model=MeResponse)
@@ -76,7 +146,12 @@ def update_me(
 ):
     user = update_profile(db, current_user, body.full_name)
     return MeResponse(
-        id=user.id, email=user.email, full_name=user.full_name, role=user.role
+        id=user.id,
+        email=user.email,
+        full_name=user.full_name,
+        role=user.role,
+        onboarding_done=user.onboarding_done,
+        worker_number=user.worker_number,
     )
 
 
@@ -95,10 +170,25 @@ def update_password(
 @router.get("/users", response_model=list[MeResponse])
 def list_users(
     db: Session = Depends(get_db),
-    _: User = Depends(require_role("admin")),
+    current_user: User = Depends(require_role("admin")),
 ):
-    users = db.query(User).order_by(User.id.desc()).all()
+    """Admin: lista los usuarios de su taller."""
+    users = (
+        db.query(User)
+        .filter(User.tenant_id == current_user.tenant_id)
+        .order_by(
+            func.lower(func.coalesce(User.full_name, User.email)).asc(), User.id.asc()
+        )
+        .all()
+    )
     return [
-        MeResponse(id=u.id, email=u.email, full_name=u.full_name, role=u.role)
+        MeResponse(
+            id=u.id,
+            email=u.email,
+            full_name=u.full_name,
+            role=u.role,
+            onboarding_done=u.onboarding_done,
+            worker_number=u.worker_number,
+        )
         for u in users
     ]

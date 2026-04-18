@@ -13,36 +13,48 @@ def _clamp_progress(value: int) -> int:
     return max(0, min(value, 100))
 
 
-def _generate_code(db: Session) -> str:
+def _generate_code(db: Session, tenant_id: int | None = None) -> str:
     """Auto-genera el código ORD-YYYY-NNN si el admin no lo rellena."""
     year = date.today().year
     prefix = f"ORD-{year}-"
-    count = db.query(Job).filter(Job.code.like(f"{prefix}%")).count()
+    q = db.query(Job).filter(Job.code.like(f"{prefix}%"))
+    if tenant_id is not None:
+        q = q.filter(Job.tenant_id == tenant_id)
+    count = q.count()
     return f"{prefix}{count + 1:03d}"
 
 
-def get_all_jobs(db: Session) -> list[Job]:
-    return db.query(Job).order_by(Job.created_at.desc()).all()
+def get_all_jobs(db: Session, tenant_id: int | None = None) -> list[Job]:
+    q = db.query(Job)
+    if tenant_id is not None:
+        q = q.filter(Job.tenant_id == tenant_id)
+    return q.order_by(Job.created_at.desc()).all()
 
 
-def get_jobs_for_user(db: Session, user_id: int) -> list[Job]:
-    return (
-        db.query(Job)
-        .filter(Job.operario_id == user_id)
-        .order_by(Job.created_at.desc())
-        .all()
-    )
+def get_jobs_for_user(
+    db: Session, user_id: int, tenant_id: int | None = None
+) -> list[Job]:
+    q = db.query(Job).filter(Job.operario_id == user_id)
+    if tenant_id is not None:
+        q = q.filter(Job.tenant_id == tenant_id)
+    return q.order_by(Job.created_at.desc()).all()
 
 
-def get_job_by_id(db: Session, job_id: int) -> Job:
-    job = db.query(Job).filter(Job.id == job_id).first()
+def get_job_by_id(db: Session, job_id: int, tenant_id: int | None = None) -> Job:
+    q = db.query(Job).filter(Job.id == job_id)
+    if tenant_id is not None:
+        q = q.filter(Job.tenant_id == tenant_id)
+    job = q.first()
     if not job:
         raise ValueError(f"Trabajo {job_id} no encontrado")
     return job
 
 
-def get_job_by_code(db: Session, code: str) -> Job:
-    job = db.query(Job).filter(Job.code == code.strip().upper()).first()
+def get_job_by_code(db: Session, code: str, tenant_id: int | None = None) -> Job:
+    q = db.query(Job).filter(Job.code == code.strip().upper())
+    if tenant_id is not None:
+        q = q.filter(Job.tenant_id == tenant_id)
+    job = q.first()
     if not job:
         raise ValueError(f"No se encontró ninguna OT con código {code}")
     if job.estado != "pendiente":
@@ -52,9 +64,12 @@ def get_job_by_code(db: Session, code: str) -> Job:
     return job
 
 
-def create_job(db: Session, data: CreateJobRequest) -> Job:
+def create_job(
+    db: Session, data: CreateJobRequest, tenant_id: int | None = None
+) -> Job:
     job = Job(
-        code=data.code or _generate_code(db),
+        tenant_id=tenant_id,
+        code=data.code or _generate_code(db, tenant_id),
         titulo=data.titulo,
         cliente=data.cliente,
         estado=data.estado,
@@ -65,7 +80,14 @@ def create_job(db: Session, data: CreateJobRequest) -> Job:
     )
     db.add(job)
     db.flush()  # obtiene job.id sin commitear — evento y job van en el mismo commit
-    add_event(db, job.id, "creado", f"Trabajo {job.code} creado", "Sistema")
+    add_event(
+        db,
+        job.id,
+        "creado",
+        f"Trabajo {job.code} creado",
+        "Sistema",
+        tenant_id=tenant_id,
+    )
     db.commit()
     db.refresh(job)
     return job
@@ -83,8 +105,9 @@ def update_estado(
     current_user_id: int | None = None,
     current_user_role: str = "operario",
     current_user_name: str = "Operario",
+    tenant_id: int | None = None,
 ) -> Job:
-    job = get_job_by_id(db, job_id)
+    job = get_job_by_id(db, job_id, tenant_id)
     # Un operario solo puede modificar sus propios trabajos
     if (
         current_user_role != "admin"
@@ -103,14 +126,17 @@ def update_estado(
         "estado_cambiado",
         f"Estado cambiado a '{estado}'",
         current_user_name,
+        tenant_id=tenant_id,
     )
     db.commit()
     db.refresh(job)
     return job
 
 
-def update_job(db: Session, job_id: int, data: UpdateJobRequest) -> Job:
-    job = get_job_by_id(db, job_id)
+def update_job(
+    db: Session, job_id: int, data: UpdateJobRequest, tenant_id: int | None = None
+) -> Job:
+    job = get_job_by_id(db, job_id, tenant_id)
     if data.titulo is not None:
         job.titulo = data.titulo
     if data.cliente is not None:
@@ -128,13 +154,19 @@ def update_job(db: Session, job_id: int, data: UpdateJobRequest) -> Job:
     return job
 
 
-def delete_job(db: Session, job_id: int) -> None:
-    job = get_job_by_id(db, job_id)
+def delete_job(db: Session, job_id: int, tenant_id: int | None = None) -> None:
+    job = get_job_by_id(db, job_id, tenant_id)
     db.delete(job)
     db.commit()
 
 
-def search_jobs(db: Session, q: str, user_id: int | None, user_role: str) -> list[Job]:
+def search_jobs(
+    db: Session,
+    q: str,
+    user_id: int | None,
+    user_role: str,
+    tenant_id: int | None = None,
+) -> list[Job]:
     """Búsqueda rápida — ILIKE en título, cliente y código OT. Limitado a 10 resultados."""
     term = f"%{q.strip()}%"
     query = db.query(Job).filter(
@@ -144,6 +176,8 @@ def search_jobs(db: Session, q: str, user_id: int | None, user_role: str) -> lis
             Job.code.ilike(term),
         )
     )
+    if tenant_id is not None:
+        query = query.filter(Job.tenant_id == tenant_id)
     # El operario solo puede ver sus propios trabajos
     if user_role != "admin":
         query = query.filter(Job.operario_id == user_id)

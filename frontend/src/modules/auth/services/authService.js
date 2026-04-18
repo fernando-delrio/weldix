@@ -1,6 +1,7 @@
 import { API_BASE_URL } from '../../core/lib/api'
 
-// Lanza error con el mensaje del backend si la respuesta no es 2xx
+const TOKEN_KEY = 'weldix_access_token'
+
 const assertResponseOk = (res, data) => {
   if (!res.ok) throw new Error(data.detail || 'Error en la solicitud')
 }
@@ -16,8 +17,27 @@ const request = async (path, body) => {
   return data
 }
 
-// Punto unico de acceso a la API de autenticacion
+const authGet = async (path) => {
+  const token = localStorage.getItem(TOKEN_KEY)
+  const res = await fetch(`${API_BASE_URL}${path}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  const data = await res.json()
+  assertResponseOk(res, data)
+  return data
+}
+
 export const authService = {
-  login:  ({ email, password })            => request('/auth/login',  { email, password }),
-  signup: ({ email, password, full_name }) => request('/auth/signup', { email, password, full_name }),
+  login: ({ email, password }) => request('/auth/login', { email, password }),
+
+  registerWorkspace: ({ nombre_taller, admin_email, admin_password, admin_name, aceptar_terminos }) =>
+    request('/auth/register-workspace', {
+      nombre_taller,
+      admin_email,
+      admin_password,
+      admin_name,
+      aceptar_terminos,
+    }),
+
+  getTrialStatus: () => authGet('/auth/me/trial-status'),
 }

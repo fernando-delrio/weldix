@@ -79,7 +79,7 @@ const AdminDashboardPage = () => {
 
   return (
     <AppShell>
-      <div className="mx-auto w-full max-w-[680px] space-y-5 pb-5">
+      <div className="mx-auto w-full max-w-[1100px] space-y-5 pb-5">
 
         {/* Cabecera */}
         <div className="flex items-end justify-between">
@@ -102,7 +102,7 @@ const AdminDashboardPage = () => {
 
         {!isLoading && dashboard && (
           <>
-            <FichajesAdminSection />
+            <FichajesAdminSection operarios={dashboard.operarios} onRefresh={refresh} />
 
             <section className="space-y-3">
               {sectionHeader({

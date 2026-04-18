@@ -11,7 +11,12 @@ import EquiposPage from './modules/equipos/components/EquiposPage'
 import JobsPage from './modules/jobs/components/JobsPage'
 import JobDetailPage from './modules/jobs/components/JobDetailPage'
 import LoginPage from './modules/auth/components/LoginPage'
+import RegisterWorkspacePage from './modules/auth/components/RegisterWorkspacePage'
 import RrhhPage from './modules/rrhh/components/RrhhPage'
+import PrivacidadPage from './modules/core/components/PrivacidadPage'
+import TerminosPage from './modules/core/components/TerminosPage'
+import LandingPage from './modules/landing/components/LandingPage'
+import TrialExpiredPage from './modules/core/components/TrialExpiredPage'
 
 const Splash = ({ text }) => (
   <main className="grid min-h-screen place-items-center bg-slate-950 text-slate-300">
@@ -35,8 +40,12 @@ const AppRoutes = () => {
     <BrowserRouter>
       <AuthSessionProvider>
         <Routes>
-          <Route path="/" element={<RootRedirect />} />
+          <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/registro" element={<RegisterWorkspacePage />} />
+          <Route path="/privacidad" element={<PrivacidadPage />} />
+          <Route path="/terminos" element={<TerminosPage />} />
+          <Route path="/trial-expirado" element={<TrialExpiredPage />} />
 
           <Route element={<ProtectedRoute />}>
             <Route path="/app/inicio" element={<WorkerDashboardPage />} />

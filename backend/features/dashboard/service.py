@@ -103,9 +103,11 @@ def get_worker_dashboard(db: Session, user: User) -> dict:
     now = datetime.now()
 
     # Solo los trabajos del propio operario — no ve los de otros ni los sin asignar
+    tid = user.tenant_id
     jobs = (
         db.query(Job)
         .filter(Job.operario_id == user.id)
+        .filter(Job.tenant_id == tid if tid is not None else True)
         .order_by(Job.created_at.desc())
         .all()
     )
@@ -113,7 +115,10 @@ def get_worker_dashboard(db: Session, user: User) -> dict:
     active_job = next((j for j in jobs if j.estado in ("en_proceso", "control")), None)
     today_jobs = [j for j in jobs if j.estado == "pendiente"][:5]
 
-    stock = db.query(Material).order_by(Material.name).all()
+    stock_q = db.query(Material)
+    if tid is not None:
+        stock_q = stock_q.filter(Material.tenant_id == tid)
+    stock = stock_q.order_by(Material.name).all()
 
     return {
         "greeting": {

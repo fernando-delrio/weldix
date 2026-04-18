@@ -19,10 +19,11 @@ router = APIRouter(prefix="/stock", tags=["stock"])
 @router.get("", response_model=list[StockItemResponse])
 def list_stock(
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
     return [
-        StockItemResponse.from_orm_material(m) for m in service.get_all_materials(db)
+        StockItemResponse.from_orm_material(m)
+        for m in service.get_all_materials(db, tenant_id=current_user.tenant_id)
     ]
 
 
@@ -30,38 +31,42 @@ def list_stock(
 def create_material(
     body: CreateMaterialRequest,
     db: Session = Depends(get_db),
-    _: User = Depends(require_role("admin")),
+    current_user: User = Depends(require_role("admin")),
 ):
-    return StockItemResponse.from_orm_material(service.create_material(db, body))
+    return StockItemResponse.from_orm_material(
+        service.create_material(db, body, tenant_id=current_user.tenant_id)
+    )
 
 
-# Endpoint exclusivo para operarios: descuenta cantidad consumida con validación server-side
 @router.post("/{material_id}/consume", response_model=StockItemResponse)
 def consume_material(
     material_id: int,
     body: ConsumeMaterialRequest,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
     try:
         return StockItemResponse.from_orm_material(
-            service.consume_material(db, material_id, body.consumed)
+            service.consume_material(
+                db, material_id, body.consumed, tenant_id=current_user.tenant_id
+            )
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 
 
-# PATCH solo para admin: edición libre de campos (nombre, cantidad, mínimo, unidad)
 @router.patch("/{material_id}", response_model=StockItemResponse)
 def update_material(
     material_id: int,
     body: UpdateMaterialRequest,
     db: Session = Depends(get_db),
-    _: User = Depends(require_role("admin")),
+    current_user: User = Depends(require_role("admin")),
 ):
     try:
         return StockItemResponse.from_orm_material(
-            service.update_material(db, material_id, body)
+            service.update_material(
+                db, material_id, body, tenant_id=current_user.tenant_id
+            )
         )
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
@@ -71,9 +76,9 @@ def update_material(
 def delete_material(
     material_id: int,
     db: Session = Depends(get_db),
-    _: User = Depends(require_role("admin")),
+    current_user: User = Depends(require_role("admin")),
 ):
     try:
-        service.delete_material(db, material_id)
+        service.delete_material(db, material_id, tenant_id=current_user.tenant_id)
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
