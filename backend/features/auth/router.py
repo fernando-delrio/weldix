@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from backend.core.database import get_db
+from backend.core.email import send_welcome_email
 from backend.core.security import create_access_token
 
 from .dependencies import get_current_user, require_role
@@ -34,7 +35,11 @@ admin_signup_strategy = SignupStrategyFactory.for_admin_signup()
 @router.post(
     "/register-workspace", response_model=RegisterWorkspaceResponse, status_code=201
 )
-def register_workspace(body: RegisterWorkspaceRequest, db: Session = Depends(get_db)):
+def register_workspace(
+    body: RegisterWorkspaceRequest,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+):
     """
     Registro público: un taller nuevo se registra en Weldix.
     Crea el Tenant + el primer usuario admin automáticamente.
@@ -55,6 +60,13 @@ def register_workspace(body: RegisterWorkspaceRequest, db: Session = Depends(get
         )
     except ValueError as exc:
         raise HTTPException(status_code=409, detail=str(exc))
+
+    background_tasks.add_task(
+        send_welcome_email,
+        to=admin.email,
+        admin_name=admin.full_name or "",
+        tenant_nombre=tenant.nombre,
+    )
 
     token = create_access_token(
         subject=str(admin.id),

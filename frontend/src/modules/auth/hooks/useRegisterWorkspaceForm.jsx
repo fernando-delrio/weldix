@@ -17,7 +17,7 @@ const validationError = (form) => {
 }
 
 const useRegisterWorkspaceForm = () => {
-  const { setSession } = useAuthSession()
+  const { saveToken, refreshProfile } = useAuthSession()
   const navigate = useNavigate()
 
   const [form, setForm] = useState({
@@ -45,8 +45,8 @@ const useRegisterWorkspaceForm = () => {
     setIsSubmitting(true)
     try {
       const data = await authService.registerWorkspace(form)
-      localStorage.setItem(TOKEN_KEY, data.access_token)
-      setSession({ token: data.access_token, role: data.role, userId: data.user_id, email: data.email })
+      saveToken(data.access_token)
+      await refreshProfile(data.access_token)
       setFeedback(`¡Bienvenido a Weldix, ${data.tenant_nombre}!`)
       setTimeout(() => navigate('/app/inicio'), 800)
     } catch (ex) {
