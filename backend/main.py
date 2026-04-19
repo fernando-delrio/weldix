@@ -8,6 +8,7 @@ from backend.core.bootstrap import run_startup_tasks
 from backend.core.config import settings
 from backend.features.admin.router import router as admin_router
 from backend.features.auth.router import router as auth_router
+from backend.features.billing.router import router as billing_router
 from backend.features.dashboard.router import router as dashboard_router
 from backend.features.equipos.router import router as equipos_router
 from backend.features.fichaje.router import router as fichaje_router
@@ -42,6 +43,7 @@ def on_startup() -> None:
 
 app.include_router(admin_router)
 app.include_router(auth_router)
+app.include_router(billing_router)
 app.include_router(dashboard_router)
 app.include_router(equipos_router)
 app.include_router(fichaje_router)

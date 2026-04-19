@@ -48,9 +48,13 @@ def require_active_trial(
     db: Session = Depends(get_db),
 ) -> User:
     """
-    Bloquea el acceso con 402 si el trial del tenant ha expirado.
-    Tenants sin trial_expires_at (plan activo o dev) pasan siempre.
-    Usar como dependency en routers cuando Stripe esté integrado.
+    Bloquea con 402 si el taller no tiene acceso activo.
+    Lógica:
+      1. Sin tenant_id (dev/superadmin) → pasa siempre
+      2. subscription_status == 'active' o 'trialing' → pasa siempre (Stripe confirma)
+      3. trial_expires_at == None → plan sin restricción → pasa
+      4. trial_expires_at > now → trial vigente → pasa
+      5. trial_expires_at < now → bloqueado → 402
     """
     from datetime import datetime, timezone
 
@@ -58,10 +62,22 @@ def require_active_trial(
         return user
 
     tenant = db.query(Tenant).filter(Tenant.id == user.tenant_id).first()
-    if tenant and tenant.trial_expires_at:
-        if datetime.now(timezone.utc) > tenant.trial_expires_at:
-            raise HTTPException(
-                status_code=402,
-                detail="Tu periodo de prueba ha expirado. Activa tu suscripción para continuar.",
-            )
-    return user
+    if not tenant:
+        return user
+
+    # Suscripción Stripe activa — fuente de verdad principal
+    if tenant.subscription_status in ("active", "trialing"):
+        return user
+
+    # Sin restricción de trial (plan legacy o dev)
+    if tenant.trial_expires_at is None:
+        return user
+
+    # Trial vigente
+    if datetime.now(timezone.utc) <= tenant.trial_expires_at:
+        return user
+
+    raise HTTPException(
+        status_code=402,
+        detail="Tu periodo de prueba ha expirado. Activa tu suscripción para continuar.",
+    )

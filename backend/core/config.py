@@ -37,5 +37,15 @@ class Settings(BaseSettings):
 
     mistral_api_key: str | None = None
 
+    # Stripe — obtener en https://dashboard.stripe.com/apikeys
+    stripe_secret_key: str | None = None
+    # Webhook secret — obtener en https://dashboard.stripe.com/webhooks tras crear el endpoint
+    stripe_webhook_secret: str | None = None
+    # IDs de precios en Stripe (crear en Products → Add product)
+    stripe_price_starter: str | None = None  # ej: price_1ABC...
+    stripe_price_pro: str | None = None  # ej: price_1DEF...
+    # URL del frontend para redirigir tras checkout
+    frontend_url: str = "http://localhost:5174"
+
 
 settings = Settings()

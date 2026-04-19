@@ -1,14 +1,15 @@
-import { Link } from 'react-router-dom'
+import { useBilling } from '../../billing/hooks/useBilling'
 
 const urgencyConfig = (daysLeft) =>
   daysLeft <= 1
     ? { bg: 'bg-rose-500/15 border-rose-500/40', text: 'text-rose-300', icon: 'bx bx-error-circle', dot: 'bg-rose-400' }
     : { bg: 'bg-amber-500/10 border-amber-500/30', text: 'text-amber-300', icon: 'bx bx-time-five', dot: 'bg-amber-400' }
 
-const dayLabel = (n) => n === 1 ? '1 día' : `${n} días`
+const dayLabel = (n) => (n === 1 ? '1 día' : `${n} días`)
 
 const TrialBanner = ({ daysLeft, onDismiss }) => {
   const cfg = urgencyConfig(daysLeft)
+  const { startCheckout, isRedirecting } = useBilling()
 
   return (
     <div className={`mb-4 flex items-center justify-between gap-3 rounded-xl border px-4 py-2.5 ${cfg.bg}`}>
@@ -20,12 +21,18 @@ const TrialBanner = ({ daysLeft, onDismiss }) => {
         </p>
       </div>
       <div className="flex items-center gap-3 shrink-0">
-        <Link
-          to="/trial-expirado"
-          className="rounded-lg bg-sky-500 px-3 py-1 text-xs font-bold text-white hover:bg-sky-400 transition"
+        <button
+          type="button"
+          onClick={() => startCheckout('starter')}
+          disabled={isRedirecting}
+          className="rounded-lg bg-amber-500 px-3 py-1 text-xs font-bold text-slate-950 hover:bg-amber-400 transition disabled:opacity-60"
         >
-          Activar plan
-        </Link>
+          {isRedirecting ? (
+            <i className="bx bx-loader-alt animate-spin" />
+          ) : (
+            'Activar plan'
+          )}
+        </button>
         <button
           type="button"
           onClick={onDismiss}

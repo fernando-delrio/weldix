@@ -12,9 +12,12 @@ class Tenant(Base):
     nombre = Column(String(255), nullable=False)
     slug = Column(String(100), unique=True, index=True, nullable=False)
     plan = Column(String(30), nullable=False, default="trial")  # trial | starter | pro
-    trial_expires_at = Column(
-        DateTime(timezone=True), nullable=True
-    )  # None = sin restricción
+    trial_expires_at = Column(DateTime(timezone=True), nullable=True)
+    # Stripe — None hasta que el taller haga checkout
+    stripe_customer_id = Column(String(255), nullable=True, unique=True, index=True)
+    subscription_status = Column(
+        String(30), nullable=True
+    )  # active | past_due | canceled | trialing
     created_at = Column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
