@@ -38,7 +38,7 @@ const feedbackBanner = ({ feedback }) =>
 // ── Sección usuarios ─────────────────────────────────────────────────────────
 const sectionHeader = ({ title, action }) => (
   <div className="flex items-center justify-between">
-    <p className="text-[0.64rem] font-bold uppercase tracking-[0.2em] text-sky-300">{title}</p>
+    <p className="text-[0.64rem] font-bold uppercase tracking-[0.2em] text-amber-300">{title}</p>
     {action}
   </div>
 )
@@ -90,7 +90,7 @@ const AdminDashboardPage = () => {
           <button
             type="button"
             onClick={() => setShowNewJobModal(true)}
-            className="shrink-0 rounded-xl border border-sky-500/50 bg-sky-500/15 px-3 py-2 text-[0.7rem] font-bold uppercase tracking-[0.14em] text-sky-300 transition hover:border-sky-400/70 hover:bg-sky-500/25"
+            className="shrink-0 rounded-xl border border-amber-500/50 bg-amber-500/15 px-3 py-2 text-[0.7rem] font-bold uppercase tracking-[0.14em] text-amber-300 transition hover:border-amber-400/70 hover:bg-amber-500/25"
           >
             + Nuevo trabajo
           </button>

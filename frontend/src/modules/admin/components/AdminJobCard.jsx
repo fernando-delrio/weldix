@@ -14,7 +14,7 @@ const statusBadge = ({ estadoLabel, toneClasses }) => (
 
 const progressBar = ({ progreso }) => (
   <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-slate-800">
-    <div className="h-full rounded-full bg-sky-500 transition-all" style={{ width: `${progreso}%` }} />
+    <div className="h-full rounded-full bg-amber-500 transition-all" style={{ width: `${progreso}%` }} />
   </div>
 )
 
@@ -22,7 +22,7 @@ const operarioTag = ({ operario_name }) => (
   <div className="mt-3 flex items-center gap-2">
     <span className="text-[0.65rem] font-bold uppercase tracking-[0.16em] text-slate-500">Operario</span>
     {operario_name
-      ? <span className="rounded-full border border-sky-500/30 bg-sky-500/10 px-2.5 py-0.5 text-xs font-semibold text-sky-300">{operario_name}</span>
+      ? <span className="rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-0.5 text-xs font-semibold text-amber-300">{operario_name}</span>
       : <span className="text-xs text-slate-600 italic">Sin asignar</span>
     }
   </div>

@@ -1,6 +1,6 @@
 const TONE_CLASSES = {
   warning:   { bg: 'bg-yellow-500/15 border-yellow-500/40', text: 'text-yellow-300' },
-  info:      { bg: 'bg-sky-500/15 border-sky-500/40',       text: 'text-sky-300' },
+  info:      { bg: 'bg-amber-500/15 border-amber-500/40',       text: 'text-amber-300' },
   secondary: { bg: 'bg-purple-500/15 border-purple-500/40', text: 'text-purple-300' },
   success:   { bg: 'bg-emerald-500/15 border-emerald-500/40', text: 'text-emerald-300' },
   neutral:   { bg: 'bg-slate-700/40 border-slate-600/40',   text: 'text-slate-400' },
@@ -16,7 +16,7 @@ const ESTADO_LABELS = {
 
 const ROLE_CONFIG = {
   admin:    { label: 'Admin',    classes: 'bg-rose-500/15 border-rose-500/40 text-rose-300' },
-  operario: { label: 'Operario', classes: 'bg-sky-500/15 border-sky-500/40 text-sky-300' },
+  operario: { label: 'Operario', classes: 'bg-amber-500/15 border-amber-500/40 text-amber-300' },
 }
 
 const toneClasses = (tone) => TONE_CLASSES[tone] ?? TONE_CLASSES.neutral

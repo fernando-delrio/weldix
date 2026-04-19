@@ -2,7 +2,7 @@ import AppShell from './AppShell'
 
 const Section = ({ title, children }) => (
   <section className="space-y-3">
-    <h2 className="text-sm font-bold uppercase tracking-[0.14em] text-sky-400">{title}</h2>
+    <h2 className="text-sm font-bold uppercase tracking-[0.14em] text-amber-400">{title}</h2>
     <div className="space-y-2 text-sm leading-relaxed text-slate-300">{children}</div>
   </section>
 )
@@ -129,7 +129,7 @@ const TerminosPage = () => (
       <Section title="10. Protección de datos">
         <p>
           El tratamiento de datos personales se rige por la{' '}
-          <a href="/privacidad" className="text-sky-400 underline hover:text-sky-300">
+          <a href="/privacidad" className="text-amber-400 underline hover:text-amber-300">
             Política de Privacidad
           </a>{' '}
           de Weldix, que forma parte integrante de estos Términos.
@@ -156,7 +156,7 @@ const TerminosPage = () => (
       <Section title="13. Contacto">
         <p>
           Para cualquier consulta sobre estos Términos, escribe a{' '}
-          <a href="mailto:legal@weldix.app" className="text-sky-400 underline">
+          <a href="mailto:legal@weldix.app" className="text-amber-400 underline">
             legal@weldix.app
           </a>
           .

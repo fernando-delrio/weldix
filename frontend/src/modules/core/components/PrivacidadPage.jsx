@@ -2,7 +2,7 @@ import AppShell from './AppShell'
 
 const Section = ({ title, children }) => (
   <section className="space-y-3">
-    <h2 className="text-sm font-bold uppercase tracking-[0.14em] text-sky-400">{title}</h2>
+    <h2 className="text-sm font-bold uppercase tracking-[0.14em] text-amber-400">{title}</h2>
     <div className="space-y-2 text-sm leading-relaxed text-slate-300">{children}</div>
   </section>
 )
@@ -84,7 +84,7 @@ const PrivacidadPage = () => (
         <p>
           Para cualquier consulta sobre privacidad, contacta a través del correo indicado en el panel
           de administración de tu taller o escribe a{' '}
-          <a href="mailto:privacidad@weldix.app" className="text-sky-400 underline">
+          <a href="mailto:privacidad@weldix.app" className="text-amber-400 underline">
             privacidad@weldix.app
           </a>
           .

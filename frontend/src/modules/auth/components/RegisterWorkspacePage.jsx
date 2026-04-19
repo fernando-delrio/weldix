@@ -94,15 +94,15 @@ const RegisterWorkspacePage = () => {
             type="checkbox"
             checked={form.aceptar_terminos}
             onChange={update('aceptar_terminos')}
-            className="mt-0.5 h-4 w-4 shrink-0 accent-sky-500"
+            className="mt-0.5 h-4 w-4 shrink-0 accent-amber-500"
           />
           <span className="text-xs text-slate-400 leading-relaxed">
             Acepto los{' '}
-            <Link to="/terminos" className="text-sky-400 underline hover:text-sky-300">
+            <Link to="/terminos" className="text-amber-400 underline hover:text-amber-300">
               términos y condiciones
             </Link>{' '}
             y la{' '}
-            <Link to="/privacidad" className="text-sky-400 underline hover:text-sky-300">
+            <Link to="/privacidad" className="text-amber-400 underline hover:text-amber-300">
               política de privacidad
             </Link>{' '}
             de Weldix.
@@ -119,7 +119,7 @@ const RegisterWorkspacePage = () => {
 
         <p className="mt-3 text-center text-xs text-slate-500">
           ¿Ya tienes cuenta?{' '}
-          <Link to="/login" className="text-sky-400 hover:text-sky-300">
+          <Link to="/login" className="text-amber-400 hover:text-amber-300">
             Inicia sesión
           </Link>
         </p>

@@ -44,7 +44,7 @@ const StepDot = ({ index, current, total }) => (
   <span
     className={cx(
       'h-1.5 rounded-full transition-all duration-300',
-      index === current ? 'w-6 bg-sky-400' : 'w-1.5 bg-slate-700',
+      index === current ? 'w-6 bg-amber-400' : 'w-1.5 bg-slate-700',
     )}
     aria-hidden="true"
   />
@@ -106,7 +106,7 @@ const OnboardingWizard = ({ onComplete }) => {
             <button
               type="button"
               onClick={handleAction}
-              className="mt-1 text-sm font-semibold text-sky-400 underline hover:text-sky-300 transition"
+              className="mt-1 text-sm font-semibold text-amber-400 underline hover:text-amber-300 transition"
             >
               {current.action.label} →
             </button>
@@ -135,7 +135,7 @@ const OnboardingWizard = ({ onComplete }) => {
             <button
               type="button"
               onClick={goNext}
-              className="rounded-lg bg-sky-500 px-4 py-1.5 text-xs font-bold text-white transition hover:bg-sky-400 min-w-[72px]"
+              className="rounded-lg bg-amber-500 px-4 py-1.5 text-xs font-bold text-white transition hover:bg-amber-400 min-w-[72px]"
             >
               {isLast ? 'Empezar' : 'Siguiente'}
             </button>

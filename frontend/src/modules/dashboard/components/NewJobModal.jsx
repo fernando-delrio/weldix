@@ -2,7 +2,7 @@ import { cx } from '../../core/lib/cx'
 import { JOB_TYPES, useNewJobForm } from '../hooks/useNewJobForm'
 
 const fieldBase =
-  'flex min-h-[48px] items-center rounded-lg border border-slate-700 bg-slate-900/70 transition focus-within:border-sky-500 focus-within:ring-2 focus-within:ring-sky-500/20'
+  'flex min-h-[48px] items-center rounded-lg border border-slate-700 bg-slate-900/70 transition focus-within:border-amber-500 focus-within:ring-2 focus-within:ring-amber-500/20'
 const inputBase =
   'w-full bg-transparent px-3.5 text-[0.95rem] text-slate-100 outline-none placeholder:text-slate-500'
 const labelBase = 'mt-3 text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-slate-400'
@@ -119,7 +119,7 @@ const NewJobModal = ({ onClose, onCreated }) => {
           <button
             type="submit"
             disabled={form.isSubmitting}
-            className="mt-4 h-12 rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 text-sm font-bold tracking-[0.1em] text-white transition hover:from-sky-400 hover:to-blue-500 disabled:opacity-60"
+            className="mt-4 h-12 rounded-xl bg-gradient-to-r from-amber-500 to-blue-600 text-sm font-bold tracking-[0.1em] text-white transition hover:from-amber-400 hover:to-blue-500 disabled:opacity-60"
           >
             {submitLabel({ isSubmitting: form.isSubmitting })}
           </button>

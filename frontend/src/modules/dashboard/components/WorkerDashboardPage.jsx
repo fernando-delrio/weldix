@@ -53,7 +53,7 @@ const adminNewJobButton = ({ isAdmin, onOpen }) =>
     <button
       type="button"
       onClick={onOpen}
-      className="shrink-0 rounded-xl border border-sky-500/50 bg-sky-500/15 px-3 py-2 text-[0.7rem] font-bold uppercase tracking-[0.14em] text-sky-300 transition hover:border-sky-400/70 hover:bg-sky-500/25"
+      className="shrink-0 rounded-xl border border-amber-500/50 bg-amber-500/15 px-3 py-2 text-[0.7rem] font-bold uppercase tracking-[0.14em] text-amber-400 transition hover:border-amber-400/70 hover:bg-amber-500/25"
     >
       + Nuevo trabajo
     </button>
@@ -64,7 +64,7 @@ const startByOrtButton = ({ isAdmin, hasActiveJob, onOpen }) =>
     <button
       type="button"
       onClick={onOpen}
-      className="w-full rounded-xl border border-sky-500/50 bg-sky-500/10 py-3 text-[0.75rem] font-bold uppercase tracking-[0.14em] text-sky-300 transition hover:bg-sky-500/20"
+      className="w-full rounded-xl border border-amber-500/50 bg-amber-500/10 py-3 text-[0.75rem] font-bold uppercase tracking-[0.14em] text-amber-300 transition hover:bg-amber-500/20"
     >
       + Iniciar trabajo por OT
     </button>
@@ -160,11 +160,11 @@ const WorkerDashboardPage = () => {
 
         {!isLoading && dashboard && (
           <>
-            <section className="rounded-xl border border-white/[0.07] bg-gradient-to-br from-sky-900/20 via-slate-900/60 to-slate-900/80 p-4">
+            <section className="rounded-xl border border-white/[0.07] bg-gradient-to-br from-amber-900/20 via-slate-900/60 to-slate-900/80 p-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-start gap-3">
                   {/* Avatar con iniciales del operario */}
-                  <div className="mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-sky-500/30 bg-sky-500/10 text-sm font-bold tracking-wide text-sky-300">
+                  <div className="mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-amber-500/30 bg-amber-500/10 text-sm font-bold tracking-wide text-amber-300">
                     {dashboard.greeting.operatorName
                       .split(' ')
                       .slice(0, 2)
@@ -173,7 +173,7 @@ const WorkerDashboardPage = () => {
                       .toUpperCase()}
                   </div>
                   <div>
-                    <p className="text-[0.64rem] font-bold uppercase tracking-[0.2em] text-sky-300">
+                    <p className="text-[0.64rem] font-bold uppercase tracking-[0.2em] text-amber-300">
                       {dashboard.greeting.greetingLabel}
                     </p>
                     <h1 className="mt-0.5 text-3xl font-extrabold tracking-tight text-slate-100">

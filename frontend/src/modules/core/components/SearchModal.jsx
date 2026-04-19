@@ -82,7 +82,7 @@ const SearchModal = ({ isOpen, close, query, setQuery, results, isSearching }) =
 
       {/* Panel */}
       <div
-        className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-cyan-900/50 bg-slate-900 shadow-2xl"
+        className="relative w-full max-w-lg overflow-hidden rounded-sm border border-slate-700 bg-slate-900 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Input */}

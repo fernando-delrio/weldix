@@ -18,7 +18,7 @@ const filterTab = ({ key, label, isActive, onClick }) => (
     onClick={onClick}
     className={`shrink-0 rounded-lg px-3 py-1.5 text-[0.68rem] font-bold uppercase tracking-[0.12em] transition ${
       isActive
-        ? 'bg-sky-500/20 text-sky-300 shadow-[inset_0_0_0_1px_rgba(56,189,248,0.4)]'
+        ? 'bg-amber-500/20 text-amber-300 shadow-[inset_0_0_0_1px_rgba(56,189,248,0.4)]'
         : 'text-slate-500 hover:text-slate-300'
     }`}
   >
@@ -43,9 +43,9 @@ const metricPills = ({ metrics }) => (
       <span className="text-lg font-extrabold leading-none text-yellow-300">{metrics.pendiente}</span>
       <span className="mt-0.5 text-[0.6rem] font-bold uppercase tracking-[0.16em] text-yellow-300/80">Pendientes</span>
     </div>
-    <div className="flex flex-col items-center rounded-xl border border-sky-500/30 bg-sky-500/10 px-3 py-2.5">
-      <span className="text-lg font-extrabold leading-none text-sky-300">{metrics.en_proceso}</span>
-      <span className="mt-0.5 text-[0.6rem] font-bold uppercase tracking-[0.16em] text-sky-300/80">En proceso</span>
+    <div className="flex flex-col items-center rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2.5">
+      <span className="text-lg font-extrabold leading-none text-amber-300">{metrics.en_proceso}</span>
+      <span className="mt-0.5 text-[0.6rem] font-bold uppercase tracking-[0.16em] text-amber-300/80">En proceso</span>
     </div>
   </div>
 )
@@ -63,7 +63,7 @@ const AdminJobsSection = () => {
     <section className="space-y-3">
       {metricPills({ metrics: dashboard.metrics })}
 
-      <p className="text-[0.64rem] font-bold uppercase tracking-[0.2em] text-sky-300">Todos los trabajos</p>
+      <p className="text-[0.64rem] font-bold uppercase tracking-[0.2em] text-amber-300">Todos los trabajos</p>
 
       <div className="flex gap-1.5 overflow-x-auto pb-1">
         {STATUS_FILTERS.map((f) =>

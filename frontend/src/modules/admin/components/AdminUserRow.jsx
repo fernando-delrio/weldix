@@ -1,5 +1,5 @@
 ﻿const AVATAR_GRADIENTS = [
-  { bg: 'bg-sky-500/20',     border: 'border-sky-500/30',     text: 'text-sky-300'     },
+  { bg: 'bg-amber-500/20',     border: 'border-amber-500/30',     text: 'text-amber-300'     },
   { bg: 'bg-violet-500/20',  border: 'border-violet-500/30',  text: 'text-violet-300'  },
   { bg: 'bg-emerald-500/20', border: 'border-emerald-500/30', text: 'text-emerald-300' },
   { bg: 'bg-amber-500/20',   border: 'border-amber-500/30',   text: 'text-amber-300'   },

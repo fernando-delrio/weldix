@@ -9,7 +9,7 @@ const advanceButton = ({ nextLabel, onComplete }) =>
     <button
       type="button"
       onClick={onComplete}
-      className="h-11 rounded-xl bg-gradient-to-r from-sky-500 to-blue-500 text-sm font-bold tracking-[0.03em] text-white transition hover:from-sky-400 hover:to-blue-400"
+      className="h-11 rounded-xl bg-gradient-to-r from-amber-500 to-blue-500 text-sm font-bold tracking-[0.03em] text-white transition hover:from-amber-400 hover:to-blue-400"
     >
       {nextLabel}
     </button>
@@ -27,7 +27,7 @@ const ActiveJobCard = ({ job, onComplete, onRegisterMaterial }) => {
   }
 
   return (
-    <PanelCard className="border-sky-500/55">
+    <PanelCard className="border-amber-500/55">
       <div className="flex items-center justify-between gap-3">
         <span className={`rounded-md border px-2 py-1 text-[0.62rem] font-bold uppercase tracking-[0.16em] ${statusTone.badge}`}>
           {job.status}
@@ -40,7 +40,7 @@ const ActiveJobCard = ({ job, onComplete, onRegisterMaterial }) => {
 
       <div className="mt-4 flex items-center justify-between">
         <p className="text-[0.62rem] font-semibold uppercase tracking-[0.14em] text-slate-500">Progreso estimado</p>
-        <span className="text-sm font-bold text-sky-300">{job.progress}%</span>
+        <span className="text-sm font-bold text-amber-300">{job.progress}%</span>
       </div>
 
       <StageProgress stages={job.stages} currentStage={job.currentStage} />
@@ -57,7 +57,7 @@ const ActiveJobCard = ({ job, onComplete, onRegisterMaterial }) => {
         <button
           type="button"
           onClick={handleAskIA}
-          className="h-11 rounded-xl border border-sky-700/40 bg-sky-500/5 text-sm font-semibold text-sky-400 transition hover:border-sky-500/60 hover:bg-sky-500/10"
+          className="h-11 rounded-xl border border-amber-700/40 bg-amber-500/5 text-sm font-semibold text-amber-400 transition hover:border-amber-500/60 hover:bg-amber-500/10"
         >
           🔧 Consultar IA sobre este trabajo
         </button>
