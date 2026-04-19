@@ -6,7 +6,7 @@ const BottomNav = ({ items }) => {
   const location = useLocation()
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-cyan-950/70 bg-slate-950/95 backdrop-blur">
+    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-800 bg-slate-950/95 backdrop-blur">
       <div
         className="mx-auto h-[68px] w-full max-w-[980px] px-1"
         style={{ display: 'grid', gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))` }}
@@ -22,7 +22,7 @@ const BottomNav = ({ items }) => {
               className={cx(
                 'mx-0.5 my-1.5 flex flex-col items-center justify-center gap-1 rounded-xl transition',
                 isActive
-                  ? 'bg-sky-500/20 text-sky-300 shadow-[inset_0_0_0_1px_rgba(56,189,248,0.4)]'
+                  ? 'bg-amber-500/15 text-amber-400 shadow-[inset_0_0_0_1px_rgba(245,158,11,0.3)]'
                   : 'text-slate-500 hover:text-slate-300',
               )}
             >

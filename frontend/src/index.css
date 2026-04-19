@@ -1,5 +1,36 @@
 @import "tailwindcss";
 
+/* ── Tema claro — sobrescribe las variables de color de Tailwind v4 ─────────
+   Tailwind v4 genera clases como:
+     .bg-slate-950 { background-color: var(--color-slate-950, oklch(...)) }
+   Al redefinir --color-slate-* aquí, TODOS los componentes cambian sin tocar JSX.
+   Paleta: papel kraft / plano técnico industrial.
+──────────────────────────────────────────────────────────────────────────── */
+html[data-theme='light'] {
+  /* Fondos — del más oscuro al más claro (invertido respecto al dark) */
+  --color-slate-950: #f2ebe0;   /* fondo principal — crema cálido */
+  --color-slate-900: #ebe3d8;   /* fondo de cards */
+  --color-slate-800: #ddd5c8;   /* superficies elevadas / divisores */
+  --color-slate-700: #cfc7ba;   /* bordes */
+  --color-slate-600: #b8b0a4;   /* bordes sutiles */
+
+  /* Texto — del más suave al más fuerte (también invertido) */
+  --color-slate-500: #6b6560;   /* texto muy suave */
+  --color-slate-400: #514b46;   /* texto secundario */
+  --color-slate-300: #3d3830;   /* texto body */
+  --color-slate-200: #2a2520;   /* texto fuerte */
+  --color-slate-100: #1a1510;   /* texto más fuerte — casi negro cálido */
+
+  /* Amber — más oscuro en light para legibilidad */
+  --color-amber-400: #b45309;
+  --color-amber-300: #92400e;
+  --color-amber-500: #d97706;
+
+  /* Rose/emerald — ligeramente ajustados */
+  --color-rose-400: #e11d48;
+  --color-emerald-400: #059669;
+}
+
 /* ── Tipografía base ─────────────────────────────────────────────── */
 body {
   font-family: 'Inter', system-ui, sans-serif;
