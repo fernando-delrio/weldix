@@ -3,6 +3,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
 from backend.core.database import get_db
+from backend.core.email import send_trial_expired_email, send_trial_warning_email
 from backend.core.security import decode_token
 
 from .model import Tenant, User
@@ -73,10 +74,27 @@ def require_active_trial(
     if tenant.trial_expires_at is None:
         return user
 
-    # Trial vigente
-    if datetime.now(timezone.utc) <= tenant.trial_expires_at:
+    # Trial vigente — avisar si quedan 3 días o menos
+    now = datetime.now(timezone.utc)
+    if now <= tenant.trial_expires_at:
+        days_left = (tenant.trial_expires_at - now).days
+        if days_left <= 3:
+            send_trial_warning_email(
+                to=user.email,
+                admin_name=user.full_name or "",
+                tenant_nombre=tenant.nombre,
+                days_left=days_left,
+                tenant_id=tenant.id,
+            )
         return user
 
+    # Trial expirado
+    send_trial_expired_email(
+        to=user.email,
+        admin_name=user.full_name or "",
+        tenant_nombre=tenant.nombre,
+        tenant_id=tenant.id,
+    )
     raise HTTPException(
         status_code=402,
         detail="Tu periodo de prueba ha expirado. Activa tu suscripción para continuar.",

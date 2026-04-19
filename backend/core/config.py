@@ -47,5 +47,9 @@ class Settings(BaseSettings):
     # URL del frontend para redirigir tras checkout
     frontend_url: str = "http://localhost:5174"
 
+    # Resend — emails transaccionales (https://resend.com)
+    resend_api_key: str | None = None
+    email_from: str = "Weldix <hola@weldix.app>"
+
 
 settings = Settings()
