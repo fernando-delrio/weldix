@@ -1,6 +1,6 @@
 import { cx } from '../lib/cx'
 
-const AppHeader = ({ roleLabel, timeLabel, onLogout }) => (
+const AppHeader = ({ roleLabel, timeLabel, onLogout, onSearchOpen }) => (
   <header className="fixed inset-x-0 top-0 z-40 border-b border-cyan-950/70 bg-slate-950/95 backdrop-blur">
     <div className="mx-auto flex h-16 w-full max-w-[980px] items-center justify-between px-4 sm:px-6">
       <div className="flex items-center gap-3">
@@ -14,7 +14,22 @@ const AppHeader = ({ roleLabel, timeLabel, onLogout }) => (
       </div>
 
       <div className="flex items-center gap-3">
-        <p className="text-xs font-semibold tracking-[0.12em] text-slate-400">{timeLabel}</p>
+        <p className="hidden text-xs font-semibold tracking-[0.12em] text-slate-400 sm:block">{timeLabel}</p>
+
+        {/* Botón búsqueda — también responde a Ctrl+K */}
+        <button
+          type="button"
+          onClick={onSearchOpen}
+          className="flex items-center gap-2 rounded-lg border border-slate-700/60 bg-slate-800/60 px-3 py-1.5 text-[0.65rem] text-slate-400 transition hover:border-sky-600/50 hover:text-slate-200"
+          title="Buscar (Ctrl+K)"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-3.5 w-3.5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+          </svg>
+          <span className="hidden sm:inline">Buscar</span>
+          <kbd className="hidden rounded border border-slate-600 px-1 py-0.5 text-[0.55rem] text-slate-500 sm:inline">Ctrl+K</kbd>
+        </button>
+
         <button
           type="button"
           onClick={onLogout}

@@ -1,7 +1,10 @@
 import AppRoutes from './routes'
+import { ThemeProvider } from './modules/core/lib/ThemeContext'
 
-const App = () => {
-  return <AppRoutes />
-}
+const App = () => (
+  <ThemeProvider>
+    <AppRoutes />
+  </ThemeProvider>
+)
 
 export default App

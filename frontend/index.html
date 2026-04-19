@@ -11,6 +11,12 @@
       rel="stylesheet"
     />
     <title>Weldix</title>
+    <script>
+      (function () {
+        var t = localStorage.getItem('weldix_theme') || 'dark'
+        document.documentElement.setAttribute('data-theme', t)
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>

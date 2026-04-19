@@ -1,39 +1,52 @@
 from jose import jwt
 
-from app.core.config import settings
+from backend.core.config import settings
 
-
-def _signup(client, email: str, password: str = "Password123"):
-    return client.post(
-        "/auth/signup",
-        json={
-            "email": email,
-            "password": password,
-            "full_name": "Test User",
-        },
-    )
-
-
-def _signup_admin(client, email: str, token: str, password: str = "Password123"):
-    return client.post(
-        "/auth/admin/signup",
-        json={
-            "email": email,
-            "password": password,
-            "full_name": "Admin User",
-        },
-        headers={"Authorization": f"Bearer {token}"},
-    )
+# ─── Helpers ──────────────────────────────────────────────────────────────────
 
 
 def _login(client, email: str, password: str):
     return client.post("/auth/login", json={"email": email, "password": password})
 
 
-def test_signup_login_and_me_flow(client):
-    signup = _signup(client, "worker@example.com")
-    assert signup.status_code == 200
-    assert signup.json()["email"] == "worker@example.com"
+def _admin_token(client):
+    """El admin está creado en conftest.py — devuelve su token."""
+    login = _login(client, "admin@weldix.dev", "Admin1234!")
+    return login.json()["access_token"]
+
+
+def _create_worker(client, email: str, password: str = "Password123"):
+    """Solo el admin puede crear cuentas — registro público cerrado."""
+    token = _admin_token(client)
+    return client.post(
+        "/auth/admin/signup",
+        json={"email": email, "password": password, "full_name": "Test Worker"},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+
+# ─── Tests ────────────────────────────────────────────────────────────────────
+
+
+def test_public_signup_is_closed(client):
+    """El registro público está desactivado — solo admin puede crear cuentas."""
+    response = client.post(
+        "/auth/signup",
+        json={
+            "email": "attacker@example.com",
+            "password": "Password123",
+            "full_name": "Hacker",
+        },
+    )
+    assert response.status_code == 403
+
+
+def test_admin_creates_worker_and_worker_can_login(client):
+    """Flujo completo: admin crea operario → operario hace login → /me devuelve datos."""
+    created = _create_worker(client, "worker@example.com")
+    assert created.status_code == 200
+    assert created.json()["email"] == "worker@example.com"
+    assert created.json()["role"] == "operario"
 
     login = _login(client, "worker@example.com", "Password123")
     assert login.status_code == 200
@@ -45,28 +58,30 @@ def test_signup_login_and_me_flow(client):
     assert me.json()["role"] == "operario"
 
 
-def test_signup_duplicate_email_returns_409(client):
-    first = _signup(client, "duplicate@example.com")
-    second = _signup(client, "duplicate@example.com")
+def test_duplicate_email_returns_409(client):
+    """Crear dos usuarios con el mismo email devuelve 409."""
+    first = _create_worker(client, "duplicate@example.com")
+    second = _create_worker(client, "duplicate@example.com")
 
     assert first.status_code == 200
     assert second.status_code == 409
 
 
-def test_me_with_malformed_sub_returns_401(client):
+def test_me_with_malformed_token_returns_401(client):
+    """Un token con sub no numérico es rechazado."""
     bad_token = jwt.encode(
         {"sub": "not-an-int"},
         settings.jwt_secret_key,
         algorithm=settings.jwt_algorithm,
     )
-
     response = client.get("/auth/me", headers={"Authorization": f"Bearer {bad_token}"})
     assert response.status_code == 401
     assert response.json()["detail"] == "No autenticado"
 
 
-def test_users_requires_admin_role(client):
-    _signup(client, "operario@example.com")
+def test_list_users_requires_admin_role(client):
+    """Un operario no puede listar usuarios — solo admin."""
+    _create_worker(client, "operario@example.com")
     login = _login(client, "operario@example.com", "Password123")
     token = login.json()["access_token"]
 
@@ -75,10 +90,10 @@ def test_users_requires_admin_role(client):
     assert response.json()["detail"] == "No autorizado"
 
 
-def test_users_admin_can_list_users(client):
-    _signup(client, "other@example.com")
-    login = _login(client, "admin@weldix.dev", "Admin1234!")
-    token = login.json()["access_token"]
+def test_admin_can_list_all_users(client):
+    """El admin ve todos los usuarios en la lista."""
+    _create_worker(client, "other@example.com")
+    token = _admin_token(client)
 
     response = client.get("/auth/users", headers={"Authorization": f"Bearer {token}"})
     assert response.status_code == 200
@@ -89,7 +104,8 @@ def test_users_admin_can_list_users(client):
 
 
 def test_login_is_locked_after_failed_attempts(client):
-    _signup(client, "lock@example.com")
+    """Después de N intentos fallidos, la cuenta se bloquea temporalmente."""
+    _create_worker(client, "lock@example.com")
 
     for _ in range(settings.login_max_attempts):
         wrong = _login(client, "lock@example.com", "WrongPass123")
@@ -100,33 +116,37 @@ def test_login_is_locked_after_failed_attempts(client):
     assert "bloqueada" in locked.json()["detail"].lower()
 
 
-def test_signup_never_creates_admin_role(client):
-    signup = client.post(
-        "/auth/signup",
+def test_admin_signup_creates_admin_role(client):
+    """El admin puede crear otro admin pasando role='admin'."""
+    token = _admin_token(client)
+    response = client.post(
+        "/auth/admin/signup",
         json={
-            "email": "attempt-admin@example.com",
+            "email": "new-admin@example.com",
             "password": "Password123",
-            "full_name": "Attempt Admin",
+            "full_name": "New Admin",
             "role": "admin",
         },
+        headers={"Authorization": f"Bearer {token}"},
     )
+    assert response.status_code == 200
+    assert response.json()["role"] == "admin"
 
-    assert signup.status_code == 200
-    assert signup.json()["role"] == "operario"
 
+def test_operario_cannot_use_admin_signup(client):
+    """Un operario no puede usar el endpoint admin/signup."""
+    _create_worker(client, "operario2@example.com")
+    login = _login(client, "operario2@example.com", "Password123")
+    operario_token = login.json()["access_token"]
 
-def test_admin_signup_requires_admin_role(client):
-    _signup(client, "operario2@example.com")
-    operario_login = _login(client, "operario2@example.com", "Password123")
-    operario_token = operario_login.json()["access_token"]
-
-    denied = _signup_admin(client, "new-admin-denied@example.com", operario_token)
+    denied = client.post(
+        "/auth/admin/signup",
+        json={
+            "email": "new@example.com",
+            "password": "Password123",
+            "full_name": "Test",
+        },
+        headers={"Authorization": f"Bearer {operario_token}"},
+    )
     assert denied.status_code == 403
     assert denied.json()["detail"] == "No autorizado"
-
-    admin_login = _login(client, "admin@weldix.dev", "Admin1234!")
-    admin_token = admin_login.json()["access_token"]
-
-    created = _signup_admin(client, "new-admin-ok@example.com", admin_token)
-    assert created.status_code == 200
-    assert created.json()["role"] == "admin"

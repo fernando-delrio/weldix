@@ -1,7 +1,7 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class Settings(BaseSettings): 
+class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     app_name: str = "Weldix API"
@@ -21,16 +21,31 @@ class Settings(BaseSettings):
 
     seed_demo_data: bool = False  # Poner True en .env solo para entornos de desarrollo
 
-    
     login_max_attempts: int = 5
     login_lock_minutes: int = 10
 
     allowed_origins: list[str] = [
         "http://localhost:5173",
         "http://localhost:5174",
+        "http://localhost:5175",
+        "http://localhost:5176",
+        "http://127.0.0.1:5173",
+        "http://127.0.0.1:5174",
+        "http://127.0.0.1:5175",
+        "http://127.0.0.1:5176",
     ]
 
     mistral_api_key: str | None = None
+
+    # Stripe — obtener en https://dashboard.stripe.com/apikeys
+    stripe_secret_key: str | None = None
+    # Webhook secret — obtener en https://dashboard.stripe.com/webhooks tras crear el endpoint
+    stripe_webhook_secret: str | None = None
+    # IDs de precios en Stripe (crear en Products → Add product)
+    stripe_price_starter: str | None = None  # ej: price_1ABC...
+    stripe_price_pro: str | None = None  # ej: price_1DEF...
+    # URL del frontend para redirigir tras checkout
+    frontend_url: str = "http://localhost:5174"
 
 
 settings = Settings()

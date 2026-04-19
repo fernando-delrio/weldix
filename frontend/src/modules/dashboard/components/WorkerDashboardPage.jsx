@@ -1,14 +1,19 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import AppShell from '../../core/components/AppShell'
+import OnboardingWizard from '../../core/components/OnboardingWizard'
+import useOnboarding from '../../core/hooks/useOnboarding'
 import { useAuthSession } from '../../auth/hooks/useAuthSession'
 import { useWorkerDashboard } from '../hooks/useWorkerDashboard'
+import { useIaContext } from '../../ia/lib/IaContext'
 import AdminJobsSection from '../../admin/components/AdminJobsSection'
+import JornadaButton from '../../fichaje/components/JornadaButton'
 import ActiveJobCard from './ActiveJobCard'
 import MetricCard from './MetricCard'
 import NewJobModal from './NewJobModal'
 import RegisterMaterialModal from './RegisterMaterialModal'
 import StartJobByOrtModal from './StartJobByOrtModal'
+import RegistroHorasOT from '../../registro_horas/components/RegistroHorasOT'
 import PanelCard from './PanelCard'
 import SectionHeader from './SectionHeader'
 import TodayJobItem from './TodayJobItem'
@@ -48,7 +53,7 @@ const adminNewJobButton = ({ isAdmin, onOpen }) =>
     <button
       type="button"
       onClick={onOpen}
-      className="shrink-0 rounded-xl border border-sky-500/50 bg-sky-500/15 px-3 py-2 text-[0.7rem] font-bold uppercase tracking-[0.14em] text-sky-300 transition hover:border-sky-400/70 hover:bg-sky-500/25"
+      className="shrink-0 rounded-xl border border-amber-500/50 bg-amber-500/15 px-3 py-2 text-[0.7rem] font-bold uppercase tracking-[0.14em] text-amber-400 transition hover:border-amber-400/70 hover:bg-amber-500/25"
     >
       + Nuevo trabajo
     </button>
@@ -59,16 +64,21 @@ const startByOrtButton = ({ isAdmin, hasActiveJob, onOpen }) =>
     <button
       type="button"
       onClick={onOpen}
-      className="w-full rounded-xl border border-sky-500/50 bg-sky-500/10 py-3 text-[0.75rem] font-bold uppercase tracking-[0.14em] text-sky-300 transition hover:bg-sky-500/20"
+      className="w-full rounded-xl border border-amber-500/50 bg-amber-500/10 py-3 text-[0.75rem] font-bold uppercase tracking-[0.14em] text-amber-300 transition hover:bg-amber-500/20"
     >
       + Iniciar trabajo por OT
     </button>
   )
 
 const activeJobSection = ({ activeJob, onComplete, onOpenMaterialModal }) =>
-  activeJob
-    ? <ActiveJobCard job={activeJob} onComplete={onComplete} onRegisterMaterial={onOpenMaterialModal} />
-    : <PanelCard><p className="text-sm text-slate-400">Sin trabajo activo en este momento.</p></PanelCard>
+  activeJob ? (
+    <>
+      <ActiveJobCard job={activeJob} onComplete={onComplete} onRegisterMaterial={onOpenMaterialModal} />
+      <RegistroHorasOT jobId={activeJob.id} />
+    </>
+  ) : (
+    <PanelCard><p className="text-sm text-slate-400">Sin trabajo activo en este momento.</p></PanelCard>
+  )
 
 const pendingJobsSection = ({ todayJobs, onStartJob, canStart }) =>
   todayJobs.length > 0 && (
@@ -91,6 +101,7 @@ const WorkerDashboardPage = () => {
   const { profile } = useAuthSession()
   const { dashboard, isLoading, isEmpty, error, refresh, markActiveJobCompleted, startPendingJob, registerMaterialUsage } =
     useWorkerDashboard()
+  const { show: showOnboarding, complete: completeOnboarding } = useOnboarding(profile)
 
   const [showModal, setShowModal]               = useState(false)
   const [showOrtModal, setShowOrtModal]         = useState(false)
@@ -98,6 +109,40 @@ const WorkerDashboardPage = () => {
   const [createdFeedback, setCreatedFeedback]   = useState('')
 
   const isAdmin = profile?.role === 'admin'
+  const { setPageContext } = useIaContext()
+
+  // Inyectar contexto del dashboard en la IA cuando cargan los datos
+  useEffect(() => {
+    if (!dashboard) return
+
+    if (!isAdmin) {
+      const activeJobText = dashboard.activeJob
+        ? `Trabajo activo: ${dashboard.activeJob.code} — ${dashboard.activeJob.titulo} (estado: ${dashboard.activeJob.estado})`
+        : 'Sin trabajo activo ahora mismo'
+      setPageContext({
+        seccion: 'Inicio — Panel del operario',
+        resumen: activeJobText,
+        sugerencias: [
+          '¿Cómo avanzo el estado de mi trabajo activo?',
+          '¿Qué hago si detecto un defecto en la soldadura?',
+          '¿Qué EPI necesito para soldar acero inoxidable?',
+          '¿Cómo registro el material que he consumido?',
+        ],
+      })
+    } else {
+      setPageContext({
+        seccion: 'Inicio — Panel del administrador',
+        resumen: `Panel de administración del taller. Gestión de trabajos, operarios y stock.`,
+        sugerencias: [
+          '¿Cuántos trabajos están en proceso ahora?',
+          '¿Qué materiales tienen stock bajo?',
+          '¿Cómo asigno un trabajo a un operario?',
+          'Resume el estado actual del taller',
+        ],
+      })
+    }
+    return () => setPageContext(null)
+  }, [dashboard, isAdmin, setPageContext])
 
   const handleCreated = (newJob) => {
     setShowModal(false)
@@ -107,6 +152,7 @@ const WorkerDashboardPage = () => {
 
   return (
     <AppShell>
+      {showOnboarding && <OnboardingWizard onComplete={completeOnboarding} />}
       <div className="mx-auto w-full max-w-[680px] space-y-4 pb-5">
         {loadingState({ isLoading, isEmpty })}
         {errorState({ isLoading, error, refresh })}
@@ -114,21 +160,34 @@ const WorkerDashboardPage = () => {
 
         {!isLoading && dashboard && (
           <>
-            <section className="rounded-xl border border-cyan-900/50 bg-slate-900/55 p-4">
+            <section className="rounded-xl border border-white/[0.07] bg-gradient-to-br from-amber-900/20 via-slate-900/60 to-slate-900/80 p-4">
               <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-[0.64rem] font-bold uppercase tracking-[0.2em] text-sky-300">
-                    {dashboard.greeting.greetingLabel}
-                  </p>
-                  <h1 className="mt-1 text-4xl font-extrabold tracking-tight text-slate-100">
-                    {dashboard.greeting.operatorName}
-                  </h1>
-                  <p className="mt-1 text-sm text-slate-400">
-                    {dashboard.greeting.dateLabel} - {dashboard.greeting.shiftLabel}
-                  </p>
+                <div className="flex items-start gap-3">
+                  {/* Avatar con iniciales del operario */}
+                  <div className="mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-amber-500/30 bg-amber-500/10 text-sm font-bold tracking-wide text-amber-300">
+                    {dashboard.greeting.operatorName
+                      .split(' ')
+                      .slice(0, 2)
+                      .map((n) => n[0])
+                      .join('')
+                      .toUpperCase()}
+                  </div>
+                  <div>
+                    <p className="text-[0.64rem] font-bold uppercase tracking-[0.2em] text-amber-300">
+                      {dashboard.greeting.greetingLabel}
+                    </p>
+                    <h1 className="mt-0.5 text-3xl font-extrabold tracking-tight text-slate-100">
+                      {dashboard.greeting.operatorName}
+                    </h1>
+                    <p className="mt-1 text-sm text-slate-400">
+                      {dashboard.greeting.dateLabel} · {dashboard.greeting.shiftLabel}
+                    </p>
+                  </div>
                 </div>
                 {adminNewJobButton({ isAdmin, onOpen: () => setShowModal(true) })}
               </div>
+              {/* Fichaje de jornada — solo visible para operarios */}
+              {!isAdmin && <JornadaButton />}
             </section>
 
             {!isAdmin && (

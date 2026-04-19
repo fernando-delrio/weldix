@@ -1,8 +1,12 @@
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import AppShell from '../../core/components/AppShell'
 import { getStatusConfig } from '../../core/lib/statusConfig'
 import { useJobDetail } from '../hooks/useJobDetail'
+import FotosGallery from './FotosGallery'
+import RegistroHorasOT from '../../registro_horas/components/RegistroHorasOT'
+import { useIaContext } from '../../ia/lib/IaContext'
 
 // ── Estilos base ──────────────────────────────────────────────────────────────
 const cardBase  = 'rounded-xl border border-cyan-900/50 bg-slate-900/65 p-5'
@@ -65,7 +69,7 @@ const advanceButton = ({ canAdvance, isAdvancing, advance, job }) => {
       type="button"
       onClick={advance}
       disabled={isAdvancing}
-      className="h-12 w-full rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 text-sm font-bold tracking-[0.1em] text-white transition hover:from-sky-400 hover:to-blue-500 disabled:opacity-60"
+      className="h-14 w-full rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 text-sm font-bold tracking-[0.1em] text-white transition hover:from-sky-400 hover:to-blue-500 disabled:opacity-60 sm:h-12"
     >
       {isAdvancing ? 'Guardando...' : nextLabel}
     </button>
@@ -81,8 +85,8 @@ const historyTimeline = ({ history }) =>
         {history.map((event) => (
           <li key={event.id} className="flex gap-3">
             <div className="flex flex-col items-center">
-              <div className="h-2.5 w-2.5 shrink-0 rounded-full bg-sky-500 mt-0.5" />
-              <div className="w-px flex-1 bg-slate-700" />
+              <div className="mt-0.5 h-2.5 w-2.5 shrink-0 rounded-full border-2 border-sky-400 bg-slate-950" />
+              <div className="w-px flex-1 bg-white/[0.07]" />
             </div>
             <div className="pb-2">
               <p className="text-sm text-slate-200">{event.descripcion}</p>
@@ -94,7 +98,7 @@ const historyTimeline = ({ history }) =>
     </section>
   )
 
-const jobContent = (state, navigate) => {
+const jobContent = (state) => {
   const { isLoading, error, job, history, isAdvancing, advance, canAdvance } = state
   if (isLoading || error || !job) return null
 
@@ -134,6 +138,12 @@ const jobContent = (state, navigate) => {
 
       {descriptionSection(job)}
 
+      {/* Registro de horas en esta OT — múltiples operarios posibles */}
+      <RegistroHorasOT jobId={job.id} />
+
+      {/* Galería de fotos — antes/durante/después */}
+      <FotosGallery jobId={job.id} />
+
       {historyTimeline({ history })}
 
       {advanceButton({ canAdvance, isAdvancing, advance, job })}
@@ -145,10 +155,30 @@ const jobContent = (state, navigate) => {
 const JobDetailPage = () => {
   const navigate = useNavigate()
   const state    = useJobDetail()
+  const { setPageContext } = useIaContext()
+
+  // Inyectar contexto del trabajo en la IA cuando carga el detalle
+  const { job } = state
+
+  useEffect(() => {
+    if (!job) return
+    setPageContext({
+      seccion: `Trabajo ${job.code ?? ''}`,
+      resumen: `OT: ${job.code} — ${job.title}. Cliente: ${job.client ?? 'N/A'}. Estado: ${job.statusKey}. Progreso: ${job.progress}%.`,
+      sugerencias: [
+        `¿Qué técnica recomiendas para este tipo de trabajo?`,
+        '¿Qué defectos debo vigilar al soldar este material?',
+        '¿Cuáles son los EPI necesarios para este trabajo?',
+        '¿Cómo interpreto las notas del plano de esta OT?',
+      ],
+    })
+    return () => setPageContext(null)
+  }, [job, setPageContext])
 
   return (
     <AppShell>
-      <div className="mx-auto w-full max-w-[620px] space-y-4 pb-5">
+      {/* max-w-[720px] en lugar de 620 para que las fotos tengan más espacio en tablet */}
+      <div className="mx-auto w-full max-w-[720px] space-y-4 pb-5">
 
         <button
           type="button"
@@ -160,7 +190,7 @@ const JobDetailPage = () => {
 
         {loadingSkeleton(state)}
         {errorBanner(state)}
-        {jobContent(state, navigate)}
+        {jobContent(state)}
 
       </div>
     </AppShell>

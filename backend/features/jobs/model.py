@@ -7,15 +7,18 @@ from backend.core.database import Base
 class Job(Base):
     __tablename__ = "jobs"
 
-    id          = Column(Integer, primary_key=True, index=True)
-    code        = Column(String(30), nullable=True)
-    titulo      = Column(String(255), nullable=False)
-    cliente     = Column(String(255), nullable=False)
-    estado      = Column(String(30), nullable=False, default="pendiente")
+    id = Column(Integer, primary_key=True, index=True)
+    tenant_id = Column(Integer, ForeignKey("tenants.id"), nullable=True, index=True)
+    code = Column(String(30), nullable=True)
+    titulo = Column(String(255), nullable=False)
+    cliente = Column(String(255), nullable=False)
+    estado = Column(String(30), nullable=False, default="pendiente")
     operario_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     fecha_inicio = Column(Date, nullable=True)
-    progreso    = Column(Integer, nullable=False, default=0)
+    progreso = Column(Integer, nullable=False, default=0)
     descripcion = Column(Text, nullable=True)
-    created_at  = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
 
-    operario    = relationship("User", foreign_keys=[operario_id], lazy="select")
+    operario = relationship("User", foreign_keys=[operario_id], lazy="select")

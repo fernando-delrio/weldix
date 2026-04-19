@@ -4,7 +4,7 @@ const StockItem = ({ item }) => {
   const tone = toneFor(item.tone)
 
   return (
-    <article className="rounded-xl border border-cyan-900/50 bg-slate-900/65 p-3">
+    <article className="rounded-xl border border-slate-900/50 bg-slate-900/65 p-3">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h4 className="text-lg font-semibold text-slate-100">{item.name}</h4>

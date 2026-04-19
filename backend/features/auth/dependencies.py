@@ -4,7 +4,8 @@ from sqlalchemy.orm import Session
 
 from backend.core.database import get_db
 from backend.core.security import decode_token
-from .model import User
+
+from .model import Tenant, User
 
 bearer = HTTPBearer()
 
@@ -40,3 +41,43 @@ def require_role(*roles: str):
         return user
 
     return _guard
+
+
+def require_active_trial(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> User:
+    """
+    Bloquea con 402 si el taller no tiene acceso activo.
+    Lógica:
+      1. Sin tenant_id (dev/superadmin) → pasa siempre
+      2. subscription_status == 'active' o 'trialing' → pasa siempre (Stripe confirma)
+      3. trial_expires_at == None → plan sin restricción → pasa
+      4. trial_expires_at > now → trial vigente → pasa
+      5. trial_expires_at < now → bloqueado → 402
+    """
+    from datetime import datetime, timezone
+
+    if user.tenant_id is None:
+        return user
+
+    tenant = db.query(Tenant).filter(Tenant.id == user.tenant_id).first()
+    if not tenant:
+        return user
+
+    # Suscripción Stripe activa — fuente de verdad principal
+    if tenant.subscription_status in ("active", "trialing"):
+        return user
+
+    # Sin restricción de trial (plan legacy o dev)
+    if tenant.trial_expires_at is None:
+        return user
+
+    # Trial vigente
+    if datetime.now(timezone.utc) <= tenant.trial_expires_at:
+        return user
+
+    raise HTTPException(
+        status_code=402,
+        detail="Tu periodo de prueba ha expirado. Activa tu suscripción para continuar.",
+    )
