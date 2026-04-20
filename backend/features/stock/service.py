@@ -1,5 +1,7 @@
 from sqlalchemy.orm import Session
 
+from backend.core.webhooks import fire_webhook
+
 from .model import Material
 from .schemas import (
     ConsumeMaterialRequest,
@@ -72,6 +74,20 @@ def consume_material(
     material.quantity = max(0.0, material.quantity - consumed)
     db.commit()
     db.refresh(material)
+
+    if material.minimum and material.quantity < material.minimum:
+        fire_webhook(
+            "stock_bajo",
+            {
+                "material_id": material.id,
+                "name": material.name,
+                "quantity": material.quantity,
+                "minimum": material.minimum,
+                "unit": material.unit,
+                "tenant_id": material.tenant_id,
+            },
+        )
+
     return material
 
 

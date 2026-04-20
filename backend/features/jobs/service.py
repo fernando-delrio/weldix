@@ -3,6 +3,7 @@ from datetime import date
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
+from backend.core.webhooks import fire_webhook
 from backend.features.historial.service import add_event
 
 from .model import Job
@@ -130,6 +131,19 @@ def update_estado(
     )
     db.commit()
     db.refresh(job)
+
+    if estado == "listo":
+        fire_webhook(
+            "job_listo",
+            {
+                "job_id": job.id,
+                "job_code": job.code,
+                "titulo": job.titulo,
+                "cliente": job.cliente,
+                "tenant_id": job.tenant_id,
+            },
+        )
+
     return job
 
 

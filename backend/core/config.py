@@ -51,5 +51,10 @@ class Settings(BaseSettings):
     resend_api_key: str | None = None
     email_from: str = "Weldix <hola@weldix.app>"
 
+    # n8n — automatizaciones (webhooks, WhatsApp, email cliente, etc.)
+    # Formato: http://localhost:5678/webhook/weldix
+    # Si está vacío, fire_webhook() no hace nada (modo silencioso)
+    n8n_webhook_url: str | None = None
+
 
 settings = Settings()
