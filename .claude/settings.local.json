@@ -7,7 +7,8 @@
       "Bash(python -c \":*)",
       "Bash(npm run:*)",
       "Bash(ls \"c:/Users/FeR/OneDrive/Escritorio/full stack/Weldix/\"*.db)",
-      "Bash(taskkill /f /im python.exe)"
+      "Bash(taskkill /f /im python.exe)",
+      "WebSearch"
     ]
   }
 }

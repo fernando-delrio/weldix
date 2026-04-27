@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from backend.core.database import get_db
 from backend.core.email import send_welcome_email
 from backend.core.security import create_access_token
+from backend.core.webhooks import fire_webhook
 
 from .dependencies import get_current_user, require_role
 from .model import User
@@ -66,6 +67,17 @@ def register_workspace(
         to=admin.email,
         admin_name=admin.full_name or "",
         tenant_nombre=tenant.nombre,
+    )
+    background_tasks.add_task(
+        fire_webhook,
+        "workspace_creado",
+        {
+            "tenant_id": tenant.id,
+            "tenant_nombre": tenant.nombre,
+            "tenant_slug": tenant.slug,
+            "admin_email": admin.email,
+            "admin_name": admin.full_name or "",
+        },
     )
 
     token = create_access_token(
