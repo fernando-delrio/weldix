@@ -426,8 +426,8 @@ Basado en: *Clean Code* (Martin), *A Philosophy of Software Design* (Ousterhout)
 
 ## Contacto y licencias
 
-**Autor:** Fernando Melacrujo
-**Email:** melacrujo@gmail.com
+**Autor:** Fernando Del Rio
+**Email:** fernandogondelrio@gmail.com
 **Web:** [weldix.app](https://weldix.app)
 **Demo o consultas:** [hola@weldix.app](mailto:hola@weldix.app)
 
@@ -435,7 +435,7 @@ Basado en: *Clean Code* (Martin), *A Philosophy of Software Design* (Ousterhout)
 
 ## Licencia
 
-Copyright (c) 2026 Fernando Melacrujo. Todos los derechos reservados.
+Copyright (c) 2026 Fernando Del Rio. Todos los derechos reservados.
 
 Este software y su código fuente son **propietarios y confidenciales**.
 No se concede ninguna licencia para copiar, modificar, distribuir, sublicenciar ni usar este software sin autorización escrita del autor.
