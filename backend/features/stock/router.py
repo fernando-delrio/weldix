@@ -9,6 +9,8 @@ from . import service
 from .schemas import (
     ConsumeMaterialRequest,
     CreateMaterialRequest,
+    GenerarVariantesRequest,
+    GenerarVariantesResponse,
     StockItemResponse,
     UpdateMaterialRequest,
 )
@@ -36,6 +38,20 @@ def create_material(
     return StockItemResponse.from_orm_material(
         service.create_material(db, body, tenant_id=current_user.tenant_id)
     )
+
+
+@router.post(
+    "/generar-variantes", response_model=GenerarVariantesResponse, status_code=201
+)
+def generar_variantes(
+    body: GenerarVariantesRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("admin")),
+):
+    try:
+        return service.generar_variantes(db, body, tenant_id=current_user.tenant_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
 
 
 @router.post("/{material_id}/consume", response_model=StockItemResponse)
