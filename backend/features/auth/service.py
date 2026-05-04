@@ -183,9 +183,14 @@ def get_trial_status(db: Session, tenant_id: int | None) -> dict:
         }
 
     now = _now()
-    delta = tenant.trial_expires_at - now
+    # SQLite devuelve datetimes sin tzinfo; PostgreSQL los devuelve con tzinfo.
+    # Normalizamos a UTC para que la comparación funcione en ambos entornos.
+    trial_dt = tenant.trial_expires_at
+    if trial_dt.tzinfo is None:
+        trial_dt = trial_dt.replace(tzinfo=timezone.utc)
+    delta = trial_dt - now
     days_left = max(0, delta.days)
-    is_expired = now > tenant.trial_expires_at
+    is_expired = now > trial_dt
 
     return {
         "is_trial": True,

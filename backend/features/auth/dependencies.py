@@ -74,10 +74,16 @@ def require_active_trial(
     if tenant.trial_expires_at is None:
         return user
 
+    # SQLite devuelve datetimes sin tzinfo; PostgreSQL los devuelve con tzinfo.
+    # Normalizamos a UTC para que la comparación funcione en ambos entornos.
+    trial_expires = tenant.trial_expires_at
+    if trial_expires.tzinfo is None:
+        trial_expires = trial_expires.replace(tzinfo=timezone.utc)
+
     # Trial vigente — avisar si quedan 3 días o menos
     now = datetime.now(timezone.utc)
-    if now <= tenant.trial_expires_at:
-        days_left = (tenant.trial_expires_at - now).days
+    if now <= trial_expires:
+        days_left = (trial_expires - now).days
         if days_left <= 3:
             send_trial_warning_email(
                 to=user.email,
