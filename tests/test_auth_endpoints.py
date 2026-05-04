@@ -29,7 +29,10 @@ def _create_worker(client, email: str, password: str = "Password123"):
 
 
 def test_public_signup_is_closed(client):
-    """El registro público está desactivado — solo admin puede crear cuentas."""
+    """
+    El endpoint /auth/signup fue eliminado — ya no existe en el router.
+    El registro público usa /auth/register-workspace (requiere aceptar términos).
+    """
     response = client.post(
         "/auth/signup",
         json={
@@ -38,7 +41,7 @@ def test_public_signup_is_closed(client):
             "full_name": "Hacker",
         },
     )
-    assert response.status_code == 403
+    assert response.status_code == 404
 
 
 def test_admin_creates_worker_and_worker_can_login(client):
