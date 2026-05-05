@@ -29,5 +29,16 @@ export const useRegisterForm = () => {
     }
   }
 
-  return { name, setName, email, setEmail, password, setPassword, feedback, error, isSubmitting, submit }
+  return {
+    name,
+    setName,
+    email,
+    setEmail,
+    password,
+    setPassword,
+    feedback,
+    error,
+    isSubmitting,
+    submit,
+  }
 }

@@ -12,17 +12,24 @@ import CreateUserModal from './CreateUserModal'
 const loadingState = ({ isLoading }) =>
   isLoading && (
     <PanelCard>
-      <p className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-400">Cargando panel...</p>
+      <p className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-400">
+        Cargando panel...
+      </p>
       <div className="mt-3 h-2 w-full animate-pulse rounded bg-slate-800" />
       <div className="mt-2 h-2 w-2/3 animate-pulse rounded bg-slate-800" />
     </PanelCard>
   )
 
 const errorState = ({ isLoading, error, refresh }) =>
-  !isLoading && error && (
+  !isLoading &&
+  error && (
     <PanelCard className="border-rose-700/40">
       <p className="text-sm font-semibold text-rose-300">{error}</p>
-      <button type="button" onClick={refresh} className="mt-3 rounded-lg border border-rose-500/40 px-3 py-2 text-sm font-semibold text-rose-200 transition hover:bg-rose-500/10">
+      <button
+        type="button"
+        onClick={refresh}
+        className="mt-3 rounded-lg border border-rose-500/40 px-3 py-2 text-sm font-semibold text-rose-200 transition hover:bg-rose-500/10"
+      >
         Reintentar
       </button>
     </PanelCard>
@@ -58,8 +65,8 @@ const AdminDashboardPage = () => {
   const { dashboard, isLoading, error, refresh, createUser } = useAdminDashboard()
 
   const [showNewJobModal, setShowNewJobModal] = useState(false)
-  const [showUserModal, setShowUserModal]     = useState(false)
-  const [feedback, setFeedback]               = useState('')
+  const [showUserModal, setShowUserModal] = useState(false)
+  const [feedback, setFeedback] = useState('')
 
   const showFeedback = (msg) => {
     setFeedback(msg)
@@ -80,12 +87,15 @@ const AdminDashboardPage = () => {
   return (
     <AppShell>
       <div className="mx-auto w-full max-w-[1100px] space-y-5 pb-5">
-
         {/* Cabecera */}
         <div className="flex items-end justify-between">
           <div>
-            <p className="text-[0.64rem] font-bold uppercase tracking-[0.2em] text-rose-300">Panel</p>
-            <h1 className="mt-1 text-4xl font-extrabold tracking-tight text-slate-100">Administración</h1>
+            <p className="text-[0.64rem] font-bold uppercase tracking-[0.2em] text-rose-300">
+              Panel
+            </p>
+            <h1 className="mt-1 text-4xl font-extrabold tracking-tight text-slate-100">
+              Administración
+            </h1>
           </div>
           <button
             type="button"

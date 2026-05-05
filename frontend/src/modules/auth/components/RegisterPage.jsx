@@ -3,8 +3,18 @@ import { authTw, cx } from '../utils/tw'
 import { useRegisterForm } from '../hooks/useRegisterForm'
 
 const RegisterPage = () => {
-  const { name, setName, email, setEmail, password, setPassword, feedback, error, isSubmitting, submit } =
-    useRegisterForm()
+  const {
+    name,
+    setName,
+    email,
+    setEmail,
+    password,
+    setPassword,
+    feedback,
+    error,
+    isSubmitting,
+    submit,
+  } = useRegisterForm()
 
   return (
     <AuthLayout

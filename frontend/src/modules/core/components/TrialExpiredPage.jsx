@@ -3,11 +3,11 @@ import { useBilling } from '../../billing/hooks/useBilling'
 
 const FEATURES = [
   { icon: 'bx bx-list-check', label: 'OTs ilimitadas' },
-  { icon: 'bx bx-time-five',  label: 'Control de fichaje' },
-  { icon: 'bx bx-package',    label: 'Gestión de stock' },
-  { icon: 'bx bx-group',      label: 'RRHH completo' },
-  { icon: 'bx bx-wrench',     label: 'GMAO — Equipos' },
-  { icon: 'bx bx-bot',        label: 'IA especializada' },
+  { icon: 'bx bx-time-five', label: 'Control de fichaje' },
+  { icon: 'bx bx-package', label: 'Gestión de stock' },
+  { icon: 'bx bx-group', label: 'RRHH completo' },
+  { icon: 'bx bx-wrench', label: 'GMAO — Equipos' },
+  { icon: 'bx bx-bot', label: 'IA especializada' },
 ]
 
 const PLANS = [
@@ -78,7 +78,6 @@ const TrialExpiredPage = () => {
   return (
     <main className="grid min-h-screen place-items-center bg-slate-950 px-6 py-12">
       <div className="mx-auto w-full max-w-lg space-y-8 text-center">
-
         {/* Icono */}
         <div className="flex justify-center">
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-rose-500/30 bg-rose-500/10">
@@ -89,9 +88,7 @@ const TrialExpiredPage = () => {
         {/* Título */}
         <div className="space-y-3">
           <h1 className="text-3xl font-black tracking-tight text-slate-100">
-            {justCancelled
-              ? 'El pago fue cancelado'
-              : 'Tu periodo de prueba ha terminado'}
+            {justCancelled ? 'El pago fue cancelado' : 'Tu periodo de prueba ha terminado'}
           </h1>
           <p className="text-sm leading-relaxed text-slate-400">
             {justCancelled
@@ -105,7 +102,9 @@ const TrialExpiredPage = () => {
 
         {/* Features */}
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-          {FEATURES.map((f) => <FeaturePill key={f.label} {...f} />)}
+          {FEATURES.map((f) => (
+            <FeaturePill key={f.label} {...f} />
+          ))}
         </div>
 
         {/* Planes */}
@@ -165,13 +164,9 @@ const TrialExpiredPage = () => {
           </div>
         </div>
 
-        <Link
-          to="/login"
-          className="block text-xs text-slate-700 hover:text-slate-500 transition"
-        >
+        <Link to="/login" className="block text-xs text-slate-700 hover:text-slate-500 transition">
           Volver al inicio de sesión
         </Link>
-
       </div>
     </main>
   )

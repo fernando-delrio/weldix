@@ -10,8 +10,11 @@ const ymd = (date) => `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2
 const formatFecha = (iso) => {
   if (!iso) return '-'
   const d = new Date(iso)
-  return d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }) +
-    ' - ' + d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
+  return (
+    d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }) +
+    ' - ' +
+    d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
+  )
 }
 
 const formatHoras = (horas) => {
@@ -22,7 +25,8 @@ const formatHoras = (horas) => {
 }
 
 const workerCode = (n) => (Number.isFinite(n) ? `OP-${String(n).padStart(3, '0')}` : 'OP----')
-const isHorasInvalidas = (h) => !h || isNaN(parseFloat(h)) || parseFloat(h) <= 0 || parseFloat(h) > 16
+const isHorasInvalidas = (h) =>
+  !h || isNaN(parseFloat(h)) || parseFloat(h) <= 0 || parseFloat(h) > 16
 
 const alphaByName = (a, b) => {
   const an = (a.full_name || a.email || '').toLowerCase()
@@ -30,15 +34,16 @@ const alphaByName = (a, b) => {
   return an.localeCompare(bn, 'es')
 }
 
-const fichajesByDay = (fichajes) => fichajes.reduce((acc, f) => {
-  if (!f?.inicio) return acc
-  const start = new Date(f.inicio)
-  const end = f.fin ? new Date(f.fin) : new Date()
-  const hours = Number.isFinite(f.horas) ? f.horas : Math.max(0, (end - start) / 36e5)
-  const key = ymd(start)
-  acc[key] = (acc[key] || 0) + hours
-  return acc
-}, {})
+const fichajesByDay = (fichajes) =>
+  fichajes.reduce((acc, f) => {
+    if (!f?.inicio) return acc
+    const start = new Date(f.inicio)
+    const end = f.fin ? new Date(f.fin) : new Date()
+    const hours = Number.isFinite(f.horas) ? f.horas : Math.max(0, (end - start) / 36e5)
+    const key = ymd(start)
+    acc[key] = (acc[key] || 0) + hours
+    return acc
+  }, {})
 
 const buildMonthCells = (year, month) => {
   const first = new Date(year, month, 1)
@@ -60,23 +65,34 @@ const levelClass = (hours) => {
 }
 
 const openFichaje = (fichajes) => fichajes.find((f) => f.fin == null) || null
-const byInicioDesc = (a, b) => new Date(b?.inicio || 0).getTime() - new Date(a?.inicio || 0).getTime()
+const byInicioDesc = (a, b) =>
+  new Date(b?.inicio || 0).getTime() - new Date(a?.inicio || 0).getTime()
 
 const ForzarCierreModal = ({ fichaje, onClose, onConfirm, isSubmitting, error }) => {
   const [horas, setHoras] = useState('')
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
-      <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" onClick={onClose} aria-hidden="true" />
+      <div
+        className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm"
+        onClick={onClose}
+        aria-hidden="true"
+      />
       <div className="modal-slide-up relative z-10 w-full max-w-[400px] rounded-t-2xl border border-slate-700/80 bg-slate-900 p-5 shadow-2xl sm:rounded-2xl">
-        <div className="mx-auto mb-4 h-1 w-8 rounded-full bg-slate-600 sm:hidden" aria-hidden="true" />
+        <div
+          className="mx-auto mb-4 h-1 w-8 rounded-full bg-slate-600 sm:hidden"
+          aria-hidden="true"
+        />
 
-        <h2 className="text-base font-bold tracking-tight text-slate-100">Cerrar jornada manualmente</h2>
+        <h2 className="text-base font-bold tracking-tight text-slate-100">
+          Cerrar jornada manualmente
+        </h2>
         <p className="mt-1 text-xs text-slate-400">
           Operario: <span className="font-semibold text-slate-200">{fichaje.operario_nombre}</span>
         </p>
         <p className="text-xs text-slate-400">
-          Entrada: <span className="font-semibold text-slate-200">{formatFecha(fichaje.inicio)}</span>
+          Entrada:{' '}
+          <span className="font-semibold text-slate-200">{formatFecha(fichaje.inicio)}</span>
         </p>
 
         <div className="mt-4">
@@ -128,10 +144,14 @@ const OperarioCalendar = ({ fichajes }) => {
 
   return (
     <div className="space-y-2">
-      <p className="text-[0.6rem] font-bold uppercase tracking-[0.16em] text-slate-500">Calendario mensual</p>
+      <p className="text-[0.6rem] font-bold uppercase tracking-[0.16em] text-slate-500">
+        Calendario mensual
+      </p>
       <div className="grid grid-cols-7 gap-1">
         {weekDays.map((d) => (
-          <div key={d} className="text-center text-[0.55rem] font-bold uppercase text-slate-600">{d}</div>
+          <div key={d} className="text-center text-[0.55rem] font-bold uppercase text-slate-600">
+            {d}
+          </div>
         ))}
       </div>
       <div className="grid grid-cols-7 gap-1">
@@ -144,7 +164,11 @@ const OperarioCalendar = ({ fichajes }) => {
           return (
             <div
               key={key}
-              title={hours ? `${dateObj.toLocaleDateString('es-ES')}: ${hours.toFixed(2)}h` : dateObj.toLocaleDateString('es-ES')}
+              title={
+                hours
+                  ? `${dateObj.toLocaleDateString('es-ES')}: ${hours.toFixed(2)}h`
+                  : dateObj.toLocaleDateString('es-ES')
+              }
               className={`flex h-7 items-center justify-center rounded-md border text-[0.65rem] font-semibold ${levelClass(hours)}`}
             >
               {dateObj.getDate()}
@@ -158,11 +182,18 @@ const OperarioCalendar = ({ fichajes }) => {
 
 const ActiveJobs = ({ jobs }) => (
   <div className="space-y-1.5">
-    <p className="text-[0.6rem] font-bold uppercase tracking-[0.16em] text-slate-500">Ordenes activas</p>
+    <p className="text-[0.6rem] font-bold uppercase tracking-[0.16em] text-slate-500">
+      Ordenes activas
+    </p>
     {jobs.length === 0 && <p className="text-xs text-slate-500">Sin OTs activas.</p>}
     {jobs.map((job) => (
-      <div key={job.id} className="rounded-lg border border-slate-800/80 bg-slate-950/50 px-2.5 py-2">
-        <p className="text-xs font-semibold text-slate-200">{job.code || `OT-${job.id}`} - {job.titulo}</p>
+      <div
+        key={job.id}
+        className="rounded-lg border border-slate-800/80 bg-slate-950/50 px-2.5 py-2"
+      >
+        <p className="text-xs font-semibold text-slate-200">
+          {job.code || `OT-${job.id}`} - {job.titulo}
+        </p>
         <p className="mt-0.5 text-[0.65rem] text-slate-500">Estado: {job.estado}</p>
       </div>
     ))}
@@ -174,28 +205,44 @@ const FichajesTable = ({ fichajes }) => {
 
   return (
     <div className="space-y-1.5">
-      <p className="text-[0.6rem] font-bold uppercase tracking-[0.16em] text-slate-500">Fichajes recientes</p>
+      <p className="text-[0.6rem] font-bold uppercase tracking-[0.16em] text-slate-500">
+        Fichajes recientes
+      </p>
       <div className="rounded-lg border border-slate-800/80 bg-slate-950/35">
         <div className="max-h-[340px] overflow-y-scroll">
           <table className="w-full table-fixed">
             <thead className="sticky top-0 z-10">
               <tr className="border-b border-slate-800 bg-slate-950/95 backdrop-blur">
-                <th className="w-[41%] py-2.5 pl-3 pr-2 text-left text-[0.58rem] font-bold uppercase tracking-widest text-slate-500">Entrada</th>
-                <th className="w-[41%] py-2.5 pr-2 text-left text-[0.58rem] font-bold uppercase tracking-widest text-slate-500">Salida</th>
-                <th className="w-[18%] py-2.5 pr-3 text-left text-[0.58rem] font-bold uppercase tracking-widest text-slate-500">Horas</th>
+                <th className="w-[41%] py-2.5 pl-3 pr-2 text-left text-[0.58rem] font-bold uppercase tracking-widest text-slate-500">
+                  Entrada
+                </th>
+                <th className="w-[41%] py-2.5 pr-2 text-left text-[0.58rem] font-bold uppercase tracking-widest text-slate-500">
+                  Salida
+                </th>
+                <th className="w-[18%] py-2.5 pr-3 text-left text-[0.58rem] font-bold uppercase tracking-widest text-slate-500">
+                  Horas
+                </th>
               </tr>
             </thead>
             <tbody>
               {recientes.map((f) => (
                 <tr key={f.id} className="border-b border-slate-800/60 last:border-0">
-                  <td className="py-2.5 pl-3 pr-2 text-[0.76rem] text-slate-300">{formatFecha(f.inicio)}</td>
-                  <td className="py-2.5 pr-2 text-[0.76rem] text-slate-400">{f.fin ? formatFecha(f.fin) : 'En jornada'}</td>
-                  <td className="py-2.5 pr-3 text-[0.76rem] font-semibold text-slate-300">{formatHoras(f.horas)}</td>
+                  <td className="py-2.5 pl-3 pr-2 text-[0.76rem] text-slate-300">
+                    {formatFecha(f.inicio)}
+                  </td>
+                  <td className="py-2.5 pr-2 text-[0.76rem] text-slate-400">
+                    {f.fin ? formatFecha(f.fin) : 'En jornada'}
+                  </td>
+                  <td className="py-2.5 pr-3 text-[0.76rem] font-semibold text-slate-300">
+                    {formatHoras(f.horas)}
+                  </td>
                 </tr>
               ))}
               {recientes.length === 0 && (
                 <tr>
-                  <td colSpan={3} className="py-8 text-center text-xs text-slate-500">Sin fichajes todavia.</td>
+                  <td colSpan={3} className="py-8 text-center text-xs text-slate-500">
+                    Sin fichajes todavia.
+                  </td>
                 </tr>
               )}
             </tbody>
@@ -214,8 +261,12 @@ const OperarioCard = ({ operario, onForzarCierre, isExpanded, onToggle }) => {
     <article className={`${cardBase} p-4`}>
       <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-800/80 pb-3">
         <div className="min-w-[180px]">
-          <p className="text-[0.62rem] font-bold uppercase tracking-[0.16em] text-slate-500">{workerCode(operario.worker_number)}</p>
-          <h3 className="mt-1 text-base font-bold text-slate-100">{operario.full_name || operario.email}</h3>
+          <p className="text-[0.62rem] font-bold uppercase tracking-[0.16em] text-slate-500">
+            {workerCode(operario.worker_number)}
+          </p>
+          <h3 className="mt-1 text-base font-bold text-slate-100">
+            {operario.full_name || operario.email}
+          </h3>
           <p className="text-xs text-slate-400">{operario.email}</p>
         </div>
 
@@ -257,7 +308,9 @@ const OperarioCard = ({ operario, onForzarCierre, isExpanded, onToggle }) => {
 
       {open && (
         <div className="mt-3 flex items-center justify-between rounded-lg border border-emerald-700/50 bg-emerald-500/10 px-3 py-2">
-          <p className="text-xs text-emerald-200">Jornada abierta desde {formatFecha(open.inicio)}</p>
+          <p className="text-xs text-emerald-200">
+            Jornada abierta desde {formatFecha(open.inicio)}
+          </p>
           <button
             type="button"
             onClick={() => onForzarCierre(open, operario)}
@@ -279,16 +332,15 @@ const FichajesAdminSection = ({ operarios = [], onRefresh }) => {
   const [exportError, setExportError] = useState('')
   const [expandedByOperario, setExpandedByOperario] = useState({})
 
-  const sortedOperarios = useMemo(
-    () => [...operarios].sort(alphaByName),
-    [operarios],
-  )
+  const sortedOperarios = useMemo(() => [...operarios].sort(alphaByName), [operarios])
 
   useEffect(() => {
     setExpandedByOperario((prev) => {
       const next = {}
       sortedOperarios.forEach((operario, index) => {
-        next[operario.id] = Object.prototype.hasOwnProperty.call(prev, operario.id) ? prev[operario.id] : index === 0
+        next[operario.id] = Object.prototype.hasOwnProperty.call(prev, operario.id)
+          ? prev[operario.id]
+          : index === 0
       })
       return next
     })
@@ -325,7 +377,9 @@ const FichajesAdminSection = ({ operarios = [], onRefresh }) => {
   return (
     <section className="space-y-3">
       <div className="flex items-center justify-between">
-        <p className="text-[0.64rem] font-bold uppercase tracking-[0.2em] text-sky-300">Operarios</p>
+        <p className="text-[0.64rem] font-bold uppercase tracking-[0.2em] text-sky-300">
+          Operarios
+        </p>
         <div className="flex items-center gap-2">
           <button
             type="button"
@@ -337,14 +391,22 @@ const FichajesAdminSection = ({ operarios = [], onRefresh }) => {
           </button>
           <button
             type="button"
-            onClick={() => setExpandedByOperario(Object.fromEntries(sortedOperarios.map((operario) => [operario.id, true])))}
+            onClick={() =>
+              setExpandedByOperario(
+                Object.fromEntries(sortedOperarios.map((operario) => [operario.id, true]))
+              )
+            }
             className="rounded-md border border-slate-700/70 bg-slate-800/40 px-2 py-0.5 text-[0.56rem] font-bold uppercase tracking-widest text-slate-300 transition hover:border-sky-600/70 hover:text-sky-200"
           >
             Expandir todo
           </button>
           <button
             type="button"
-            onClick={() => setExpandedByOperario(Object.fromEntries(sortedOperarios.map((operario) => [operario.id, false])))}
+            onClick={() =>
+              setExpandedByOperario(
+                Object.fromEntries(sortedOperarios.map((operario) => [operario.id, false]))
+              )
+            }
             className="rounded-md border border-slate-700/70 bg-slate-800/40 px-2 py-0.5 text-[0.56rem] font-bold uppercase tracking-widest text-slate-300 transition hover:border-sky-600/70 hover:text-sky-200"
           >
             Colapsar todo
@@ -355,9 +417,7 @@ const FichajesAdminSection = ({ operarios = [], onRefresh }) => {
         </div>
       </div>
 
-      {exportError && (
-        <p className="text-xs text-rose-400">{exportError}</p>
-      )}
+      {exportError && <p className="text-xs text-rose-400">{exportError}</p>}
 
       {sortedOperarios.length === 0 && (
         <div className={`${cardBase} p-4`}>

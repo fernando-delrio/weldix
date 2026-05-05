@@ -42,7 +42,9 @@ export const getJobHistory = async (id) => {
 }
 
 export const searchJobs = async (q) => {
-  const res = await fetch(`${API_BASE_URL}/trabajos/buscar-rapido?q=${encodeURIComponent(q)}`, { headers: authHeaders() })
+  const res = await fetch(`${API_BASE_URL}/trabajos/buscar-rapido?q=${encodeURIComponent(q)}`, {
+    headers: authHeaders(),
+  })
   if (!res.ok) throw new Error('Error al buscar trabajos')
   return res.json()
 }

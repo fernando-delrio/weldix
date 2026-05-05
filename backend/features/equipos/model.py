@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Date, DateTime, ForeignKey, Integer, String, Text, func
+from sqlalchemy import Boolean, Column, Date, DateTime, ForeignKey, Integer, String, Text, func
 
 from backend.core.database import Base
 
@@ -22,6 +22,7 @@ class Equipo(Base):
     ultimo_mantenimiento = Column(Date, nullable=True)
     # cada cuántos días hay que hacer mantenimiento
     intervalo_dias = Column(Integer, nullable=False, default=90)
+    is_demo = Column(Boolean, nullable=False, default=False)
     created_at = Column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )

@@ -30,7 +30,13 @@ const authGet = async (path) => {
 export const authService = {
   login: ({ email, password }) => request('/auth/login', { email, password }),
 
-  registerWorkspace: ({ nombre_taller, admin_email, admin_password, admin_name, aceptar_terminos }) =>
+  registerWorkspace: ({
+    nombre_taller,
+    admin_email,
+    admin_password,
+    admin_name,
+    aceptar_terminos,
+  }) =>
     request('/auth/register-workspace', {
       nombre_taller,
       admin_email,

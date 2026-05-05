@@ -24,8 +24,7 @@ const ProtectedRoute = () => {
   return (
     bootstrapping(session) ||
     unauthenticated(session, location) ||
-    loadingProfile(session) ||
-    <Outlet />
+    loadingProfile(session) || <Outlet />
   )
 }
 

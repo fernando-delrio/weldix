@@ -22,19 +22,25 @@ const executeSearch = async (q, setResults, setError) => {
 }
 
 export const useSearch = () => {
-  const [isOpen, setIsOpen]     = useState(false)
-  const [query, setQuery]       = useState('')
-  const [results, setResults]   = useState([])
+  const [isOpen, setIsOpen] = useState(false)
+  const [query, setQuery] = useState('')
+  const [results, setResults] = useState([])
   const [isSearching, setIsSearching] = useState(false)
-  const [error, setError]       = useState('')
+  const [error, setError] = useState('')
 
-  const open  = useCallback(() => setIsOpen(true), [])
-  const close = useCallback(() => { setIsOpen(false); setQuery(''); setResults([]) }, [])
+  const open = useCallback(() => setIsOpen(true), [])
+  const close = useCallback(() => {
+    setIsOpen(false)
+    setQuery('')
+    setResults([])
+  }, [])
 
   // Debounce: buscar 300ms después de que el usuario deja de escribir
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (isQueryTooShort(query)) { setResults([]); return }
+    if (isQueryTooShort(query)) {
+      setResults([])
+      return
+    }
 
     setIsSearching(true)
     setError('')

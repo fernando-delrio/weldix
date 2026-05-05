@@ -47,3 +47,12 @@ export const createUser = async (data) => {
   }
   return res.json()
 }
+
+export const deleteDemoData = async () => {
+  const res = await fetch(`${API_BASE_URL}/admin/demo-data`, {
+    method: 'DELETE',
+    headers: authHeaders(),
+  })
+  if (!res.ok) throw new Error('Error al eliminar los datos de demo')
+  return res.json()
+}

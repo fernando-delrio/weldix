@@ -13,7 +13,9 @@ const PrivacidadPage = () => (
       <header className="space-y-1">
         <p className="text-[0.62rem] font-bold uppercase tracking-[0.2em] text-slate-500">Legal</p>
         <h1 className="text-2xl font-bold tracking-tight text-slate-100">Política de Privacidad</h1>
-        <p className="text-xs text-slate-500">Última actualización: abril 2026 · Responsable: Weldix SaaS</p>
+        <p className="text-xs text-slate-500">
+          Última actualización: abril 2026 · Responsable: Weldix SaaS
+        </p>
       </header>
 
       <Section title="1. Responsable del tratamiento">
@@ -53,22 +55,39 @@ const PrivacidadPage = () => (
       </Section>
 
       <Section title="5. Tus derechos (RGPD)">
-        <p>Como interesado, puedes ejercer los siguientes derechos contactando al administrador de tu taller:</p>
+        <p>
+          Como interesado, puedes ejercer los siguientes derechos contactando al administrador de tu
+          taller:
+        </p>
         <ul className="list-inside list-disc space-y-1 pl-2">
-          <li><strong className="text-slate-200">Acceso:</strong> obtener confirmación y copia de tus datos</li>
-          <li><strong className="text-slate-200">Rectificación:</strong> corregir datos inexactos</li>
-          <li><strong className="text-slate-200">Supresión:</strong> solicitar el borrado cuando no sean necesarios</li>
-          <li><strong className="text-slate-200">Portabilidad:</strong> recibir tus datos en formato estructurado</li>
-          <li><strong className="text-slate-200">Oposición/limitación:</strong> restringir ciertos tratamientos</li>
+          <li>
+            <strong className="text-slate-200">Acceso:</strong> obtener confirmación y copia de tus
+            datos
+          </li>
+          <li>
+            <strong className="text-slate-200">Rectificación:</strong> corregir datos inexactos
+          </li>
+          <li>
+            <strong className="text-slate-200">Supresión:</strong> solicitar el borrado cuando no
+            sean necesarios
+          </li>
+          <li>
+            <strong className="text-slate-200">Portabilidad:</strong> recibir tus datos en formato
+            estructurado
+          </li>
+          <li>
+            <strong className="text-slate-200">Oposición/limitación:</strong> restringir ciertos
+            tratamientos
+          </li>
         </ul>
         <p>También puedes presentar reclamación ante la AEPD (aepd.es).</p>
       </Section>
 
       <Section title="6. Seguridad">
         <p>
-          Aplicamos medidas técnicas y organizativas adecuadas: cifrado de contraseñas (pbkdf2_sha256),
-          transporte por HTTPS, autenticación JWT con caducidad, y aislamiento de datos por taller
-          (multi-tenancy).
+          Aplicamos medidas técnicas y organizativas adecuadas: cifrado de contraseñas
+          (pbkdf2_sha256), transporte por HTTPS, autenticación JWT con caducidad, y aislamiento de
+          datos por taller (multi-tenancy).
         </p>
       </Section>
 
@@ -82,8 +101,8 @@ const PrivacidadPage = () => (
 
       <Section title="8. Contacto">
         <p>
-          Para cualquier consulta sobre privacidad, contacta a través del correo indicado en el panel
-          de administración de tu taller o escribe a{' '}
+          Para cualquier consulta sobre privacidad, contacta a través del correo indicado en el
+          panel de administración de tu taller o escribe a{' '}
           <a href="mailto:privacidad@weldix.app" className="text-amber-400 underline">
             privacidad@weldix.app
           </a>

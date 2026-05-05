@@ -1,4 +1,4 @@
-from sqlalchemy import JSON, Column, DateTime, Float, ForeignKey, Integer, String, func
+from sqlalchemy import JSON, Boolean, Column, DateTime, Float, ForeignKey, Integer, String, func
 
 from backend.core.database import Base
 
@@ -36,6 +36,7 @@ class Material(Base):
     quantity = Column(Float, nullable=False, default=0)
     minimum = Column(Float, nullable=False, default=0)
     unit = Column(String(20), nullable=False, default="ud")
+    is_demo = Column(Boolean, nullable=False, default=False)
     created_at = Column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )

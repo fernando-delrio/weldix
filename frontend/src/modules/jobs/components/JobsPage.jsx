@@ -7,14 +7,17 @@ import JobStatusFilter from './JobStatusFilter'
 const loadingState = ({ isLoading }) =>
   isLoading && (
     <PanelCard>
-      <p className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-400">Cargando trabajos...</p>
+      <p className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-400">
+        Cargando trabajos...
+      </p>
       <div className="mt-3 h-2 w-full animate-pulse rounded bg-slate-800" />
       <div className="mt-2 h-2 w-2/3 animate-pulse rounded bg-slate-800" />
     </PanelCard>
   )
 
 const errorState = ({ isLoading, error, refresh }) =>
-  !isLoading && error && (
+  !isLoading &&
+  error && (
     <PanelCard className="border-rose-700/40">
       <p className="text-sm font-semibold text-rose-300">{error}</p>
       <button
@@ -28,14 +31,18 @@ const errorState = ({ isLoading, error, refresh }) =>
   )
 
 const emptyState = ({ isLoading, error, filteredJobs, activeFilter }) =>
-  !isLoading && !error && filteredJobs.length === 0 && (
+  !isLoading &&
+  !error &&
+  filteredJobs.length === 0 && (
     <PanelCard>
       <p className="text-sm text-slate-400">No hay trabajos con estado "{activeFilter}".</p>
     </PanelCard>
   )
 
 const jobsList = ({ isLoading, error, filteredJobs }) =>
-  !isLoading && !error && filteredJobs.length > 0 && (
+  !isLoading &&
+  !error &&
+  filteredJobs.length > 0 && (
     <div className="space-y-3">
       {filteredJobs.map((job) => (
         <JobCard key={job.id} job={job} />

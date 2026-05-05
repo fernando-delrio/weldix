@@ -10,10 +10,10 @@ import { Html5Qrcode } from 'html5-qrcode'
  */
 
 const QrScannerModal = ({ onDetected, onClose }) => {
-  const [error, setError]     = useState(null)
-  const [ready, setReady]     = useState(false)
-  const scannerRef            = useRef(null)
-  const containerId           = 'qr-reader-container'
+  const [error, setError] = useState(null)
+  const [ready, setReady] = useState(false)
+  const scannerRef = useRef(null)
+  const containerId = 'qr-reader-container'
 
   useEffect(() => {
     const scanner = new Html5Qrcode(containerId)
@@ -32,7 +32,7 @@ const QrScannerModal = ({ onDetected, onClose }) => {
         },
         () => {
           // onScanFailure — se llama continuamente mientras no detecta nada. La ignoramos.
-        },
+        }
       )
       .then(() => setReady(true))
       .catch((err) => setError(`No se pudo acceder a la cámara: ${err}`))
@@ -64,10 +64,7 @@ const QrScannerModal = ({ onDetected, onClose }) => {
               <p className="mb-2 text-center text-xs text-slate-500">Iniciando cámara...</p>
             )}
             {/* html5-qrcode monta el video dentro de este div */}
-            <div
-              id={containerId}
-              className="overflow-hidden rounded-xl border border-slate-800"
-            />
+            <div id={containerId} className="overflow-hidden rounded-xl border border-slate-800" />
             <p className="mt-3 text-center text-[0.65rem] text-slate-500">
               Apunta al código QR de la OT
             </p>

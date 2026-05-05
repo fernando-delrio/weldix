@@ -8,11 +8,11 @@ const TOKEN_KEY = 'weldix_access_token'
 const isEmptyField = (v) => !v || v.trim().length === 0
 
 const validationError = (form) => {
-  if (isEmptyField(form.nombre_taller))  return 'El nombre del taller es obligatorio'
-  if (isEmptyField(form.admin_email))    return 'El email es obligatorio'
+  if (isEmptyField(form.nombre_taller)) return 'El nombre del taller es obligatorio'
+  if (isEmptyField(form.admin_email)) return 'El email es obligatorio'
   if (isEmptyField(form.admin_password)) return 'La contraseña es obligatoria'
-  if (form.admin_password.length < 8)   return 'La contraseña debe tener al menos 8 caracteres'
-  if (!form.aceptar_terminos)            return 'Debes aceptar los términos y condiciones'
+  if (form.admin_password.length < 8) return 'La contraseña debe tener al menos 8 caracteres'
+  if (!form.aceptar_terminos) return 'Debes aceptar los términos y condiciones'
   return null
 }
 
@@ -28,11 +28,14 @@ const useRegisterWorkspaceForm = () => {
     aceptar_terminos: false,
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError]               = useState('')
-  const [feedback, setFeedback]         = useState('')
+  const [error, setError] = useState('')
+  const [feedback, setFeedback] = useState('')
 
   const update = (field) => (e) =>
-    setForm((prev) => ({ ...prev, [field]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }))
+    setForm((prev) => ({
+      ...prev,
+      [field]: e.target.type === 'checkbox' ? e.target.checked : e.target.value,
+    }))
 
   const submit = async (e) => {
     e.preventDefault()
@@ -40,7 +43,10 @@ const useRegisterWorkspaceForm = () => {
     setFeedback('')
 
     const err = validationError(form)
-    if (err) { setError(err); return }
+    if (err) {
+      setError(err)
+      return
+    }
 
     setIsSubmitting(true)
     try {

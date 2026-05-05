@@ -1,25 +1,30 @@
 import { useState } from 'react'
 
-const labelBase  = 'mt-3 text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-slate-400'
-const inputBase  = 'w-full rounded-lg border border-slate-700 bg-slate-900/70 px-3.5 py-2.5 text-sm text-slate-100 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20'
-const selectBase = 'w-full rounded-lg border border-slate-700 bg-slate-900/70 px-3.5 py-2.5 text-sm text-slate-100 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20'
+const labelBase = 'mt-3 text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-slate-400'
+const inputBase =
+  'w-full rounded-lg border border-slate-700 bg-slate-900/70 px-3.5 py-2.5 text-sm text-slate-100 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20'
+const selectBase =
+  'w-full rounded-lg border border-slate-700 bg-slate-900/70 px-3.5 py-2.5 text-sm text-slate-100 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20'
 
-const isEmptyField  = (v) => !v || v.trim() === ''
-const isTooShort    = (v) => v.length < 8
+const isEmptyField = (v) => !v || v.trim() === ''
+const isTooShort = (v) => v.length < 8
 const validationError = (form) =>
-  isEmptyField(form.email)     ? 'El email es obligatorio'
-  : isEmptyField(form.fullName) ? 'El nombre es obligatorio'
-  : isEmptyField(form.password) ? 'La contraseña es obligatoria'
-  : isTooShort(form.password)   ? 'La contraseña debe tener al menos 8 caracteres'
-  : null
+  isEmptyField(form.email)
+    ? 'El email es obligatorio'
+    : isEmptyField(form.fullName)
+      ? 'El nombre es obligatorio'
+      : isEmptyField(form.password)
+        ? 'La contraseña es obligatoria'
+        : isTooShort(form.password)
+          ? 'La contraseña debe tener al menos 8 caracteres'
+          : null
 
-const errorBanner = ({ error }) =>
-  error && <p className="mt-3 text-sm text-rose-400">{error}</p>
+const errorBanner = ({ error }) => error && <p className="mt-3 text-sm text-rose-400">{error}</p>
 
 const CreateUserModal = ({ onClose, onConfirm }) => {
-  const [form, setForm]         = useState({ email: '', fullName: '', password: '', role: 'operario' })
+  const [form, setForm] = useState({ email: '', fullName: '', password: '', role: 'operario' })
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError]         = useState('')
+  const [error, setError] = useState('')
 
   const updateField = (field) => (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }))
 
@@ -32,7 +37,12 @@ const CreateUserModal = ({ onClose, onConfirm }) => {
     setIsLoading(true)
     setError('')
     try {
-      await onConfirm({ email: form.email, full_name: form.fullName, password: form.password, role: form.role })
+      await onConfirm({
+        email: form.email,
+        full_name: form.fullName,
+        password: form.password,
+        role: form.role,
+      })
       onClose()
     } catch (err) {
       setError(err.message ?? 'Error al crear el usuario.')
@@ -42,7 +52,11 @@ const CreateUserModal = ({ onClose, onConfirm }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
-      <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" onClick={onClose} aria-hidden="true" />
+      <div
+        className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm"
+        onClick={onClose}
+        aria-hidden="true"
+      />
 
       <div className="relative z-10 w-full max-w-[420px] rounded-t-2xl border border-slate-700/80 bg-slate-900 p-5 shadow-2xl sm:rounded-2xl">
         <div className="mb-4 flex items-center justify-between">
@@ -58,17 +72,35 @@ const CreateUserModal = ({ onClose, onConfirm }) => {
 
         <div className="grid gap-1">
           <label className={labelBase}>Email</label>
-          <input type="email" value={form.email} onChange={updateField('email')} placeholder="operario@empresa.com" className={inputBase} />
+          <input
+            type="email"
+            value={form.email}
+            onChange={updateField('email')}
+            placeholder="operario@empresa.com"
+            className={inputBase}
+          />
         </div>
 
         <div className="mt-3 grid gap-1">
           <label className={labelBase}>Nombre completo</label>
-          <input type="text" value={form.fullName} onChange={updateField('fullName')} placeholder="Juan García" className={inputBase} />
+          <input
+            type="text"
+            value={form.fullName}
+            onChange={updateField('fullName')}
+            placeholder="Juan García"
+            className={inputBase}
+          />
         </div>
 
         <div className="mt-3 grid gap-1">
           <label className={labelBase}>Contraseña temporal</label>
-          <input type="password" value={form.password} onChange={updateField('password')} placeholder="Mínimo 8 caracteres" className={inputBase} />
+          <input
+            type="password"
+            value={form.password}
+            onChange={updateField('password')}
+            placeholder="Mínimo 8 caracteres"
+            className={inputBase}
+          />
         </div>
 
         <div className="mt-3 grid gap-1">

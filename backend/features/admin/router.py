@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from backend.core.database import get_db
@@ -17,3 +17,13 @@ def admin_dashboard(
     current_user: User = Depends(require_role("admin")),
 ):
     return service.get_admin_dashboard(db, tenant_id=current_user.tenant_id)
+
+
+@router.delete("/demo-data")
+def delete_demo_data(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("admin")),
+):
+    if current_user.tenant_id is None:
+        raise HTTPException(400, "Este usuario no pertenece a ningún taller")
+    return service.clear_demo_data(db, current_user.tenant_id)

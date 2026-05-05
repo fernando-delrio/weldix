@@ -42,7 +42,7 @@ export const createJob = async (data) => {
 export const getJobByCode = async (code) => {
   const res = await fetch(
     `${API_BASE_URL}/trabajos/buscar?code=${encodeURIComponent(code.toUpperCase())}`,
-    { headers: authHeaders() },
+    { headers: authHeaders() }
   )
   if (!res.ok) {
     const body = await res.json().catch(() => ({}))

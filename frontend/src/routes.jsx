@@ -27,8 +27,9 @@ const Splash = ({ text }) => (
 const stillBootstrapping = ({ isSessionBootstrapped }) =>
   !isSessionBootstrapped && <Splash text="Iniciando..." />
 
-const redirectByAuthState = ({ token }) =>
+const redirectByAuthState = ({ token }) => (
   <Navigate to={token ? '/app/inicio' : '/login'} replace />
+)
 
 const RootRedirect = () => {
   const session = useAuthSession()

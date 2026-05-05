@@ -9,9 +9,9 @@ import { sanitizeJobDetail, sanitizeEvent } from '../lib/jobsModel'
 import { getStatusConfig } from '../../core/lib/statusConfig'
 
 // Helpers de validación nombrados — sigue la convención CLAUDE.md §4
-const hasNextStatus    = (job)         => Boolean(getStatusConfig(job.statusKey).next)
-const canAdvanceJob    = (job)         => Boolean(job) && hasNextStatus(job)
-const nextStateFor     = (job)         => getStatusConfig(job.statusKey)
+const hasNextStatus = (job) => Boolean(getStatusConfig(job.statusKey).next)
+const canAdvanceJob = (job) => Boolean(job) && hasNextStatus(job)
+const nextStateFor = (job) => getStatusConfig(job.statusKey)
 
 const executeLoad = async (id, setJob, setHistory, setError) => {
   try {
@@ -36,11 +36,11 @@ const executeAdvance = async (job, reload, setError) => {
 export const useJobDetail = () => {
   const { id } = useParams()
 
-  const [job, setJob]               = useState(null)
-  const [history, setHistory]       = useState([])
-  const [isLoading, setIsLoading]   = useState(true)
+  const [job, setJob] = useState(null)
+  const [history, setHistory] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
   const [isAdvancing, setIsAdvancing] = useState(false)
-  const [error, setError]           = useState('')
+  const [error, setError] = useState('')
 
   const load = useCallback(async () => {
     setIsLoading(true)
@@ -49,8 +49,9 @@ export const useJobDetail = () => {
     setIsLoading(false)
   }, [id])
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => { load() }, [load])
+  useEffect(() => {
+    load()
+  }, [load])
 
   const advance = async () => {
     if (!canAdvanceJob(job)) return

@@ -20,7 +20,9 @@ const useOnboarding = (profile) => {
 
   const complete = () => {
     setShow(false)
-    markDone().catch(() => {/* silencioso — no crítico */})
+    markDone().catch(() => {
+      /* silencioso — no crítico */
+    })
   }
 
   return { show, complete }

@@ -5,7 +5,10 @@ import Particles from '../../../components/Particles/Particles'
 import CountUp from '../../../components/CountUp/CountUp'
 
 const modeButtonClass = (currentMode, targetMode) =>
-  cx(authTw.modeButtonBase, currentMode === targetMode ? authTw.modeButtonActive : authTw.modeButtonInactive)
+  cx(
+    authTw.modeButtonBase,
+    currentMode === targetMode ? authTw.modeButtonActive : authTw.modeButtonInactive
+  )
 
 const feedbackMessage = ({ feedback, error }) =>
   (feedback || error) && (
@@ -18,7 +21,6 @@ const AuthLayout = ({ mode, title, subtitle, feedback, error, children }) => {
   return (
     <main className={authTw.pageRoot}>
       <div className={authTw.twoColumnGrid}>
-
         <section className={authTw.heroSection}>
           <div className={authTw.heroGlow} />
           <div className={authTw.heroGridOverlay} />
@@ -100,7 +102,6 @@ const AuthLayout = ({ mode, title, subtitle, feedback, error, children }) => {
             </div>
           </div>
         </section>
-
       </div>
     </main>
   )

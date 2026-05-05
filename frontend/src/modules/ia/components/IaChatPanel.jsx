@@ -49,7 +49,8 @@ const sectionBanner = ({ pageContext }) =>
 
 // Chips de sugerencias — preguntas rápidas por sección
 const SugerenciasChips = ({ sugerencias, onSelect, visible }) =>
-  visible && sugerencias?.length > 0 && (
+  visible &&
+  sugerencias?.length > 0 && (
     <div className="px-4 pt-3 pb-1 flex flex-wrap gap-2">
       {sugerencias.map((s) => (
         <button
@@ -121,7 +122,9 @@ const IaChatPanel = () => {
         {/* Header */}
         <div className="flex shrink-0 items-center justify-between border-b border-slate-700/60 px-4 py-3">
           <div className="flex items-center gap-2.5">
-            <div className="grid h-7 w-7 place-items-center rounded-lg bg-sky-500/20 text-sm">🔧</div>
+            <div className="grid h-7 w-7 place-items-center rounded-lg bg-sky-500/20 text-sm">
+              🔧
+            </div>
             <div>
               <p className="text-sm font-bold text-slate-100">Weldix AI</p>
               <p className="text-[0.62rem] text-slate-500 uppercase tracking-widest">
@@ -163,14 +166,14 @@ const IaChatPanel = () => {
         <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
           {emptyState({ messages, pageContext })}
           {messages.map((msg, i) =>
-            msg.role === 'user'
-              ? <UserBubble key={i} content={msg.content} />
-              : <AssistantBubble key={i} content={msg.content} />
+            msg.role === 'user' ? (
+              <UserBubble key={i} content={msg.content} />
+            ) : (
+              <AssistantBubble key={i} content={msg.content} />
+            )
           )}
           {isLoading && <TypingIndicator />}
-          {error && (
-            <p className="text-center text-xs text-rose-400">{error}</p>
-          )}
+          {error && <p className="text-center text-xs text-rose-400">{error}</p>}
           <div ref={bottomRef} />
         </div>
 
@@ -194,15 +197,22 @@ const IaChatPanel = () => {
                 'shrink-0 grid h-8 w-8 place-items-center rounded-lg transition',
                 input.trim() && !isLoading
                   ? 'bg-sky-500 text-white hover:bg-sky-400'
-                  : 'bg-slate-700 text-slate-500',
+                  : 'bg-slate-700 text-slate-500'
               )}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                className="h-4 w-4"
+              >
                 <path d="M3.105 2.288a.75.75 0 0 0-.826.95l1.414 4.926A1.5 1.5 0 0 0 5.135 9.25h6.115a.75.75 0 0 1 0 1.5H5.135a1.5 1.5 0 0 0-1.442 1.086l-1.414 4.926a.75.75 0 0 0 .826.95 28.897 28.897 0 0 0 15.293-7.154.75.75 0 0 0 0-1.115A28.897 28.897 0 0 0 3.105 2.288Z" />
               </svg>
             </button>
           </div>
-          <p className="mt-1.5 text-center text-[0.58rem] text-slate-600">Enter para enviar · Shift+Enter para nueva línea</p>
+          <p className="mt-1.5 text-center text-[0.58rem] text-slate-600">
+            Enter para enviar · Shift+Enter para nueva línea
+          </p>
         </form>
       </div>
     </div>

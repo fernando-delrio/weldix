@@ -7,10 +7,9 @@ const inputBase =
   'w-full bg-transparent px-3.5 text-[0.95rem] text-slate-100 outline-none placeholder:text-slate-500'
 const labelBase = 'mt-3 text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-slate-400'
 
-const submitLabel = ({ isSubmitting }) => isSubmitting ? 'CREANDO...' : 'CREAR TRABAJO'
+const submitLabel = ({ isSubmitting }) => (isSubmitting ? 'CREANDO...' : 'CREAR TRABAJO')
 
-const errorBanner = ({ error }) =>
-  error && <p className="mt-2 text-sm text-rose-400">{error}</p>
+const errorBanner = ({ error }) => error && <p className="mt-2 text-sm text-rose-400">{error}</p>
 
 const NewJobModal = ({ onClose, onCreated }) => {
   const form = useNewJobForm({ onCreated })
@@ -25,7 +24,10 @@ const NewJobModal = ({ onClose, onCreated }) => {
 
       <div className="modal-slide-up relative z-10 w-full max-w-[480px] rounded-t-2xl border border-slate-700/80 bg-slate-900 p-5 shadow-2xl sm:rounded-2xl">
         {/* Drag handle — indica bottom-sheet en móvil */}
-        <div className="mx-auto mb-4 h-1 w-8 rounded-full bg-slate-600 sm:hidden" aria-hidden="true" />
+        <div
+          className="mx-auto mb-4 h-1 w-8 rounded-full bg-slate-600 sm:hidden"
+          aria-hidden="true"
+        />
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-bold tracking-tight text-slate-100">Nuevo trabajo</h2>
           <button
@@ -105,7 +107,9 @@ const NewJobModal = ({ onClose, onCreated }) => {
               onChange={(e) => form.setOperarioId(e.target.value)}
               className="w-full bg-transparent text-[0.95rem] text-slate-100 outline-none"
             >
-              <option value="" className="bg-slate-900">Sin asignar</option>
+              <option value="" className="bg-slate-900">
+                Sin asignar
+              </option>
               {form.operarios.map((op) => (
                 <option key={op.id} value={op.id} className="bg-slate-900">
                   {op.full_name || op.email}

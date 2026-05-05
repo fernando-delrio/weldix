@@ -1,25 +1,27 @@
 import { useCallback, useEffect, useState } from 'react'
-import { finalizarFichaje, getFichajeActivo, getHorasTotales, iniciarFichaje } from '../services/fichajeService'
+import {
+  finalizarFichaje,
+  getFichajeActivo,
+  getHorasTotales,
+  iniciarFichaje,
+} from '../services/fichajeService'
 
 /**
  * Hook de fichaje para un trabajo concreto.
  * Gestiona: ¿hay fichaje abierto? → mostrar botón "Fichar salida" o "Fichar entrada".
  */
 export const useFichaje = (jobId) => {
-  const [fichajeActivo, setFichajeActivo]   = useState(null)
-  const [horasTotales,  setHorasTotales]    = useState(null)
-  const [isLoading,     setIsLoading]       = useState(true)
-  const [isSubmitting,  setIsSubmitting]    = useState(false)
-  const [error,         setError]           = useState(null)
+  const [fichajeActivo, setFichajeActivo] = useState(null)
+  const [horasTotales, setHorasTotales] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState(null)
 
   const cargarEstado = useCallback(async () => {
     setIsLoading(true)
     setError(null)
     try {
-      const [activo, horas] = await Promise.all([
-        getFichajeActivo(),
-        getHorasTotales(jobId),
-      ])
+      const [activo, horas] = await Promise.all([getFichajeActivo(), getHorasTotales(jobId)])
       // El fichaje activo puede ser de otro trabajo — solo lo mostramos si es de este
       setFichajeActivo(activo?.job_id === jobId ? activo : null)
       setHorasTotales(horas)
@@ -30,7 +32,9 @@ export const useFichaje = (jobId) => {
     }
   }, [jobId])
 
-  useEffect(() => { cargarEstado() }, [cargarEstado])
+  useEffect(() => {
+    cargarEstado()
+  }, [cargarEstado])
 
   const ficharEntrada = useCallback(async () => {
     setIsSubmitting(true)

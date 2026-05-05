@@ -4,9 +4,9 @@ import { getJobs } from '../services/jobsService'
 
 export const STATUS_FILTERS = ['todos', 'pendiente', 'en_proceso', 'control', 'listo', 'entregado']
 
-const showingAll     = (filter) => filter === 'todos'
+const showingAll = (filter) => filter === 'todos'
 const filterByStatus = (jobs, filter) => jobs.filter((job) => job.statusKey === filter)
-const applyFilter    = (jobs, filter) => showingAll(filter) ? jobs : filterByStatus(jobs, filter)
+const applyFilter = (jobs, filter) => (showingAll(filter) ? jobs : filterByStatus(jobs, filter))
 
 export const useJobs = () => {
   const [jobs, setJobs] = useState([])
@@ -27,12 +27,11 @@ export const useJobs = () => {
     }
   }, [])
 
-  useEffect(() => { load() }, [load])
+  useEffect(() => {
+    load()
+  }, [load])
 
-  const filteredJobs = useMemo(
-    () => applyFilter(jobs, activeFilter),
-    [jobs, activeFilter],
-  )
+  const filteredJobs = useMemo(() => applyFilter(jobs, activeFilter), [jobs, activeFilter])
 
   return { filteredJobs, isLoading, error, activeFilter, setActiveFilter, refresh: load }
 }

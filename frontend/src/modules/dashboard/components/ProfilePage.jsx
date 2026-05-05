@@ -3,16 +3,18 @@ import { useAuthSession } from '../../auth/hooks/useAuthSession'
 import FichajeCalendar from '../../fichaje/components/FichajeCalendar'
 import { useProfile } from '../hooks/useProfile'
 
-const roleLabel = (role) => role === 'admin' ? 'Administrador' : 'Operario'
+const roleLabel = (role) => (role === 'admin' ? 'Administrador' : 'Operario')
 
-const fieldShell = 'flex min-h-[48px] items-center rounded-lg border border-slate-700 bg-slate-900/70 transition focus-within:border-amber-500 focus-within:ring-2 focus-within:ring-amber-500/20'
-const inputBase  = 'w-full bg-transparent px-3.5 text-[0.95rem] text-slate-100 outline-none placeholder:text-slate-500'
-const labelBase  = 'mt-3 text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-slate-400'
-const cardBase   = 'rounded-xl border border-slate-900/50 bg-slate-900/65 p-5'
+const fieldShell =
+  'flex min-h-[48px] items-center rounded-lg border border-slate-700 bg-slate-900/70 transition focus-within:border-amber-500 focus-within:ring-2 focus-within:ring-amber-500/20'
+const inputBase =
+  'w-full bg-transparent px-3.5 text-[0.95rem] text-slate-100 outline-none placeholder:text-slate-500'
+const labelBase = 'mt-3 text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-slate-400'
+const cardBase = 'rounded-xl border border-slate-900/50 bg-slate-900/65 p-5'
 
-const feedbackOk  = ({ msg }) => msg && <p className="mt-2 text-sm text-emerald-400">{msg}</p>
+const feedbackOk = ({ msg }) => msg && <p className="mt-2 text-sm text-emerald-400">{msg}</p>
 const feedbackErr = ({ msg }) => msg && <p className="mt-2 text-sm text-rose-400">{msg}</p>
-const submitBtn   = ({ label, loading }) => (
+const submitBtn = ({ label, loading }) => (
   <button
     type="submit"
     disabled={loading}
@@ -23,24 +25,27 @@ const submitBtn   = ({ label, loading }) => (
 )
 
 const ProfilePage = () => {
-  const state   = useProfile()
+  const state = useProfile()
   const { profile } = useAuthSession()
   const isOperario = profile?.role !== 'admin'
 
   return (
     <AppShell>
       <div className="mx-auto w-full max-w-[520px] space-y-5 pb-5">
-
         {/* Info de cuenta — solo lectura */}
         <section className={cardBase}>
           <h2 className="text-lg font-bold tracking-tight text-slate-100">Mi cuenta</h2>
           <div className="mt-4 grid gap-3">
             <div>
-              <p className="text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-slate-500">Email</p>
+              <p className="text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-slate-500">
+                Email
+              </p>
               <p className="mt-0.5 text-sm text-slate-300">{state.profile?.email}</p>
             </div>
             <div>
-              <p className="text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-slate-500">Rol</p>
+              <p className="text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-slate-500">
+                Rol
+              </p>
               <p className="mt-0.5 text-sm text-slate-300">{roleLabel(state.profile?.role)}</p>
             </div>
           </div>
@@ -70,7 +75,9 @@ const ProfilePage = () => {
         {/* Calendario de fichajes — solo operarios */}
         {isOperario && (
           <section>
-            <h2 className="mb-3 text-xs font-bold uppercase tracking-[0.16em] text-slate-400">Mis jornadas</h2>
+            <h2 className="mb-3 text-xs font-bold uppercase tracking-[0.16em] text-slate-400">
+              Mis jornadas
+            </h2>
             <FichajeCalendar />
           </section>
         )}
@@ -120,7 +127,6 @@ const ProfilePage = () => {
             {submitBtn({ label: 'Cambiar contraseña', loading: state.isSavingPassword })}
           </form>
         </section>
-
       </div>
     </AppShell>
   )

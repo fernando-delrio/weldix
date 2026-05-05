@@ -29,7 +29,10 @@ const Lightbox = ({ foto, onClose, onDelete }) => (
       )}
       <button
         type="button"
-        onClick={() => { onDelete(foto.id); onClose() }}
+        onClick={() => {
+          onDelete(foto.id)
+          onClose()
+        }}
         className="rounded-md border border-rose-700/50 bg-rose-500/10 px-3 py-1 text-[0.65rem] uppercase tracking-widest text-rose-400 transition hover:bg-rose-500/20"
       >
         Eliminar
@@ -89,8 +92,16 @@ const FotosGallery = ({ jobId }) => {
   const [etiqueta, setEtiqueta] = useState('durante')
 
   const {
-    fotos, isLoading, isUploading, lightbox, error,
-    fileInputRef, abrirLightbox, cerrarLightbox, eliminarFoto, subirFoto,
+    fotos,
+    isLoading,
+    isUploading,
+    lightbox,
+    error,
+    fileInputRef,
+    abrirLightbox,
+    cerrarLightbox,
+    eliminarFoto,
+    subirFoto,
   } = useFotos(jobId)
 
   // Al seleccionar archivo, usamos la etiqueta actual del selector
@@ -104,9 +115,7 @@ const FotosGallery = ({ jobId }) => {
     <section className={cardBase}>
       <h2 className="mb-4 text-xs font-bold uppercase tracking-[0.16em] text-slate-400">
         Fotos del trabajo
-        {fotos.length > 0 && (
-          <span className="ml-2 text-slate-600">({fotos.length})</span>
-        )}
+        {fotos.length > 0 && <span className="ml-2 text-slate-600">({fotos.length})</span>}
       </h2>
 
       {error && <p className="mb-3 text-xs text-rose-400">{error}</p>}
@@ -153,13 +162,7 @@ const FotosGallery = ({ jobId }) => {
         </>
       )}
 
-      {lightbox && (
-        <Lightbox
-          foto={lightbox}
-          onClose={cerrarLightbox}
-          onDelete={eliminarFoto}
-        />
-      )}
+      {lightbox && <Lightbox foto={lightbox} onClose={cerrarLightbox} onDelete={eliminarFoto} />}
     </section>
   )
 }

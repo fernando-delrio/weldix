@@ -15,7 +15,6 @@ const RegisterWorkspacePage = () => {
       error={error}
     >
       <form onSubmit={submit} className={authTw.formGrid}>
-
         {/* Nombre del taller */}
         <label htmlFor="reg-taller" className={authTw.fieldLabel}>
           NOMBRE DEL TALLER
