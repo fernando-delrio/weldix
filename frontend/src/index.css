@@ -24,11 +24,22 @@ html[data-theme='light'] {
   /* Amber — más oscuro en light para legibilidad */
   --color-amber-400: #b45309;
   --color-amber-300: #92400e;
+  --color-amber-200: #92400e;
   --color-amber-500: #d97706;
 
-  /* Rose/emerald — ligeramente ajustados */
+  /* Rose/emerald — ligeramente ajustados (300 y 400 se usan como texto) */
   --color-rose-400: #e11d48;
+  --color-rose-300: #be123c;
   --color-emerald-400: #059669;
+  --color-emerald-300: #047857;
+
+  /* Sky/cyan — acentos usados como TEXTO (text-sky-300/400, text-cyan-300).
+     Sin override quedan en su valor oscuro-mode (azul/cian claro) y resultan
+     casi invisibles sobre el fondo crema. Los mismos tonos sólo aparecen como
+     fondo en puntitos decorativos (bg-sky-400), así que oscurecerlos es seguro. */
+  --color-sky-400: #0369a1;
+  --color-sky-300: #0369a1;
+  --color-cyan-300: #155e75;
 }
 
 /* ── Tipografía base ─────────────────────────────────────────────── */
