@@ -29,3 +29,6 @@ frontend/dist/
 
 # Logs
 *.log
+
+# Local artifacts (no publicados)
+routing-portfolio.html
