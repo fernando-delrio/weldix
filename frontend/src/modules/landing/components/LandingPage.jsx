@@ -27,8 +27,6 @@ const T = {
     sectionAlt: 'bg-[#090e15]',
     btnPrimary: 'bg-amber-500 text-black hover:bg-amber-400 shadow-amber-500/20',
     btnGhost: 'border border-slate-700 text-slate-300 hover:bg-slate-800',
-    btnWhatsapp:
-      'border border-emerald-700/60 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20',
     footerBg: 'bg-[#040608]',
     monoMuted: 'text-slate-600',
     gridColor: 'rgba(255,255,255,0.022)',
@@ -69,8 +67,6 @@ const T = {
     sectionAlt: 'bg-[#ede7db]',
     btnPrimary: 'bg-amber-600 text-white hover:bg-amber-700 shadow-amber-600/25',
     btnGhost: 'border border-stone-400 text-slate-200 hover:bg-stone-200',
-    btnWhatsapp:
-      'border border-emerald-700/60 bg-emerald-500/10 text-emerald-900 hover:bg-emerald-500/20',
     footerBg: 'bg-[#e8e0d4]',
     monoMuted: 'text-stone-500',
     gridColor: 'rgba(0,0,0,0.05)',
@@ -193,14 +189,14 @@ const PLANS = [
   {
     name: 'STARTER',
     users: 'hasta 5 operarios',
-    price: '19',
+    price: '29',
     features: ['OTs ilimitadas', 'Control de fichaje', 'Gestión de stock', 'Soporte por email'],
     popular: false,
   },
   {
-    name: 'TALLER',
-    users: 'hasta 20 operarios',
-    price: '49',
+    name: 'PRO',
+    users: 'operarios ilimitados',
+    price: '59',
     features: [
       'Todo de Starter',
       'RRHH completo',
@@ -210,19 +206,6 @@ const PLANS = [
       'Soporte prioritario',
     ],
     popular: true,
-  },
-  {
-    name: 'INDUSTRIA',
-    users: 'operarios ilimitados',
-    price: '89',
-    features: [
-      'Todo de Taller',
-      'Automatizaciones n8n',
-      'Portal cliente',
-      'Facturas en PDF',
-      'SLA garantizado',
-    ],
-    popular: false,
   },
 ]
 
@@ -399,19 +382,6 @@ const HeroSection = ({ t, isDark }) => (
           <i className="bx bx-rocket text-base" />
           Probar 15 días gratis
         </Link>
-        <a
-          href="https://wa.me/34600000000?text=Hola%2C%20quiero%20saber%20más%20sobre%20Weldix"
-          target="_blank"
-          rel="noopener noreferrer"
-          data-gsap="hero-cta"
-          className={cx(
-            'flex items-center gap-2 rounded-sm px-7 py-3.5 text-sm font-semibold uppercase tracking-wider transition',
-            t.btnWhatsapp
-          )}
-        >
-          <i className="bx bxl-whatsapp text-base" />
-          WhatsApp
-        </a>
         <a
           href="mailto:hola@weldix.app?subject=Quiero%20saber%20más%20sobre%20Weldix"
           data-gsap="hero-cta"
@@ -840,7 +810,7 @@ const PricingSection = ({ t }) => (
         </p>
       </div>
 
-      <div className="grid md:grid-cols-3">
+      <div className="mx-auto grid max-w-3xl md:grid-cols-2">
         {PLANS.map(({ name, users, price, features, popular }, i) => (
           <div
             key={name}
@@ -936,18 +906,6 @@ const CtaSection = ({ t }) => (
           <i className="bx bx-rocket text-lg" />
           Crear mi taller gratis
         </Link>
-        <a
-          href="https://wa.me/34600000000?text=Hola%2C%20quiero%20una%20demo%20de%20Weldix"
-          target="_blank"
-          rel="noopener noreferrer"
-          className={cx(
-            'flex items-center gap-2 rounded-sm px-8 py-4 text-sm font-semibold uppercase tracking-wider transition',
-            t.btnWhatsapp
-          )}
-        >
-          <i className="bx bxl-whatsapp text-lg" />
-          Pedir demo por WhatsApp
-        </a>
       </div>
       <p className={cx('text-[0.62rem] font-semibold uppercase tracking-[0.18em]', t.faint)}>
         Sin compromiso · Sin tarjeta · Cancela cuando quieras

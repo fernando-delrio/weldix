@@ -152,15 +152,6 @@ const TrialExpiredPage = () => {
               <i className="bx bx-envelope mr-1" />
               hola@weldix.app
             </a>
-            <a
-              href="https://wa.me/34600000000?text=Quiero%20activar%20mi%20suscripci%C3%B3n%20en%20Weldix"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs text-slate-500 hover:text-amber-400 transition"
-            >
-              <i className="bx bxl-whatsapp mr-1" />
-              WhatsApp
-            </a>
           </div>
         </div>
 
