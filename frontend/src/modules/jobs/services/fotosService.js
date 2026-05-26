@@ -12,6 +12,13 @@ export const getFotosParaTrabajo = async (jobId) => {
   return res.json()
 }
 
+export const getFotoObjectUrl = async (foto) => {
+  const res = await fetch(foto.url, { headers: authHeaders() })
+  if (!res.ok) throw new Error('Error al obtener la imagen')
+  const blob = await res.blob()
+  return URL.createObjectURL(blob)
+}
+
 export const uploadFoto = async (jobId, file, etiqueta = 'durante') => {
   // FormData: el backend espera multipart/form-data — no añadimos Content-Type manualmente
   // porque el navegador lo pone con el boundary correcto

@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 import { useAdminDashboard } from '../hooks/useAdminDashboard'
 import AdminJobCard from './AdminJobCard'
-import PanelCard from '../../dashboard/components/PanelCard'
+import PanelCard from '../../core/components/PanelCard'
 
 // ── Constantes ───────────────────────────────────────────────────────────────
 const STATUS_FILTERS = ['Todos', 'pendiente', 'en_proceso', 'control', 'listo', 'entregado']

@@ -14,7 +14,7 @@ const Lightbox = ({ foto, onClose, onDelete }) => (
     onClick={onClose}
   >
     <img
-      src={foto.url}
+      src={foto.previewUrl}
       alt={foto.etiqueta}
       className="max-h-[80vh] max-w-[90vw] rounded-xl object-contain shadow-2xl"
       onClick={(e) => e.stopPropagation()}
@@ -75,7 +75,7 @@ const FotoThumb = ({ foto, onClick }) => (
     className="group relative aspect-square overflow-hidden rounded-lg border border-slate-800 bg-slate-800/60 transition hover:border-sky-500/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400"
   >
     <img
-      src={foto.url}
+      src={foto.previewUrl}
       alt={foto.etiqueta}
       className="h-full w-full object-cover transition group-hover:scale-105"
     />

@@ -19,7 +19,7 @@ class FotoResponse(BaseModel):
             id=foto.id,
             job_id=foto.job_id,
             filename=foto.filename,
-            url=f"{base_url}/media/fotos/{foto.filename}",
+            url=f"{base_url}/fotos/{foto.id}/archivo",
             etiqueta=foto.etiqueta,
             created_at=foto.created_at,
             uploader_nombre=foto.uploader.full_name if foto.uploader else None,

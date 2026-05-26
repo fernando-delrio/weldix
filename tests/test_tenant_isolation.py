@@ -27,6 +27,17 @@ def _create_job(client, token: str, titulo: str = "Soldadura test") -> dict:
     return res.json()
 
 
+def _upload_png(client, token: str, job_id: int, filename: str = "foto.png") -> dict:
+    res = client.post(
+        f"/trabajos/{job_id}/fotos",
+        files={"file": (filename, b"\x89PNG\r\n\x1a\n" + b"\x00" * 32, "image/png")},
+        data={"etiqueta": "antes"},
+        headers=_auth_header(token),
+    )
+    assert res.status_code == 201, f"No se pudo subir foto: {res.json()}"
+    return res.json()
+
+
 # ─── Tests de listado ─────────────────────────────────────────────────────────
 
 
@@ -162,3 +173,49 @@ def test_admin_only_sees_own_tenant_users(two_tenants_client):
 
     assert "admin@taller-b.dev" in emails_b
     assert "admin@taller-a.dev" not in emails_b
+
+
+def test_photos_are_isolated_by_tenant(two_tenants_client, tmp_path, monkeypatch):
+    """
+    Admin A no puede asociar, listar, descargar ni borrar fotos de trabajos de B.
+    """
+    from backend.features.fotos import service as fotos_service
+
+    monkeypatch.setattr(fotos_service, "MEDIA_DIR", tmp_path)
+    client, token_a, token_b = two_tenants_client
+
+    job_a = _create_job(client, token_a, "Job con fotos A")
+    job_b = _create_job(client, token_b, "Job con fotos B")
+    foto_b = _upload_png(client, token_b, job_b["id"])
+
+    cross_upload = client.post(
+        f"/trabajos/{job_b['id']}/fotos",
+        files={"file": ("otra.png", b"\x89PNG\r\n\x1a\n" + b"\x00" * 32, "image/png")},
+        headers=_auth_header(token_a),
+    )
+    assert cross_upload.status_code == 404
+
+    list_a = client.get(f"/trabajos/{job_a['id']}/fotos", headers=_auth_header(token_a))
+    assert list_a.status_code == 200
+    assert list_a.json() == []
+
+    list_b_as_a = client.get(
+        f"/trabajos/{job_b['id']}/fotos", headers=_auth_header(token_a)
+    )
+    assert list_b_as_a.status_code == 404
+
+    download_b_as_a = client.get(
+        f"/fotos/{foto_b['id']}/archivo", headers=_auth_header(token_a)
+    )
+    assert download_b_as_a.status_code == 404
+
+    delete_b_as_a = client.delete(
+        f"/fotos/{foto_b['id']}", headers=_auth_header(token_a)
+    )
+    assert delete_b_as_a.status_code == 404
+
+    still_visible_to_b = client.get(
+        f"/trabajos/{job_b['id']}/fotos", headers=_auth_header(token_b)
+    )
+    assert still_visible_to_b.status_code == 200
+    assert [foto["id"] for foto in still_visible_to_b.json()] == [foto_b["id"]]

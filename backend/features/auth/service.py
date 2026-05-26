@@ -1,39 +1,14 @@
 import re
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, Tuple
+from typing import Dict, Tuple
 
 from sqlalchemy.orm import Session
 
 from backend.core.config import settings
 from backend.core.security import create_access_token, hash_password, verify_password
-
-from backend.features.equipos.model import Equipo
-from backend.features.jobs.model import Job
-from backend.features.stock.model import Material
+from backend.features.demo import seed_workspace_demo_data
 
 from .model import Tenant, User
-
-_DEMO_JOBS: list[dict[str, Any]] = [
-    {"code": "ORD-DEMO-001", "titulo": "Estructura metálica (demo)", "cliente": "Cliente Ejemplo", "estado": "en_proceso", "progreso": 40},
-    {"code": "ORD-DEMO-002", "titulo": "Barandilla inox (demo)", "cliente": "Reformas Ejemplo", "estado": "pendiente", "progreso": 0},
-    {"code": "ORD-DEMO-003", "titulo": "Depósito 2000L (demo)", "cliente": "Agro Ejemplo", "estado": "listo", "progreso": 100},
-]
-_DEMO_STOCK: list[dict[str, Any]] = [
-    {"name": "Varilla soldadura 3.2mm (demo)", "quantity": 20, "minimum": 50, "unit": "ud"},
-    {"name": "Chapa acero 3mm (demo)", "quantity": 15, "minimum": 10, "unit": "kg"},
-]
-_DEMO_EQUIPOS: list[dict[str, Any]] = [
-    {"nombre": "Soldadora MIG (demo)", "tipo": "Soldadora", "estado": "operativo", "intervalo_dias": 90},
-]
-
-
-def _seed_demo_data(db: Session, tenant_id: int) -> None:
-    for data in _DEMO_JOBS:
-        db.add(Job(tenant_id=tenant_id, is_demo=True, **data))
-    for data in _DEMO_STOCK:
-        db.add(Material(tenant_id=tenant_id, is_demo=True, **data))
-    for data in _DEMO_EQUIPOS:
-        db.add(Equipo(tenant_id=tenant_id, is_demo=True, **data))
 
 # { email: (attempts, locked_until_utc) }
 _login_state: Dict[str, Tuple[int, datetime | None]] = {}
@@ -66,7 +41,6 @@ def _reset_attempts(email: str):
 
 
 def _slugify(name: str) -> str:
-    """Convierte "Talleres García S.L." en "talleres-garcia-sl" para usar como slug."""
     slug = name.lower().strip()
     slug = re.sub(r"[^a-z0-9\s-]", "", slug)
     slug = re.sub(r"\s+", "-", slug)
@@ -75,7 +49,6 @@ def _slugify(name: str) -> str:
 
 
 def _unique_slug(db: Session, base: str) -> str:
-    """Si el slug ya existe, añade un sufijo numérico hasta encontrar uno libre."""
     slug = base
     counter = 2
     while db.query(Tenant).filter(Tenant.slug == slug).first():
@@ -91,17 +64,11 @@ def create_workspace(
     admin_password: str,
     admin_name: str | None,
 ) -> tuple[Tenant, User]:
-    """
-    Registro público: crea un Tenant (taller) y su primer usuario admin.
-    Este es el punto de entrada para nuevos clientes de Weldix.
-    """
     safe_email = admin_email.lower().strip()
 
-    # Guard: email ya registrado
     if db.query(User).filter(User.email == safe_email).first():
         raise ValueError("Este email ya tiene una cuenta en Weldix")
 
-    # Crear tenant con trial de 15 días
     base_slug = _slugify(nombre_taller)
     slug = _unique_slug(db, base_slug)
     tenant = Tenant(
@@ -111,9 +78,8 @@ def create_workspace(
         trial_expires_at=_now() + timedelta(days=15),
     )
     db.add(tenant)
-    db.flush()  # obtenemos tenant.id antes de crear el usuario
+    db.flush()
 
-    # Crear admin del taller
     admin = User(
         tenant_id=tenant.id,
         email=safe_email,
@@ -122,7 +88,7 @@ def create_workspace(
         password_hash=hash_password(admin_password),
     )
     db.add(admin)
-    _seed_demo_data(db, tenant.id)  # type: ignore[arg-type]
+    seed_workspace_demo_data(db, tenant.id)  # type: ignore[arg-type]
     db.commit()
     db.refresh(tenant)
     db.refresh(admin)
@@ -180,18 +146,12 @@ def change_password(
     db: Session, user: User, current_password: str, new_password: str
 ) -> None:
     if not verify_password(current_password, user.password_hash):
-        raise ValueError("Contraseña actual incorrecta")
+        raise ValueError("Contrasena actual incorrecta")
     user.password_hash = hash_password(new_password)
     db.commit()
 
 
 def get_trial_status(db: Session, tenant_id: int | None) -> dict:
-    """
-    Devuelve el estado del trial del tenant del usuario.
-    - trial_expires_at = None → plan activo, sin restricción
-    - trial_expires_at < now → expirado
-    - trial_expires_at > now → days_left calculados
-    """
     if tenant_id is None:
         return {
             "is_trial": False,
@@ -210,8 +170,6 @@ def get_trial_status(db: Session, tenant_id: int | None) -> dict:
         }
 
     now = _now()
-    # SQLite devuelve datetimes sin tzinfo; PostgreSQL los devuelve con tzinfo.
-    # Normalizamos a UTC para que la comparación funcione en ambos entornos.
     trial_dt = tenant.trial_expires_at
     if trial_dt.tzinfo is None:
         trial_dt = trial_dt.replace(tzinfo=timezone.utc)
@@ -236,7 +194,7 @@ def authenticate_user(db: Session, email: str, password: str) -> dict:
     user = db.query(User).filter(User.email == safe_email).first()
     if not user or not verify_password(password, user.password_hash):
         _register_failed_attempt(safe_email)
-        raise ValueError("Credenciales inválidas")
+        raise ValueError("Credenciales invalidas")
 
     _reset_attempts(safe_email)
 

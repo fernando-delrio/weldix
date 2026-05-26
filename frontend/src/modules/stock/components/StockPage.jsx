@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import AppShell from '../../core/components/AppShell'
-import PanelCard from '../../dashboard/components/PanelCard'
+import PanelCard from '../../core/components/PanelCard'
 import { useStockPage } from '../hooks/useStockPage'
 import { useAuthSession } from '../../auth/hooks/useAuthSession'
 import { cx } from '../../core/lib/cx'

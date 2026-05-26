@@ -315,7 +315,31 @@ def seed_stock() -> None:
 
 
 def _check_security_warnings() -> None:
-    if settings.jwt_secret_key == "dev-secret-change-me":
+    is_production = settings.environment.lower() in {"prod", "production"}
+    insecure_jwt_secret = settings.jwt_secret_key == "dev-secret-change-me"
+
+    if is_production and insecure_jwt_secret:
+        raise RuntimeError(
+            "JWT_SECRET_KEY usa el valor inseguro de desarrollo. "
+            "Define una clave segura antes de arrancar en produccion."
+        )
+    if is_production and settings.auto_create_tables:
+        raise RuntimeError(
+            "AUTO_CREATE_TABLES debe ser false en produccion. "
+            "Usa Alembic para aplicar cambios de schema."
+        )
+    if is_production and "*" in settings.allowed_hosts:
+        raise RuntimeError("ALLOWED_HOSTS no puede contener '*' en produccion.")
+    if is_production and any(
+        origin.startswith(("http://localhost", "http://127.0.0.1"))
+        for origin in settings.allowed_origins
+    ):
+        raise RuntimeError(
+            "ALLOWED_ORIGINS contiene origenes locales en produccion. "
+            "Configura el dominio HTTPS del frontend."
+        )
+
+    if insecure_jwt_secret:
         logger.warning(
             "⚠️  JWT_SECRET_KEY usa el valor por defecto de desarrollo. "
             "Define una clave segura en .env antes de desplegar a producción."

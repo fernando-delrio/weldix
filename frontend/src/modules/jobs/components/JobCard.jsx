@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { toneFor } from '../../dashboard/lib/tones'
+import { toneFor } from '../../core/lib/tones'
 
 // Acento lateral por estado — comunica el estado de un vistazo sin leer el badge
 const STATUS_ACCENT = {
