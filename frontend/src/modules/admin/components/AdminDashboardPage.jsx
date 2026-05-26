@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import AppShell from '../../core/components/AppShell'
-import PanelCard from '../../dashboard/components/PanelCard'
+import PanelCard from '../../core/components/PanelCard'
 import NewJobModal from '../../dashboard/components/NewJobModal'
 import FichajesAdminSection from '../../fichaje/components/FichajesAdminSection'
 import WeldixButton from '../../core/components/WeldixButton'

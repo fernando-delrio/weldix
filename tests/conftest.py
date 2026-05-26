@@ -13,6 +13,7 @@ from backend.features.auth.dependencies import require_active_trial
 from backend.features.auth.model import Tenant
 from backend.features.auth.router import router as auth_router
 from backend.features.billing.router import router as billing_router
+from backend.features.fotos.router import router as fotos_router
 from backend.features.jobs.router import router as jobs_router
 
 
@@ -148,7 +149,7 @@ def two_tenants_client():
 
     Útil para: tests de aislamiento multi-tenant.
     """
-    app, engine = _make_test_app([auth_router, jobs_router])
+    app, engine = _make_test_app([auth_router, jobs_router, fotos_router])
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
     db = SessionLocal()

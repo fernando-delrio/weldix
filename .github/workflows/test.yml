@@ -31,13 +31,14 @@ jobs:
       #     DATABASE_URL: "sqlite:///./ci-test.db"
 
       - name: Run tests
-        # DATABASE_URL vacío → SQLite en memoria (conftest.py lo gestiona)
+        # DATABASE_URL en memoria → database.py crea un engine válido al importar.
+        # Los tests usan su propio engine StaticPool (ver conftest.py), no este.
         # PYTHONPATH=. permite que pytest encuentre el paquete backend desde la raíz
         run: pytest tests/ -v --tb=short
         env:
           PYTHONPATH: "."
           SECRET_KEY: "ci-secret-key-not-used-in-production"
-          DATABASE_URL: ""
+          DATABASE_URL: "sqlite:///:memory:"
 
   # ─── Frontend ───────────────────────────────────────────────────────────────
   frontend:

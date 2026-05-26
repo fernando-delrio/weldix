@@ -34,6 +34,9 @@ class Settings(BaseSettings):
         "http://127.0.0.1:5175",
         "http://127.0.0.1:5176",
     ]
+    allowed_hosts: list[str] = ["localhost", "127.0.0.1", "testserver"]
+    force_https: bool = False
+    max_upload_mb: int = 10
 
     mistral_api_key: str | None = None
 

@@ -1,4 +1,7 @@
+from pathlib import Path
+
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
 from backend.core.database import get_db
@@ -29,9 +32,14 @@ async def upload_foto(
     current_user: User = Depends(get_current_user),
 ):
     try:
-        foto = await service.guardar_foto(db, job_id, current_user.id, file, etiqueta)
+        foto = await service.guardar_foto(
+            db, job_id, current_user.id, current_user.tenant_id, file, etiqueta
+        )
     except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc))
+        status_code = (
+            404 if "Trabajo" in str(exc) and "no encontrado" in str(exc) else 400
+        )
+        raise HTTPException(status_code=status_code, detail=str(exc))
     return FotoResponse.from_orm_foto(foto, _base_url(request))
 
 
@@ -40,10 +48,30 @@ def list_fotos(
     job_id: int,
     request: Request,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
-    fotos = service.get_fotos_para_trabajo(db, job_id)
+    try:
+        fotos = service.get_fotos_para_trabajo(db, job_id, current_user.tenant_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
     return [FotoResponse.from_orm_foto(f, _base_url(request)) for f in fotos]
+
+
+@router.get("/fotos/{foto_id}/archivo")
+def get_foto_archivo(
+    foto_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    try:
+        foto = service.get_foto_by_id(db, foto_id, current_user.tenant_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+
+    archivo = Path(foto.filepath)
+    if not archivo.exists():
+        raise HTTPException(status_code=404, detail="Archivo no encontrado")
+    return FileResponse(archivo)
 
 
 @router.delete("/fotos/{foto_id}", status_code=204)
@@ -53,7 +81,9 @@ def delete_foto(
     current_user: User = Depends(get_current_user),
 ):
     try:
-        service.delete_foto(db, foto_id, current_user.id, current_user.role)
+        service.delete_foto(
+            db, foto_id, current_user.id, current_user.role, current_user.tenant_id
+        )
     except PermissionError as exc:
         raise HTTPException(status_code=403, detail=str(exc))
     except ValueError as exc:

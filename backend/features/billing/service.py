@@ -75,6 +75,14 @@ def create_checkout_session(
     customer_id = _get_or_create_customer(tenant, admin_email)
     db.commit()  # persistir stripe_customer_id si es nuevo
 
+    has_active_trial = (
+        tenant.trial_expires_at is not None
+        and tenant.trial_expires_at > datetime.utcnow()
+    )
+    subscription_data: dict = {"metadata": {"tenant_id": str(tenant.id)}}
+    if has_active_trial:
+        subscription_data["trial_end"] = int(tenant.trial_expires_at.timestamp())
+
     session = stripe.checkout.Session.create(
         customer=customer_id,
         mode="subscription",
@@ -82,16 +90,7 @@ def create_checkout_session(
         success_url=success_url,
         cancel_url=cancel_url,
         metadata={"tenant_id": str(tenant.id)},
-        subscription_data={
-            "metadata": {"tenant_id": str(tenant.id)},
-            # Si tiene trial activo, propagar los días restantes a Stripe
-            "trial_end": (
-                int(tenant.trial_expires_at.timestamp())
-                if tenant.trial_expires_at
-                and tenant.trial_expires_at > datetime.now(timezone.utc)
-                else "now"
-            ),
-        },
+        subscription_data=subscription_data,
         allow_promotion_codes=True,
     )
     return session.url

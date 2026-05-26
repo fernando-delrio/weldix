@@ -1,5 +1,5 @@
 import AppShell from '../../core/components/AppShell'
-import PanelCard from '../../dashboard/components/PanelCard'
+import PanelCard from '../../core/components/PanelCard'
 import WeldixButton from '../../core/components/WeldixButton'
 import { useJobs } from '../hooks/useJobs'
 import JobCard from './JobCard'

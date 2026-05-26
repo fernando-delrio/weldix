@@ -1,7 +1,7 @@
 import { getStatusConfig } from '../../core/lib/statusConfig'
 import { useIaContext } from '../../ia/lib/IaContext'
-import { toneFor } from '../lib/tones'
-import PanelCard from './PanelCard'
+import PanelCard from '../../core/components/PanelCard'
+import { toneFor } from '../../core/lib/tones'
 import StageProgress from './StageProgress'
 
 const advanceButton = ({ nextLabel, onComplete }) =>

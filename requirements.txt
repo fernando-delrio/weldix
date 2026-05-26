@@ -1,5 +1,6 @@
 annotated-doc==0.0.4
 annotated-types==0.7.0
+alembic==1.17.2
 anyio==4.12.1
 click==8.3.1
 colorama==0.4.6
@@ -28,4 +29,5 @@ mistralai==1.12.4
 pytest==8.4.2
 stripe==15.0.1
 python-multipart==0.0.20
+psycopg[binary]==3.3.2
 resend==2.10.0

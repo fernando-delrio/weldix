@@ -1,5 +1,5 @@
 import AppShell from '../../core/components/AppShell'
-import PanelCard from './PanelCard'
+import PanelCard from '../../core/components/PanelCard'
 
 const AppSectionPlaceholderPage = ({ title, description }) => {
   return (

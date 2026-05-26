@@ -1,4 +1,4 @@
-import { toneFor } from '../lib/tones'
+import { toneFor } from '../../core/lib/tones'
 
 const StockItem = ({ item }) => {
   const tone = toneFor(item.tone)

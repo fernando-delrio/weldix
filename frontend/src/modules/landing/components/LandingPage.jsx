@@ -211,6 +211,12 @@ const PLANS = [
 
 // ─── theme toggle ─────────────────────────────────────────────────────────────
 
+const NAV_ITEMS = [
+  { label: 'Módulos', targetId: 'modulos' },
+  { label: 'Cómo funciona', targetId: 'como-funciona' },
+  { label: 'Precios', targetId: 'precios' },
+]
+
 const ThemeToggle = ({ isDark, onToggle, t }) => (
   <button
     type="button"
@@ -254,6 +260,15 @@ const ThemeToggle = ({ isDark, onToggle, t }) => (
 
 // ─── navbar ───────────────────────────────────────────────────────────────────
 
+const scrollToLandingSection = (event, targetId) => {
+  const section = document.getElementById(targetId)
+
+  if (!section) return
+
+  event.preventDefault()
+  section.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
 const NavBar = ({ isDark, onToggle, t }) => (
   <nav
     className={cx(
@@ -272,22 +287,33 @@ const NavBar = ({ isDark, onToggle, t }) => (
     </div>
 
     <div className="hidden items-center gap-8 md:flex">
-      {['Módulos', 'Cómo funciona', 'Precios'].map((l) => (
-        <button
-          key={l}
-          type="button"
+      {NAV_ITEMS.map(({ label, targetId }) => (
+        <a
+          key={targetId}
+          href={`#${targetId}`}
+          onClick={(event) => scrollToLandingSection(event, targetId)}
           className={cx(
             'text-[0.7rem] font-semibold uppercase tracking-[0.14em] transition',
             t.navText
           )}
         >
-          {l}
-        </button>
+          {label}
+        </a>
       ))}
     </div>
 
     <div className="flex items-center gap-2">
       <ThemeToggle isDark={isDark} onToggle={onToggle} t={t} />
+      <a
+        href="mailto:hola@weldix.app?subject=Contacto%20Weldix"
+        className={cx(
+          'hidden items-center gap-1.5 px-3 py-1.5 text-[0.7rem] font-semibold uppercase tracking-wider transition sm:flex',
+          t.navText
+        )}
+      >
+        <i className="bx bx-envelope text-sm" />
+        Contacto
+      </a>
       <Link
         to="/login"
         className={cx(
@@ -519,7 +545,7 @@ const TrustMetricsBar = ({ t, isDark }) => (
 // ─── features ─────────────────────────────────────────────────────────────────
 
 const FeaturesSection = ({ t }) => (
-  <section className="px-6 py-24">
+  <section id="modulos" className="scroll-mt-24 px-6 py-24">
     <div className="mx-auto max-w-6xl">
       <div
         className={cx(
@@ -604,8 +630,9 @@ const FeaturesSection = ({ t }) => (
 
 const TimelineSection = ({ t }) => (
   <section
+    id="como-funciona"
     data-gsap="timeline-section"
-    className={cx('px-6 py-24 transition-colors duration-300', t.sectionAlt)}
+    className={cx('scroll-mt-24 px-6 py-24 transition-colors duration-300', t.sectionAlt)}
   >
     <div className="mx-auto max-w-6xl">
       <div className={cx('mb-14 border-b pb-8', t.divider)}>
@@ -778,7 +805,10 @@ const TestimonialsSection = ({ t }) => (
 // ─── precios ──────────────────────────────────────────────────────────────────
 
 const PricingSection = ({ t }) => (
-  <section className={cx('px-6 py-24 transition-colors duration-300', t.sectionAlt)}>
+  <section
+    id="precios"
+    className={cx('scroll-mt-24 px-6 py-24 transition-colors duration-300', t.sectionAlt)}
+  >
     <div className="mx-auto max-w-6xl">
       <div
         className={cx(

@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { deleteFoto, getFotosParaTrabajo, uploadFoto } from '../services/fotosService'
+import {
+  deleteFoto,
+  getFotoObjectUrl,
+  getFotosParaTrabajo,
+  uploadFoto,
+} from '../services/fotosService'
 
 export const useFotos = (jobId) => {
   const [fotos, setFotos] = useState([])
@@ -8,23 +13,43 @@ export const useFotos = (jobId) => {
   const [lightbox, setLightbox] = useState(null) // foto abierta en lightbox
   const [error, setError] = useState(null)
   const fileInputRef = useRef(null)
+  const objectUrlsRef = useRef([])
+
+  const revokeObjectUrls = useCallback(() => {
+    objectUrlsRef.current.forEach((url) => URL.revokeObjectURL(url))
+    objectUrlsRef.current = []
+  }, [])
+
+  const withPreviewUrls = useCallback(async (items) => {
+    const enriched = await Promise.all(
+      items.map(async (foto) => {
+        const previewUrl = await getFotoObjectUrl(foto)
+        objectUrlsRef.current.push(previewUrl)
+        return { ...foto, previewUrl }
+      })
+    )
+    return enriched
+  }, [])
 
   const cargarFotos = useCallback(async () => {
     setIsLoading(true)
     setError(null)
     try {
       const data = await getFotosParaTrabajo(jobId)
-      setFotos(data)
+      revokeObjectUrls()
+      setFotos(await withPreviewUrls(data))
     } catch (err) {
       setError(err.message)
     } finally {
       setIsLoading(false)
     }
-  }, [jobId])
+  }, [jobId, revokeObjectUrls, withPreviewUrls])
 
   useEffect(() => {
     cargarFotos()
   }, [cargarFotos])
+
+  useEffect(() => revokeObjectUrls, [revokeObjectUrls])
 
   const subirFoto = useCallback(
     async (file, etiqueta = 'durante') => {
@@ -32,14 +57,15 @@ export const useFotos = (jobId) => {
       setError(null)
       try {
         const nueva = await uploadFoto(jobId, file, etiqueta)
-        setFotos((prev) => [...prev, nueva])
+        const [fotoConPreview] = await withPreviewUrls([nueva])
+        setFotos((prev) => [...prev, fotoConPreview])
       } catch (err) {
         setError(err.message)
       } finally {
         setIsUploading(false)
       }
     },
-    [jobId]
+    [jobId, withPreviewUrls]
   )
 
   const eliminarFoto = useCallback(
@@ -47,7 +73,16 @@ export const useFotos = (jobId) => {
       setError(null)
       try {
         await deleteFoto(fotoId)
-        setFotos((prev) => prev.filter((f) => f.id !== fotoId))
+        setFotos((prev) => {
+          const deleted = prev.find((f) => f.id === fotoId)
+          if (deleted?.previewUrl) {
+            URL.revokeObjectURL(deleted.previewUrl)
+            objectUrlsRef.current = objectUrlsRef.current.filter(
+              (url) => url !== deleted.previewUrl
+            )
+          }
+          return prev.filter((f) => f.id !== fotoId)
+        })
         if (lightbox?.id === fotoId) setLightbox(null)
       } catch (err) {
         setError(err.message)

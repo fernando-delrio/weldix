@@ -1,4 +1,28 @@
 services:
+  backend:
+    build: .
+    container_name: weldix-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      - ./media:/app/media
+    depends_on:
+      - db
+
+  db:
+    image: postgres:16-alpine
+    container_name: weldix-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: weldix
+      POSTGRES_USER: weldix
+      POSTGRES_PASSWORD: weldix-change-me
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
   n8n:
     image: n8nio/n8n:latest
     container_name: weldix-n8n
@@ -16,4 +40,5 @@ services:
       - GENERIC_TIMEZONE=Europe/Madrid
 
 volumes:
+  postgres_data:
   n8n_data:
