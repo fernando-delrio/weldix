@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Html5Qrcode } from 'html5-qrcode'
+import WeldixButton from '../../core/components/WeldixButton'
 
 /**
  * 🆕 html5-qrcode — librería que accede a la cámara del dispositivo y decodifica QRs.
@@ -47,13 +48,15 @@ const QrScannerModal = ({ onDetected, onClose }) => {
       <div className="relative w-full max-w-[360px] rounded-2xl border border-slate-700 bg-slate-900 p-5 shadow-2xl">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-bold tracking-tight text-slate-100">Escanear QR</h2>
-          <button
-            type="button"
+          <WeldixButton
+            variant="ghost"
+            size="icon"
             onClick={onClose}
-            className="grid h-8 w-8 place-items-center rounded-lg border border-slate-700 text-slate-400 transition hover:border-slate-500 hover:text-slate-200"
+            aria-label="Cerrar escáner QR"
+            className="h-11 w-11 border border-slate-700"
           >
             ✕
-          </button>
+          </WeldixButton>
         </div>
 
         {error ? (

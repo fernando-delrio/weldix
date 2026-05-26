@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { descargarFichajesCsv, forzarCierreJornada } from '../services/fichajeService'
+import WeldixButton from '../../core/components/WeldixButton'
 
 const cardBase = 'rounded-xl border border-white/[0.06] bg-slate-900'
 const weekDays = ['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa', 'Do']
@@ -114,21 +115,19 @@ const ForzarCierreModal = ({ fichaje, onClose, onConfirm, isSubmitting, error })
         {error && <p className="mt-3 text-xs text-rose-400">{error}</p>}
 
         <div className="mt-4 flex gap-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex-1 rounded-xl border border-slate-700 py-2.5 text-xs font-bold uppercase tracking-widest text-slate-400 transition hover:border-slate-500 hover:text-slate-200"
-          >
+          <WeldixButton variant="secondary" className="flex-1" onClick={onClose}>
             Cancelar
-          </button>
-          <button
-            type="button"
+          </WeldixButton>
+          <WeldixButton
+            variant="danger"
+            className="flex-1"
             onClick={() => onConfirm(parseFloat(horas))}
-            disabled={isSubmitting || isHorasInvalidas(horas)}
-            className="flex-1 rounded-xl bg-gradient-to-r from-rose-500/80 to-rose-600/80 py-2.5 text-xs font-bold uppercase tracking-widest text-white transition hover:from-rose-500 hover:to-rose-600 disabled:opacity-50"
+            isLoading={isSubmitting}
+            loadingLabel="Cerrando jornada…"
+            disabled={isHorasInvalidas(horas)}
           >
-            {isSubmitting ? 'Cerrando...' : 'Confirmar cierre'}
-          </button>
+            Confirmar cierre
+          </WeldixButton>
         </div>
       </div>
     </div>
@@ -280,15 +279,15 @@ const OperarioCard = ({ operario, onForzarCierre, isExpanded, onToggle }) => {
           <span className="rounded-md border border-violet-700/50 bg-violet-500/10 px-2 py-0.5 text-[0.58rem] font-bold uppercase tracking-widest text-violet-300">
             {operario.pending_vacaciones_dias} dias
           </span>
-          <button
-            type="button"
+          <WeldixButton
+            variant="secondary"
+            size="sm"
             onClick={onToggle}
             aria-expanded={isExpanded}
             aria-controls={panelId}
-            className="rounded-md border border-slate-600/80 bg-slate-800/60 px-2.5 py-0.5 text-[0.58rem] font-bold uppercase tracking-widest text-slate-200 transition hover:border-sky-500/70 hover:text-sky-200"
           >
             {isExpanded ? 'Ocultar' : 'Desplegar'}
-          </button>
+          </WeldixButton>
         </div>
       </div>
 
@@ -311,13 +310,9 @@ const OperarioCard = ({ operario, onForzarCierre, isExpanded, onToggle }) => {
           <p className="text-xs text-emerald-200">
             Jornada abierta desde {formatFecha(open.inicio)}
           </p>
-          <button
-            type="button"
-            onClick={() => onForzarCierre(open, operario)}
-            className="rounded-lg border border-rose-500/50 bg-rose-500/10 px-2.5 py-1 text-[0.6rem] font-bold uppercase tracking-widest text-rose-300 transition hover:bg-rose-500/20"
-          >
+          <WeldixButton variant="danger" size="sm" onClick={() => onForzarCierre(open, operario)}>
             Cerrar jornada
-          </button>
+          </WeldixButton>
         </div>
       )}
     </article>
@@ -381,36 +376,37 @@ const FichajesAdminSection = ({ operarios = [], onRefresh }) => {
           Operarios
         </p>
         <div className="flex items-center gap-2">
-          <button
-            type="button"
+          <WeldixButton
+            variant="success"
+            size="sm"
             onClick={handleExportCsv}
-            disabled={isExportingCsv}
-            className="rounded-md border border-emerald-700/70 bg-emerald-500/10 px-2 py-0.5 text-[0.56rem] font-bold uppercase tracking-widest text-emerald-200 transition hover:bg-emerald-500/20 disabled:opacity-60"
+            isLoading={isExportingCsv}
+            loadingLabel="Exportando CSV…"
           >
-            {isExportingCsv ? 'Exportando...' : 'Exportar CSV'}
-          </button>
-          <button
-            type="button"
+            Exportar CSV
+          </WeldixButton>
+          <WeldixButton
+            variant="ghost"
+            size="sm"
             onClick={() =>
               setExpandedByOperario(
                 Object.fromEntries(sortedOperarios.map((operario) => [operario.id, true]))
               )
             }
-            className="rounded-md border border-slate-700/70 bg-slate-800/40 px-2 py-0.5 text-[0.56rem] font-bold uppercase tracking-widest text-slate-300 transition hover:border-sky-600/70 hover:text-sky-200"
           >
             Expandir todo
-          </button>
-          <button
-            type="button"
+          </WeldixButton>
+          <WeldixButton
+            variant="ghost"
+            size="sm"
             onClick={() =>
               setExpandedByOperario(
                 Object.fromEntries(sortedOperarios.map((operario) => [operario.id, false]))
               )
             }
-            className="rounded-md border border-slate-700/70 bg-slate-800/40 px-2 py-0.5 text-[0.56rem] font-bold uppercase tracking-widest text-slate-300 transition hover:border-sky-600/70 hover:text-sky-200"
           >
             Colapsar todo
-          </button>
+          </WeldixButton>
           <span className="rounded-md border border-slate-700/60 bg-slate-800/40 px-2 py-0.5 text-[0.58rem] font-bold uppercase tracking-widest text-slate-300">
             {sortedOperarios.length} en plantilla
           </span>

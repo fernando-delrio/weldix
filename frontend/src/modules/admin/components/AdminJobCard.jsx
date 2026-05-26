@@ -1,3 +1,5 @@
+import WeldixButton from '../../core/components/WeldixButton'
+
 // ── Helpers ─────────────────────────────────────────────────────────────────
 const codeTag = ({ code }) =>
   code && (
@@ -39,13 +41,9 @@ const operarioTag = ({ operario_name }) => (
 )
 
 const deleteButton = ({ onDelete }) => (
-  <button
-    type="button"
-    onClick={onDelete}
-    className="rounded-lg border border-rose-500/30 px-3 py-2 text-xs font-semibold text-rose-400 transition hover:border-rose-500/60 hover:bg-rose-500/10"
-  >
+  <WeldixButton variant="danger" size="sm" onClick={onDelete}>
     Eliminar
-  </button>
+  </WeldixButton>
 )
 
 // ── Componente ───────────────────────────────────────────────────────────────

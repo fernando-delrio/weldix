@@ -22,8 +22,9 @@ const AppHeader = ({ roleLabel, timeLabel, onLogout, onSearchOpen }) => (
         <button
           type="button"
           onClick={onSearchOpen}
-          className="flex items-center gap-2 rounded-lg border border-slate-700/60 bg-slate-800/60 px-3 py-1.5 text-[0.65rem] text-slate-400 transition hover:border-sky-600/50 hover:text-slate-200"
+          className="flex items-center gap-2 rounded-lg border border-slate-700/60 bg-slate-800/60 px-3 py-1.5 text-[0.65rem] text-slate-400 transition hover:border-sky-600/50 hover:text-slate-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400"
           title="Buscar (Ctrl+K)"
+          aria-label="Buscar (Ctrl+K)"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -48,10 +49,12 @@ const AppHeader = ({ roleLabel, timeLabel, onLogout, onSearchOpen }) => (
         <button
           type="button"
           onClick={onLogout}
+          aria-label="Cerrar sesión"
           className={cx(
             'flex items-center gap-1.5 rounded-lg border border-slate-600/60 bg-slate-800/80',
             'px-3 py-1.5 text-[0.65rem] font-bold uppercase tracking-[0.18em] text-slate-300',
-            'transition hover:border-rose-500/50 hover:bg-rose-500/10 hover:text-rose-300'
+            'transition hover:border-rose-500/50 hover:bg-rose-500/10 hover:text-rose-300',
+            'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-400'
           )}
         >
           <svg

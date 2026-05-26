@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import AppShell from '../../core/components/AppShell'
+import WeldixButton from '../../core/components/WeldixButton'
 import { getStatusConfig } from '../../core/lib/statusConfig'
 import { useJobDetail } from '../hooks/useJobDetail'
 import FotosGallery from './FotosGallery'
@@ -73,7 +74,9 @@ const advanceButton = ({ canAdvance, isAdvancing, advance, job }) => {
         type="button"
         onClick={advance}
         disabled={isAdvancing}
-        className="h-14 w-full rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 text-sm font-bold tracking-[0.1em] text-white transition hover:from-sky-400 hover:to-blue-500 disabled:opacity-60 sm:h-12"
+        aria-busy={isAdvancing}
+        aria-label={isAdvancing ? 'Guardando cambio de estado…' : nextLabel}
+        className="h-14 w-full rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 text-sm font-bold tracking-[0.1em] text-white transition hover:from-sky-400 hover:to-blue-500 disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-300 sm:h-12"
       >
         {isAdvancing ? 'Guardando...' : nextLabel}
       </button>
@@ -188,13 +191,14 @@ const JobDetailPage = () => {
     <AppShell>
       {/* max-w-[720px] en lugar de 620 para que las fotos tengan más espacio en tablet */}
       <div className="mx-auto w-full max-w-[720px] space-y-4 pb-5">
-        <button
-          type="button"
+        <WeldixButton
+          variant="ghost"
+          size="sm"
           onClick={() => navigate(-1)}
-          className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 transition hover:text-slate-300"
+          aria-label="Volver al listado de trabajos"
         >
           ← Volver
-        </button>
+        </WeldixButton>
 
         {loadingSkeleton(state)}
         {errorBanner(state)}

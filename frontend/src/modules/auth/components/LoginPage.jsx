@@ -54,6 +54,8 @@ const LoginPage = () => {
         <button
           type="submit"
           disabled={isSubmitting}
+          aria-busy={isSubmitting}
+          aria-label={isSubmitting ? 'Validando credenciales…' : 'Entrar'}
           className={cx(authTw.primaryButton, authTw.primaryButtonWideTracking)}
         >
           {isSubmitting ? 'VALIDANDO...' : 'ENTRAR  ->'}

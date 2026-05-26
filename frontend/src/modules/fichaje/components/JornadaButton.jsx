@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useJornada } from '../hooks/useJornada'
+import WeldixButton from '../../core/components/WeldixButton'
 
 // ── Helpers de formato ────────────────────────────────────────────────────────
 const fmtHora = (iso) =>
@@ -69,13 +70,15 @@ const HistorialModal = ({ historial, onClose }) => {
           <h2 className="text-sm font-bold uppercase tracking-[0.16em] text-slate-200">
             Historial de jornadas
           </h2>
-          <button
-            type="button"
+          <WeldixButton
+            variant="ghost"
+            size="icon"
             onClick={onClose}
-            className="grid h-7 w-7 place-items-center rounded-lg border border-slate-700 text-slate-400 hover:text-slate-200 text-xs"
+            aria-label="Cerrar historial de jornadas"
+            className="h-11 w-11 rounded-lg border border-slate-700 text-xs"
           >
             ✕
-          </button>
+          </WeldixButton>
         </div>
 
         <div className="max-h-[60vh] overflow-y-auto">
@@ -164,47 +167,49 @@ const JornadaButton = () => {
               {elapsed && <span className="text-[0.62rem] text-emerald-600">· {elapsed}</span>}
             </div>
 
-            <button
-              type="button"
+            <WeldixButton
+              variant="danger"
               onClick={finalizar}
-              disabled={isSubmitting}
-              className="rounded-xl border border-rose-500/50 bg-rose-500/10 px-4 py-2 text-[0.7rem] font-bold uppercase tracking-[0.14em] text-rose-300 transition hover:bg-rose-500/20 disabled:opacity-50"
+              isLoading={isSubmitting}
+              loadingLabel="Finalizando jornada…"
             >
-              {isSubmitting ? '...' : 'Finalizar jornada'}
-            </button>
+              Finalizar jornada
+            </WeldixButton>
           </div>
         )}
 
         {/* Sin jornada activa */}
         {!jornadaActiva && (
           <div className="flex items-center gap-2">
-            <button
-              type="button"
+            <WeldixButton
+              variant="primary"
               onClick={iniciar}
-              disabled={isSubmitting}
-              className="rounded-xl border border-sky-500/50 bg-sky-500/10 px-4 py-2 text-[0.7rem] font-bold uppercase tracking-[0.14em] text-sky-300 transition hover:bg-sky-500/20 disabled:opacity-50"
+              isLoading={isSubmitting}
+              loadingLabel="Iniciando jornada…"
             >
-              {isSubmitting ? '...' : 'Iniciar jornada'}
-            </button>
+              Iniciar jornada
+            </WeldixButton>
 
-            <button
-              type="button"
+            <WeldixButton
+              variant="ghost"
+              size="sm"
               onClick={abrirHistorial}
-              className="text-[0.62rem] uppercase tracking-widest text-slate-600 transition hover:text-slate-400"
+              aria-label="Ver historial de jornadas"
             >
               Ver historial
-            </button>
+            </WeldixButton>
           </div>
         )}
 
         {jornadaActiva && (
-          <button
-            type="button"
+          <WeldixButton
+            variant="ghost"
+            size="sm"
             onClick={abrirHistorial}
-            className="text-[0.6rem] uppercase tracking-widest text-slate-700 transition hover:text-slate-500"
+            aria-label="Ver historial de jornadas"
           >
             Ver historial de jornadas
-          </button>
+          </WeldixButton>
         )}
 
         <ResumenCierre jornada={jornadaCerrada} />

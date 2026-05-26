@@ -1,4 +1,5 @@
 import { useBilling } from '../../billing/hooks/useBilling'
+import WeldixButton from './WeldixButton'
 
 const urgencyConfig = (daysLeft) =>
   daysLeft <= 1
@@ -33,22 +34,25 @@ const TrialBanner = ({ daysLeft, onDismiss }) => {
         </p>
       </div>
       <div className="flex items-center gap-3 shrink-0">
-        <button
-          type="button"
+        <WeldixButton
+          variant="warning"
+          size="sm"
           onClick={() => startCheckout('starter')}
-          disabled={isRedirecting}
-          className="rounded-lg bg-amber-500 px-3 py-1 text-xs font-bold text-slate-950 hover:bg-amber-400 transition disabled:opacity-60"
+          isLoading={isRedirecting}
+          loadingLabel="Redirigiendo a pago…"
+          className="bg-amber-500 text-slate-950 hover:bg-amber-400"
         >
-          {isRedirecting ? <i className="bx bx-loader-alt animate-spin" /> : 'Activar plan'}
-        </button>
-        <button
-          type="button"
+          Activar plan
+        </WeldixButton>
+        <WeldixButton
+          variant="ghost"
+          size="icon"
           onClick={onDismiss}
           aria-label="Cerrar aviso"
-          className="text-slate-500 hover:text-slate-300 transition"
+          className="h-8 w-8 text-slate-500"
         >
           <i className="bx bx-x text-lg" />
-        </button>
+        </WeldixButton>
       </div>
     </div>
   )

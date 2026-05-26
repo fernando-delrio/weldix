@@ -23,7 +23,8 @@ const filterTab = ({ key, label, isActive, onClick }) => (
     key={key}
     type="button"
     onClick={onClick}
-    className={`shrink-0 rounded-lg px-3 py-1.5 text-[0.68rem] font-bold uppercase tracking-[0.12em] transition ${
+    aria-pressed={isActive}
+    className={`shrink-0 rounded-lg px-3 py-1.5 text-[0.68rem] font-bold uppercase tracking-[0.12em] transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400 ${
       isActive
         ? 'bg-amber-500/20 text-amber-300 shadow-[inset_0_0_0_1px_rgba(56,189,248,0.4)]'
         : 'text-slate-500 hover:text-slate-300'

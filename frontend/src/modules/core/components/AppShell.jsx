@@ -59,7 +59,7 @@ const ThemeToggleBtn = ({ compact = false }) => {
         type="button"
         onClick={toggleTheme}
         aria-label={label}
-        className="grid h-8 w-8 place-items-center rounded-lg border border-slate-700/60 bg-slate-800/60 text-slate-400 transition hover:text-amber-400"
+        className="grid h-11 w-11 place-items-center rounded-lg border border-slate-700/60 bg-slate-800/60 text-slate-400 transition hover:text-amber-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
       >
         {isDark ? <SunIcon /> : <MoonIcon />}
       </button>
@@ -147,7 +147,8 @@ const Sidebar = ({
           type="button"
           onClick={onSearchOpen}
           title="Buscar (Ctrl+K)"
-          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-slate-500 transition hover:bg-slate-800/70 hover:text-slate-300"
+          aria-label="Buscar (Ctrl+K)"
+          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-slate-500 transition hover:bg-slate-800/70 hover:text-slate-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -171,7 +172,7 @@ const Sidebar = ({
           type="button"
           title="Notificaciones"
           aria-label="Notificaciones"
-          className="relative flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-slate-500 transition hover:bg-slate-800/70 hover:text-slate-300"
+          className="relative flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-slate-500 transition hover:bg-slate-800/70 hover:text-slate-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -196,7 +197,8 @@ const Sidebar = ({
             type="button"
             onClick={onInstall}
             title="Instalar app"
-            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sky-400 transition hover:bg-sky-500/10"
+            aria-label="Instalar app"
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sky-400 transition hover:bg-sky-500/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -226,7 +228,8 @@ const Sidebar = ({
           type="button"
           onClick={onLogout}
           title="Cerrar sesión"
-          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-slate-500 transition hover:bg-rose-500/10 hover:text-rose-400"
+          aria-label="Cerrar sesión"
+          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-slate-500 transition hover:bg-rose-500/10 hover:text-rose-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-400"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -269,7 +272,7 @@ const MobileHeader = ({ roleLabel, onLogout, onSearchOpen }) => (
         <button
           type="button"
           onClick={onSearchOpen}
-          className="grid h-8 w-8 place-items-center rounded-lg border border-slate-700/60 bg-slate-800/60 text-slate-400"
+          className="grid h-11 w-11 place-items-center rounded-lg border border-slate-700/60 bg-slate-800/60 text-slate-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400"
           aria-label="Buscar"
         >
           <svg
@@ -290,7 +293,7 @@ const MobileHeader = ({ roleLabel, onLogout, onSearchOpen }) => (
         {/* Campana — placeholder Fase 5 */}
         <button
           type="button"
-          className="relative grid h-8 w-8 place-items-center rounded-lg border border-slate-700/60 bg-slate-800/60 text-slate-400"
+          className="relative grid h-11 w-11 place-items-center rounded-lg border border-slate-700/60 bg-slate-800/60 text-slate-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400"
           aria-label="Notificaciones"
         >
           <svg
@@ -312,7 +315,7 @@ const MobileHeader = ({ roleLabel, onLogout, onSearchOpen }) => (
         <button
           type="button"
           onClick={onLogout}
-          className="grid h-8 w-8 place-items-center rounded-lg border border-slate-700/60 bg-slate-800/60 text-slate-400 hover:text-rose-400"
+          className="grid h-11 w-11 place-items-center rounded-lg border border-slate-700/60 bg-slate-800/60 text-slate-400 hover:text-rose-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-400"
           aria-label="Cerrar sesión"
         >
           <svg
@@ -342,8 +345,8 @@ const IaFab = () => {
     <button
       type="button"
       onClick={() => openChat()}
-      className="fixed bottom-[88px] right-4 z-40 flex h-12 w-12 items-center justify-center rounded-sm border border-amber-500/40 bg-amber-500/15 text-xl shadow-lg backdrop-blur transition hover:border-amber-400/70 hover:bg-amber-500/25 md:bottom-6 md:right-6"
-      title="Asistente IA"
+      aria-label="Asistente IA"
+      className="fixed bottom-[88px] right-4 z-40 flex h-12 w-12 items-center justify-center rounded-sm border border-amber-500/40 bg-amber-500/15 text-xl shadow-lg backdrop-blur transition hover:border-amber-400/70 hover:bg-amber-500/25 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400 md:bottom-6 md:right-6"
     >
       🔧
     </button>

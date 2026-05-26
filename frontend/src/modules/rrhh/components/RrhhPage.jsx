@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import AppShell from '../../core/components/AppShell'
+import WeldixButton from '../../core/components/WeldixButton'
 import { useAuthSession } from '../../auth/hooks/useAuthSession'
 import { useRrhh } from '../hooks/useRrhh'
 import { cx } from '../../core/lib/cx'
@@ -165,23 +166,27 @@ const RangeCalendar = ({ inicio, fin, onRangeChange }) => {
     <div className="select-none">
       {/* Cabecera del mes */}
       <div className="mb-3 flex items-center justify-between">
-        <button
-          type="button"
+        <WeldixButton
+          variant="ghost"
+          size="icon"
           onClick={prevMes}
-          className="grid h-7 w-7 place-items-center rounded-lg border border-slate-700 text-slate-400 hover:text-slate-200 transition"
+          aria-label="Mes anterior"
+          className="h-11 w-11 border border-slate-700"
         >
           ‹
-        </button>
+        </WeldixButton>
         <span className="text-sm font-bold text-slate-100">
           {MESES[mes.month]} {mes.year}
         </span>
-        <button
-          type="button"
+        <WeldixButton
+          variant="ghost"
+          size="icon"
           onClick={nextMes}
-          className="grid h-7 w-7 place-items-center rounded-lg border border-slate-700 text-slate-400 hover:text-slate-200 transition"
+          aria-label="Mes siguiente"
+          className="h-11 w-11 border border-slate-700"
         >
           ›
-        </button>
+        </WeldixButton>
       </div>
 
       {/* Cabecera días semana */}
@@ -345,22 +350,14 @@ const SolicitudCard = ({ solicitud, onCancelar, onRevisar, isAdmin }) => {
 
       <div className="flex gap-2 pt-1">
         {!isAdmin && solicitud.estado === 'pendiente' && (
-          <button
-            type="button"
-            onClick={() => onCancelar(solicitud.id)}
-            className="rounded-md border border-slate-700 bg-slate-800/60 px-3 py-1 text-[0.62rem] text-slate-500 transition hover:border-rose-700/50 hover:text-rose-400"
-          >
+          <WeldixButton variant="danger" size="sm" onClick={() => onCancelar(solicitud.id)}>
             Cancelar solicitud
-          </button>
+          </WeldixButton>
         )}
         {isAdmin && solicitud.estado === 'pendiente' && (
-          <button
-            type="button"
-            onClick={() => onRevisar(solicitud.id)}
-            className="rounded-md border border-sky-700/50 bg-sky-500/10 px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-widest text-sky-300 transition hover:bg-sky-500/20"
-          >
+          <WeldixButton variant="primary" size="sm" onClick={() => onRevisar(solicitud.id)}>
             Revisar
-          </button>
+          </WeldixButton>
         )}
       </div>
     </div>
@@ -400,13 +397,15 @@ const NuevaSolicitudModal = ({ tipos, saldo, onClose, onSubmit, isSubmitting, er
       <div className="relative z-10 w-full max-w-[480px] max-h-[90vh] overflow-y-auto rounded-t-2xl border border-slate-700/80 bg-slate-900 p-5 shadow-2xl sm:rounded-2xl">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-bold text-slate-100">Nueva solicitud</h2>
-          <button
-            type="button"
+          <WeldixButton
+            variant="ghost"
+            size="icon"
             onClick={onClose}
-            className="grid h-8 w-8 place-items-center rounded-lg border border-slate-700 text-slate-400 hover:text-slate-200"
+            aria-label="Cerrar modal de nueva solicitud"
+            className="h-11 w-11 border border-slate-700"
           >
             ✕
-          </button>
+          </WeldixButton>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -465,17 +464,17 @@ const NuevaSolicitudModal = ({ tipos, saldo, onClose, onSubmit, isSubmitting, er
             </p>
           )}
 
-          <button
+          <WeldixButton
             type="submit"
-            disabled={isSubmitting || !isValid || sinSaldo}
-            className="h-11 w-full rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 text-sm font-bold text-white transition hover:from-sky-400 hover:to-blue-500 disabled:opacity-40"
+            variant="primary"
+            size="lg"
+            isLoading={isSubmitting}
+            loadingLabel="Enviando solicitud…"
+            disabled={!isValid || sinSaldo}
+            className="w-full"
           >
-            {isSubmitting
-              ? 'Enviando...'
-              : isValid
-                ? `Enviar solicitud (${diasSel}d)`
-                : 'Selecciona las fechas'}
-          </button>
+            {isValid ? `Enviar solicitud (${diasSel}d)` : 'Selecciona las fechas'}
+          </WeldixButton>
         </form>
       </div>
     </div>
@@ -498,13 +497,15 @@ const RevisarModal = ({ solicitud, onClose, onSubmit, isSubmitting, error }) => 
       <div className="relative z-10 w-full max-w-[480px] rounded-t-2xl border border-slate-700/80 bg-slate-900 p-5 shadow-2xl sm:rounded-2xl">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-bold text-slate-100">Revisar solicitud</h2>
-          <button
-            type="button"
+          <WeldixButton
+            variant="ghost"
+            size="icon"
             onClick={onClose}
-            className="grid h-8 w-8 place-items-center rounded-lg border border-slate-700 text-slate-400 hover:text-slate-200"
+            aria-label="Cerrar modal de revisión"
+            className="h-11 w-11 border border-slate-700"
           >
             ✕
-          </button>
+          </WeldixButton>
         </div>
 
         <div className={cx(cardBase, 'mb-4')}>
@@ -520,30 +521,22 @@ const RevisarModal = ({ solicitud, onClose, onSubmit, isSubmitting, error }) => 
 
         <form onSubmit={handleSubmit} className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
-            <button
-              type="button"
+            <WeldixButton
+              variant={form.estado === 'aprobada' ? 'success' : 'secondary'}
               onClick={() => setForm((p) => ({ ...p, estado: 'aprobada' }))}
-              className={cx(
-                'rounded-xl border py-3 text-sm font-bold transition',
-                form.estado === 'aprobada'
-                  ? 'border-emerald-500 bg-emerald-500/20 text-emerald-300'
-                  : 'border-slate-700 bg-slate-800/60 text-slate-400 hover:border-emerald-700/50'
-              )}
+              aria-pressed={form.estado === 'aprobada'}
+              className="w-full"
             >
               Aprobar
-            </button>
-            <button
-              type="button"
+            </WeldixButton>
+            <WeldixButton
+              variant={form.estado === 'rechazada' ? 'danger' : 'secondary'}
               onClick={() => setForm((p) => ({ ...p, estado: 'rechazada' }))}
-              className={cx(
-                'rounded-xl border py-3 text-sm font-bold transition',
-                form.estado === 'rechazada'
-                  ? 'border-rose-500 bg-rose-500/20 text-rose-300'
-                  : 'border-slate-700 bg-slate-800/60 text-slate-400 hover:border-rose-700/50'
-              )}
+              aria-pressed={form.estado === 'rechazada'}
+              className="w-full"
             >
               Rechazar
-            </button>
+            </WeldixButton>
           </div>
           <div>
             <label className={labelBase}>

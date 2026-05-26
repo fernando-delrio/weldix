@@ -57,7 +57,7 @@ export const authTw = {
     'w-full bg-transparent pr-3.5 text-[0.98rem] text-slate-100 outline-none placeholder:text-slate-500',
   helperTextRight: 'mt-1 text-right text-[0.82rem] text-slate-500',
   primaryButton:
-    "mt-1 h-[52px] rounded-lg bg-gradient-to-r bg-amber-500 font-['Rajdhani'] text-base font-bold text-white shadow-lg shadow-amber-900/30 transition hover:bg-amber-400 disabled:cursor-not-allowed disabled:opacity-60",
+    "mt-1 h-[52px] rounded-lg bg-gradient-to-r bg-amber-500 font-['Rajdhani'] text-base font-bold text-white shadow-lg shadow-amber-900/30 transition hover:bg-amber-400 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300",
   primaryButtonWideTracking: 'tracking-[0.16em]',
   primaryButtonMediumTracking: 'tracking-[0.12em]',
 

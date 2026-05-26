@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { cx } from '../../core/lib/cx'
 import { useIaContext } from '../lib/IaContext'
 import { useIaChat } from '../hooks/useIaChat'
+import WeldixButton from '../../core/components/WeldixButton'
 
 const UserBubble = ({ content }) => (
   <div className="flex justify-end">
@@ -134,22 +135,24 @@ const IaChatPanel = () => {
           </div>
           <div className="flex items-center gap-2">
             {messages.length > 0 && (
-              <button
-                type="button"
+              <WeldixButton
+                variant="ghost"
+                size="sm"
                 onClick={clearChat}
-                className="text-[0.62rem] font-semibold uppercase tracking-widest text-slate-500 transition hover:text-slate-300"
+                aria-label="Limpiar historial del chat"
               >
                 Limpiar
-              </button>
+              </WeldixButton>
             )}
-            <button
-              type="button"
+            <WeldixButton
+              variant="ghost"
+              size="icon"
               onClick={closeChat}
               aria-label="Cerrar chat"
-              className="grid h-7 w-7 place-items-center rounded-lg border border-slate-700 text-slate-400 transition hover:border-slate-500 hover:text-slate-200"
+              className="h-11 w-11 border border-slate-700"
             >
               ✕
-            </button>
+            </WeldixButton>
           </div>
         </div>
 
@@ -194,7 +197,9 @@ const IaChatPanel = () => {
               disabled={isLoading || !input.trim()}
               aria-label="Enviar mensaje"
               className={cx(
-                'shrink-0 grid h-8 w-8 place-items-center rounded-lg transition',
+                'shrink-0 grid h-11 w-11 place-items-center rounded-lg transition',
+                'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400',
+                'disabled:pointer-events-none disabled:opacity-50',
                 input.trim() && !isLoading
                   ? 'bg-sky-500 text-white hover:bg-sky-400'
                   : 'bg-slate-700 text-slate-500'

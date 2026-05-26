@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import AppShell from '../../core/components/AppShell'
+import WeldixButton from '../../core/components/WeldixButton'
 import { useEquipos } from '../hooks/useEquipos'
 import { useAuthSession } from '../../auth/hooks/useAuthSession'
 
@@ -88,21 +89,22 @@ const EquipoCard = ({ equipo, onCambiarEstado, onRegistrarMantenimiento, onElimi
             ))}
           </select>
 
-          <button
-            type="button"
+          <WeldixButton
+            variant="success"
+            size="sm"
             onClick={() => onRegistrarMantenimiento(equipo.id)}
-            className="rounded-md border border-emerald-700/50 bg-emerald-500/10 px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-widest text-emerald-300 transition hover:bg-emerald-500/20"
           >
             Registrar mantenimiento hoy
-          </button>
+          </WeldixButton>
 
-          <button
-            type="button"
+          <WeldixButton
+            variant="danger"
+            size="sm"
             onClick={() => onEliminar(equipo.id)}
-            className="ml-auto rounded-md border border-slate-700 bg-slate-800/60 px-2.5 py-1 text-[0.62rem] text-slate-500 transition hover:border-rose-700/50 hover:text-rose-400"
+            className="ml-auto"
           >
             Eliminar
-          </button>
+          </WeldixButton>
         </div>
       )}
     </div>
@@ -142,13 +144,15 @@ const NuevoEquipoModal = ({ onClose, onSubmit, isSubmitting }) => {
       <div className="relative z-10 w-full max-w-[480px] rounded-t-2xl border border-slate-700/80 bg-slate-900 p-5 shadow-2xl sm:rounded-2xl">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-bold text-slate-100">Nuevo equipo</h2>
-          <button
-            type="button"
+          <WeldixButton
+            variant="ghost"
+            size="icon"
             onClick={onClose}
-            className="grid h-8 w-8 place-items-center rounded-lg border border-slate-700 text-slate-400 hover:text-slate-200"
+            aria-label="Cerrar modal de nuevo equipo"
+            className="h-11 w-11 border border-slate-700"
           >
             ✕
-          </button>
+          </WeldixButton>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3">
@@ -202,13 +206,16 @@ const NuevoEquipoModal = ({ onClose, onSubmit, isSubmitting }) => {
             </div>
           </div>
 
-          <button
+          <WeldixButton
             type="submit"
-            disabled={isSubmitting}
-            className="mt-2 h-11 w-full rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 text-sm font-bold text-white transition hover:from-sky-400 hover:to-blue-500 disabled:opacity-60"
+            variant="primary"
+            size="lg"
+            isLoading={isSubmitting}
+            loadingLabel="Guardando equipo…"
+            className="mt-2 w-full"
           >
-            {isSubmitting ? 'Guardando...' : 'Crear equipo'}
-          </button>
+            Crear equipo
+          </WeldixButton>
         </form>
       </div>
     </div>
@@ -281,13 +288,9 @@ const EquiposPage = () => {
             <p className="text-xs text-slate-500">{equipos.length} equipos registrados</p>
           </div>
           {isAdmin && (
-            <button
-              type="button"
-              onClick={() => setModalAbierto(true)}
-              className="rounded-xl border border-sky-700/50 bg-sky-500/10 px-4 py-2 text-xs font-bold uppercase tracking-widest text-sky-300 transition hover:bg-sky-500/20"
-            >
+            <WeldixButton variant="primary" size="sm" onClick={() => setModalAbierto(true)}>
               + Nuevo equipo
-            </button>
+            </WeldixButton>
           )}
         </div>
 

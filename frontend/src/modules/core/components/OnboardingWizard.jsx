@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { deleteDemoData } from '../../admin/services/adminService'
 import { cx } from '../lib/cx'
+import WeldixButton from './WeldixButton'
 
 const STEPS = [
   {
@@ -100,14 +101,14 @@ const OnboardingWizard = ({ onComplete }) => {
           <span className="text-[0.6rem] font-bold uppercase tracking-[0.2em] text-slate-500">
             Paso {step + 1} de {STEPS.length}
           </span>
-          <button
-            type="button"
+          <WeldixButton
+            variant="ghost"
+            size="sm"
             onClick={onComplete}
-            className="text-xs text-slate-600 hover:text-slate-400 transition"
             aria-label="Saltar onboarding"
           >
             Saltar
-          </button>
+          </WeldixButton>
         </div>
 
         {/* Contenido */}
@@ -118,13 +119,14 @@ const OnboardingWizard = ({ onComplete }) => {
 
           {/* Botón de acción rápida (opcional) */}
           {current.action && (
-            <button
-              type="button"
+            <WeldixButton
+              variant="ghost"
+              size="sm"
               onClick={handleAction}
-              className="mt-1 text-sm font-semibold text-amber-400 underline hover:text-amber-300 transition"
+              className="mt-1 text-amber-400 underline hover:text-amber-300"
             >
               {current.action.label} →
-            </button>
+            </WeldixButton>
           )}
 
           {/* Último paso — botón para limpiar datos de demo */}
@@ -137,14 +139,15 @@ const OnboardingWizard = ({ onComplete }) => {
               {cleanDone ? (
                 <p className="text-xs font-semibold text-emerald-400">✓ Datos de demo eliminados</p>
               ) : (
-                <button
-                  type="button"
+                <WeldixButton
+                  variant="danger"
+                  size="sm"
                   onClick={handleCleanDemo}
-                  disabled={isCleaning}
-                  className="text-xs font-semibold text-red-400 hover:text-red-300 transition disabled:opacity-50"
+                  isLoading={isCleaning}
+                  loadingLabel="Eliminando datos de demo…"
                 >
-                  {isCleaning ? 'Eliminando...' : 'Limpiar datos de demo'}
-                </button>
+                  Limpiar datos de demo
+                </WeldixButton>
               )}
             </div>
           )}
@@ -161,21 +164,18 @@ const OnboardingWizard = ({ onComplete }) => {
 
           <div className="flex items-center gap-2">
             {!isFirst && (
-              <button
-                type="button"
-                onClick={goBack}
-                className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs font-semibold text-slate-400 transition hover:bg-slate-800"
-              >
+              <WeldixButton variant="secondary" size="sm" onClick={goBack}>
                 Atrás
-              </button>
+              </WeldixButton>
             )}
-            <button
-              type="button"
+            <WeldixButton
+              variant="warning"
+              size="sm"
               onClick={goNext}
-              className="rounded-lg bg-amber-500 px-4 py-1.5 text-xs font-bold text-white transition hover:bg-amber-400 min-w-[72px]"
+              className="min-w-[72px] bg-amber-500 text-white"
             >
               {isLast ? 'Empezar' : 'Siguiente'}
-            </button>
+            </WeldixButton>
           </div>
         </div>
       </div>

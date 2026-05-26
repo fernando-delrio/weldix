@@ -1,5 +1,6 @@
 import { useAuthSession } from '../../auth/hooks/useAuthSession'
 import { useRegistroHoras } from '../hooks/useRegistroHoras'
+import WeldixButton from '../../core/components/WeldixButton'
 
 const cardBase = 'rounded-xl border border-cyan-900/50 bg-slate-900/65 p-5'
 
@@ -32,24 +33,24 @@ const ControlHoras = ({ registroActivo, horaInicio, elapsed, isSubmitting, inici
             <span className="font-mono text-sm font-bold text-sky-300">{horaInicio}</span>
             {elapsed && <span className="text-[0.62rem] text-sky-600">· {elapsed}</span>}
           </div>
-          <button
-            type="button"
+          <WeldixButton
+            variant="warning"
             onClick={detener}
-            disabled={isSubmitting}
-            className="rounded-xl border border-amber-500/50 bg-amber-500/10 px-4 py-2 text-[0.7rem] font-bold uppercase tracking-[0.14em] text-amber-300 transition hover:bg-amber-500/20 disabled:opacity-50"
+            isLoading={isSubmitting}
+            loadingLabel="Deteniendo tiempo…"
           >
-            {isSubmitting ? '...' : 'Detener tiempo'}
-          </button>
+            Detener tiempo
+          </WeldixButton>
         </>
       ) : (
-        <button
-          type="button"
+        <WeldixButton
+          variant="primary"
           onClick={iniciar}
-          disabled={isSubmitting}
-          className="rounded-xl border border-sky-500/50 bg-sky-500/10 px-4 py-2 text-[0.7rem] font-bold uppercase tracking-[0.14em] text-sky-300 transition hover:bg-sky-500/20 disabled:opacity-50"
+          isLoading={isSubmitting}
+          loadingLabel="Iniciando registro de horas…"
         >
-          {isSubmitting ? '...' : 'Empezar a trabajar en esta OT'}
-        </button>
+          Empezar a trabajar en esta OT
+        </WeldixButton>
       )}
     </div>
   )

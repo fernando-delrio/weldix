@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import WeldixButton from '../../core/components/WeldixButton'
 
 const labelBase = 'mt-3 text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-slate-400'
 const inputBase =
@@ -61,13 +62,15 @@ const CreateUserModal = ({ onClose, onConfirm }) => {
       <div className="relative z-10 w-full max-w-[420px] rounded-t-2xl border border-slate-700/80 bg-slate-900 p-5 shadow-2xl sm:rounded-2xl">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-bold tracking-tight text-slate-100">Crear usuario</h2>
-          <button
-            type="button"
+          <WeldixButton
+            variant="ghost"
+            size="icon"
             onClick={onClose}
-            className="grid h-8 w-8 place-items-center rounded-lg border border-slate-700 text-slate-400 transition hover:border-slate-500 hover:text-slate-200"
+            aria-label="Cerrar modal de creación de usuario"
+            className="h-11 w-11 border border-slate-700"
           >
             ✕
-          </button>
+          </WeldixButton>
         </div>
 
         <div className="grid gap-1">
@@ -113,14 +116,16 @@ const CreateUserModal = ({ onClose, onConfirm }) => {
 
         {errorBanner({ error })}
 
-        <button
-          type="button"
+        <WeldixButton
+          variant="primary"
+          size="lg"
           onClick={handleConfirm}
-          disabled={isLoading}
-          className="mt-5 h-12 w-full rounded-xl bg-gradient-to-r from-amber-500 to-blue-600 text-sm font-bold tracking-[0.1em] text-white transition hover:from-amber-400 hover:to-blue-500 disabled:opacity-60"
+          isLoading={isLoading}
+          loadingLabel="Creando usuario…"
+          className="mt-5 w-full"
         >
-          {isLoading ? 'Creando...' : 'Crear usuario'}
-        </button>
+          Crear usuario
+        </WeldixButton>
       </div>
     </div>
   )

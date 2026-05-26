@@ -111,6 +111,8 @@ const RegisterWorkspacePage = () => {
         <button
           type="submit"
           disabled={isSubmitting}
+          aria-busy={isSubmitting}
+          aria-label={isSubmitting ? 'Creando tu taller…' : 'Crear mi taller'}
           className={cx(authTw.primaryButton, authTw.primaryButtonWideTracking, 'mt-2')}
         >
           {isSubmitting ? 'CREANDO...' : 'CREAR MI TALLER  ->'}

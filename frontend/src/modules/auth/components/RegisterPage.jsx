@@ -79,6 +79,8 @@ const RegisterPage = () => {
         <button
           type="submit"
           disabled={isSubmitting}
+          aria-busy={isSubmitting}
+          aria-label={isSubmitting ? 'Creando cuenta…' : 'Registrar'}
           className={cx(authTw.primaryButton, authTw.primaryButtonMediumTracking)}
         >
           {isSubmitting ? 'CREANDO...' : 'REGISTRAR'}
