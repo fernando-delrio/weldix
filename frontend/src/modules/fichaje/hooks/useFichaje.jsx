@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
 import {
-  finalizarFichaje,
-  getFichajeActivo,
-  getHorasTotales,
-  iniciarFichaje,
-} from '../services/fichajeService'
+  finalizarRegistro,
+  getHorasOT,
+  getRegistroActivo,
+  iniciarRegistro,
+} from '../../registro_horas/services/registroHorasService'
 
 /**
  * Hook de fichaje para un trabajo concreto.
@@ -21,7 +21,7 @@ export const useFichaje = (jobId) => {
     setIsLoading(true)
     setError(null)
     try {
-      const [activo, horas] = await Promise.all([getFichajeActivo(), getHorasTotales(jobId)])
+      const [activo, horas] = await Promise.all([getRegistroActivo(), getHorasOT(jobId)])
       // El fichaje activo puede ser de otro trabajo — solo lo mostramos si es de este
       setFichajeActivo(activo?.job_id === jobId ? activo : null)
       setHorasTotales(horas)
@@ -40,7 +40,7 @@ export const useFichaje = (jobId) => {
     setIsSubmitting(true)
     setError(null)
     try {
-      const nuevo = await iniciarFichaje(jobId)
+      const nuevo = await iniciarRegistro(jobId)
       setFichajeActivo(nuevo)
     } catch (err) {
       setError(err.message)
@@ -54,7 +54,7 @@ export const useFichaje = (jobId) => {
     setIsSubmitting(true)
     setError(null)
     try {
-      await finalizarFichaje(fichajeActivo.id)
+      await finalizarRegistro(fichajeActivo.id)
       // Recargamos para actualizar horas totales
       await cargarEstado()
     } catch (err) {
