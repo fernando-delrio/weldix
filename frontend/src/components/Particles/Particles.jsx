@@ -7,25 +7,31 @@ const defaultColors = ['#ffffff', '#ffffff', '#ffffff']
 
 // ── Conversión de color ───────────────────────────────────────────────────────
 // Cada paso tiene un nombre que dice qué hace — Decompose Conditional (Shvets §10)
-const expandShortHex    = (hex) => hex.split('').map((c) => c + c).join('')
-const normalizeHex      = (hex) => hex.length === 3 ? expandShortHex(hex) : hex
+const expandShortHex = (hex) =>
+  hex
+    .split('')
+    .map((c) => c + c)
+    .join('')
+const normalizeHex = (hex) => (hex.length === 3 ? expandShortHex(hex) : hex)
 
 const hexToRgb = (hex) => {
   const full = normalizeHex(hex.replace(/^#/, ''))
-  const int  = parseInt(full, 16)
+  const int = parseInt(full, 16)
   return [((int >> 16) & 255) / 255, ((int >> 8) & 255) / 255, (int & 255) / 255]
 }
 
 // ── Generación de partículas ──────────────────────────────────────────────────
-const randomInRange     = ()      => Math.random() * 2 - 1
-const isOutsideSphere   = (len)   => len > 1 || len === 0
-const resolvedPalette   = (cols)  => cols?.length > 0 ? cols : defaultColors
-const randomFromPalette = (pal)   => hexToRgb(pal[Math.floor(Math.random() * pal.length)])
+const randomInRange = () => Math.random() * 2 - 1
+const isOutsideSphere = (len) => len > 1 || len === 0
+const resolvedPalette = (cols) => (cols?.length > 0 ? cols : defaultColors)
+const randomFromPalette = (pal) => hexToRgb(pal[Math.floor(Math.random() * pal.length)])
 
 // Rejection sampling: intenta un punto; si cae fuera de la esfera, se llama a
 // sí misma — recursión en lugar de do/while para evitar variables mutables.
 const randomUnitPoint = () => {
-  const x   = randomInRange(), y = randomInRange(), z = randomInRange()
+  const x = randomInRange(),
+    y = randomInRange(),
+    z = randomInRange()
   const len = x * x + y * y + z * z
   return isOutsideSphere(len) ? randomUnitPoint() : [x, y, z]
 }
@@ -34,8 +40,8 @@ const randomUnitPoint = () => {
 // Usamos Array.from({ length: count }) para iterar sin for/let.
 const buildParticleArrays = (count, palette) => {
   const positions = new Float32Array(count * 3)
-  const randoms   = new Float32Array(count * 4)
-  const colors    = new Float32Array(count * 3)
+  const randoms = new Float32Array(count * 4)
+  const colors = new Float32Array(count * 3)
 
   Array.from({ length: count }, (_, i) => {
     const [x, y, z] = randomUnitPoint()
@@ -60,8 +66,8 @@ const resetOffset = (particles) => {
 }
 
 const applyRotation = (particles, elapsed, speed) => {
-  particles.rotation.x  = Math.sin(elapsed * 0.0002) * 0.1
-  particles.rotation.y  = Math.cos(elapsed * 0.0005) * 0.15
+  particles.rotation.x = Math.sin(elapsed * 0.0002) * 0.1
+  particles.rotation.y = Math.cos(elapsed * 0.0005) * 0.15
   particles.rotation.z += 0.01 * speed
 }
 
@@ -148,7 +154,7 @@ const Particles = ({
   className = '',
 }) => {
   const containerRef = useRef(null)
-  const mouseRef     = useRef({ x: 0, y: 0 })
+  const mouseRef = useRef({ x: 0, y: 0 })
 
   useEffect(() => {
     const container = containerRef.current
@@ -183,31 +189,30 @@ const Particles = ({
 
     const geometry = new Geometry(gl, {
       position: { size: 3, data: positions },
-      random:   { size: 4, data: randoms },
-      color:    { size: 3, data: colors },
+      random: { size: 4, data: randoms },
+      color: { size: 3, data: colors },
     })
 
     const program = new Program(gl, {
       vertex,
       fragment,
       uniforms: {
-        uTime:           { value: 0 },
-        uSpread:         { value: particleSpread },
-        uBaseSize:       { value: particleBaseSize * pixelRatio },
+        uTime: { value: 0 },
+        uSpread: { value: particleSpread },
+        uBaseSize: { value: particleBaseSize * pixelRatio },
         uSizeRandomness: { value: sizeRandomness },
         uAlphaParticles: { value: alphaParticles ? 1 : 0 },
       },
       transparent: true,
-      depthTest:   false,
+      depthTest: false,
     })
 
     const particles = new Mesh(gl, { mode: gl.POINTS, geometry, program })
 
-
     const raf = { id: null, lastTime: performance.now(), elapsed: 0 }
 
     const update = (t) => {
-      raf.id       = requestAnimationFrame(update)
+      raf.id = requestAnimationFrame(update)
       raf.elapsed += (t - raf.lastTime) * speed
       raf.lastTime = t
 
@@ -232,9 +237,17 @@ const Particles = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    particleCount, particleSpread, speed, moveParticlesOnHover,
-    particleHoverFactor, alphaParticles, particleBaseSize,
-    sizeRandomness, cameraDistance, disableRotation, pixelRatio,
+    particleCount,
+    particleSpread,
+    speed,
+    moveParticlesOnHover,
+    particleHoverFactor,
+    alphaParticles,
+    particleBaseSize,
+    sizeRandomness,
+    cameraDistance,
+    disableRotation,
+    pixelRatio,
   ])
 
   return <div ref={containerRef} className={`particles-container ${className}`} />

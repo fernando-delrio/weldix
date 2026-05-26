@@ -7,9 +7,9 @@ const colorTiempo = (inicio) => {
 }
 
 const horasFormateadas = (inicio) => {
-  const mins  = Math.floor((Date.now() - new Date(inicio).getTime()) / 60_000)
-  const h     = Math.floor(mins / 60)
-  const m     = mins % 60
+  const mins = Math.floor((Date.now() - new Date(inicio).getTime()) / 60_000)
+  const h = Math.floor(mins / 60)
+  const m = mins % 60
   return h > 0 ? `${h}h ${m}min` : `${m} min`
 }
 
@@ -35,8 +35,13 @@ const FichajeEnCurso = ({ fichaje, isSubmitting, onFicharSalida }) => (
       <div>
         <p className="text-sm font-semibold text-slate-100">Fichaje activo</p>
         <p className="text-[0.68rem] text-slate-400">
-          Inicio: {new Date(fichaje.inicio).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
-          {' · '}{horasFormateadas(fichaje.inicio)}
+          Inicio:{' '}
+          {new Date(fichaje.inicio).toLocaleTimeString('es-ES', {
+            hour: '2-digit',
+            minute: '2-digit',
+          })}
+          {' · '}
+          {horasFormateadas(fichaje.inicio)}
         </p>
       </div>
     </div>
@@ -68,13 +73,19 @@ const SinFichaje = ({ isSubmitting, onFicharEntrada }) => (
   </div>
 )
 
-const errorMsg = ({ error }) =>
-  error && <p className="mt-2 text-xs text-rose-400">{error}</p>
+const errorMsg = ({ error }) => error && <p className="mt-2 text-xs text-rose-400">{error}</p>
 
 // ── Componente principal ───────────────────────────────────────────────────────
 const FichajeSection = ({ jobId }) => {
-  const { fichajeActivo, horasTotales, isLoading, isSubmitting, error, ficharEntrada, ficharSalida } =
-    useFichaje(jobId)
+  const {
+    fichajeActivo,
+    horasTotales,
+    isLoading,
+    isSubmitting,
+    error,
+    ficharEntrada,
+    ficharSalida,
+  } = useFichaje(jobId)
 
   return (
     <section className={cardBase}>

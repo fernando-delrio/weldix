@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import AppShell from '../../core/components/AppShell'
+import WeldixButton from '../../core/components/WeldixButton'
 import { getStatusConfig } from '../../core/lib/statusConfig'
 import { useJobDetail } from '../hooks/useJobDetail'
 import FotosGallery from './FotosGallery'
@@ -9,7 +10,7 @@ import RegistroHorasOT from '../../registro_horas/components/RegistroHorasOT'
 import { useIaContext } from '../../ia/lib/IaContext'
 
 // ── Estilos base ──────────────────────────────────────────────────────────────
-const cardBase  = 'rounded-xl border border-cyan-900/50 bg-slate-900/65 p-5'
+const cardBase = 'rounded-xl border border-cyan-900/50 bg-slate-900/65 p-5'
 const labelBase = 'text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-slate-500'
 
 // ── Subcomponentes nombrados — Guard Clauses (CLAUDE.md §7) ───────────────────
@@ -29,7 +30,8 @@ const loadingSkeleton = ({ isLoading }) =>
   )
 
 const errorBanner = ({ isLoading, error }) =>
-  !isLoading && error && (
+  !isLoading &&
+  error && (
     <div className={`${cardBase} border-rose-700/40`}>
       <p className="text-sm text-rose-300">{error}</p>
     </div>
@@ -57,22 +59,28 @@ const infoField = (label, value) => (
 const descriptionSection = ({ description }) =>
   description && (
     <section className={cardBase}>
-      <h2 className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">Descripción / Tipo</h2>
+      <h2 className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">
+        Descripción / Tipo
+      </h2>
       <p className="mt-3 text-sm leading-relaxed text-slate-300">{description}</p>
     </section>
   )
 
 const advanceButton = ({ canAdvance, isAdvancing, advance, job }) => {
   const { nextLabel } = getStatusConfig(job.statusKey)
-  return canAdvance && (
-    <button
-      type="button"
-      onClick={advance}
-      disabled={isAdvancing}
-      className="h-14 w-full rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 text-sm font-bold tracking-[0.1em] text-white transition hover:from-sky-400 hover:to-blue-500 disabled:opacity-60 sm:h-12"
-    >
-      {isAdvancing ? 'Guardando...' : nextLabel}
-    </button>
+  return (
+    canAdvance && (
+      <button
+        type="button"
+        onClick={advance}
+        disabled={isAdvancing}
+        aria-busy={isAdvancing}
+        aria-label={isAdvancing ? 'Guardando cambio de estado…' : nextLabel}
+        className="h-14 w-full rounded-xl bg-gradient-to-r from-sky-500 to-blue-600 text-sm font-bold tracking-[0.1em] text-white transition hover:from-sky-400 hover:to-blue-500 disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-300 sm:h-12"
+      >
+        {isAdvancing ? 'Guardando...' : nextLabel}
+      </button>
+    )
   )
 }
 
@@ -90,7 +98,9 @@ const historyTimeline = ({ history }) =>
             </div>
             <div className="pb-2">
               <p className="text-sm text-slate-200">{event.descripcion}</p>
-              <p className="mt-0.5 text-[0.68rem] text-slate-500">{event.date} · {event.time} · {event.usuario}</p>
+              <p className="mt-0.5 text-[0.68rem] text-slate-500">
+                {event.date} · {event.time} · {event.usuario}
+              </p>
             </div>
           </li>
         ))}
@@ -127,7 +137,9 @@ const jobContent = (state) => {
 
       {/* Info — fechas y metadatos */}
       <section className={cardBase}>
-        <h2 className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">Información</h2>
+        <h2 className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">
+          Información
+        </h2>
         <div className="mt-4 grid grid-cols-2 gap-x-6 gap-y-4">
           {infoField('Cliente', job.client)}
           {infoField('Progreso', `${job.progress}%`)}
@@ -154,7 +166,7 @@ const jobContent = (state) => {
 // ── Componente principal ───────────────────────────────────────────────────────
 const JobDetailPage = () => {
   const navigate = useNavigate()
-  const state    = useJobDetail()
+  const state = useJobDetail()
   const { setPageContext } = useIaContext()
 
   // Inyectar contexto del trabajo en la IA cuando carga el detalle
@@ -179,19 +191,18 @@ const JobDetailPage = () => {
     <AppShell>
       {/* max-w-[720px] en lugar de 620 para que las fotos tengan más espacio en tablet */}
       <div className="mx-auto w-full max-w-[720px] space-y-4 pb-5">
-
-        <button
-          type="button"
+        <WeldixButton
+          variant="ghost"
+          size="sm"
           onClick={() => navigate(-1)}
-          className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 transition hover:text-slate-300"
+          aria-label="Volver al listado de trabajos"
         >
           ← Volver
-        </button>
+        </WeldixButton>
 
         {loadingSkeleton(state)}
         {errorBanner(state)}
         {jobContent(state)}
-
       </div>
     </AppShell>
   )

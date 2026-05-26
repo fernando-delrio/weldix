@@ -19,12 +19,13 @@ const TerminosPage = () => (
       <Section title="1. Objeto y aceptación">
         <p>
           Los presentes Términos y Condiciones (en adelante, "los Términos") regulan el acceso y uso
-          de la plataforma Weldix (en adelante, "el Servicio"), desarrollada y operada por Weldix SaaS.
+          de la plataforma Weldix (en adelante, "el Servicio"), desarrollada y operada por Weldix
+          SaaS.
         </p>
         <p>
           Al registrar un taller y crear una cuenta, el usuario (en adelante, "el Taller") acepta
-          expresamente los presentes Términos en su totalidad. Si no está de acuerdo, debe abstenerse
-          de usar el Servicio.
+          expresamente los presentes Términos en su totalidad. Si no está de acuerdo, debe
+          abstenerse de usar el Servicio.
         </p>
       </Section>
 
@@ -52,7 +53,9 @@ const TerminosPage = () => (
           <li>Mantener la confidencialidad de sus credenciales de acceso</li>
           <li>Notificar inmediatamente cualquier uso no autorizado de su cuenta</li>
           <li>Garantizar que los datos introducidos son verídicos y están actualizados</li>
-          <li>El uso que realicen de la plataforma los usuarios (operarios) creados bajo su cuenta</li>
+          <li>
+            El uso que realicen de la plataforma los usuarios (operarios) creados bajo su cuenta
+          </li>
         </ul>
         <p>
           Weldix se reserva el derecho de suspender o cancelar cuentas que incumplan estos Términos.
@@ -85,7 +88,8 @@ const TerminosPage = () => (
       <Section title="6. Propiedad intelectual">
         <p>
           Todo el software, diseño, código fuente, logotipos y contenidos del Servicio son propiedad
-          exclusiva de Weldix SaaS y están protegidos por las leyes de propiedad intelectual aplicables.
+          exclusiva de Weldix SaaS y están protegidos por las leyes de propiedad intelectual
+          aplicables.
         </p>
         <p>
           Los datos introducidos por el Taller (trabajos, materiales, operarios, etc.) son propiedad
@@ -104,21 +108,21 @@ const TerminosPage = () => (
       <Section title="8. Limitación de responsabilidad">
         <p>
           Weldix no será responsable de daños indirectos, pérdida de beneficios o pérdida de datos
-          derivados del uso o imposibilidad de uso del Servicio, salvo en casos de dolo o negligencia
-          grave imputable a Weldix.
+          derivados del uso o imposibilidad de uso del Servicio, salvo en casos de dolo o
+          negligencia grave imputable a Weldix.
         </p>
         <p>
           El Taller es el único responsable del cumplimiento de sus obligaciones laborales (registro
-          de jornada, convenio colectivo, etc.) y del uso que haga de los datos exportados o generados
-          por la plataforma.
+          de jornada, convenio colectivo, etc.) y del uso que haga de los datos exportados o
+          generados por la plataforma.
         </p>
       </Section>
 
       <Section title="9. Cancelación del servicio">
         <p>
           El Taller puede cancelar su cuenta en cualquier momento desde el panel de administración o
-          contactando con soporte. Tras la cancelación, los datos se conservarán durante 30 días antes
-          de ser eliminados de forma definitiva, salvo que la ley exija un plazo mayor.
+          contactando con soporte. Tras la cancelación, los datos se conservarán durante 30 días
+          antes de ser eliminados de forma definitiva, salvo que la ley exija un plazo mayor.
         </p>
         <p>
           Weldix puede cancelar el Servicio con un preaviso mínimo de 30 días, salvo en casos de
@@ -139,9 +143,9 @@ const TerminosPage = () => (
       <Section title="11. Modificación de los términos">
         <p>
           Weldix se reserva el derecho de modificar estos Términos en cualquier momento. Las
-          modificaciones se notificarán con al menos 15 días de antelación mediante correo electrónico
-          o aviso en la plataforma. El uso continuado del Servicio tras la entrada en vigor de las
-          modificaciones implica su aceptación.
+          modificaciones se notificarán con al menos 15 días de antelación mediante correo
+          electrónico o aviso en la plataforma. El uso continuado del Servicio tras la entrada en
+          vigor de las modificaciones implica su aceptación.
         </p>
       </Section>
 

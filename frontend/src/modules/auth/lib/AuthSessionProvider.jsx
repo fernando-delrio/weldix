@@ -46,7 +46,7 @@ export const AuthSessionProvider = ({ children }) => {
         setIsFetchingProfile(false)
       }
     },
-    [clearSession],
+    [clearSession]
   )
 
   useEffect(() => {
@@ -80,7 +80,7 @@ export const AuthSessionProvider = ({ children }) => {
       saveToken,
       refreshProfile,
       clearSession,
-    ],
+    ]
   )
 
   return <AuthSessionContext.Provider value={value}>{children}</AuthSessionContext.Provider>

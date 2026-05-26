@@ -1,3 +1,5 @@
+import WeldixButton from '../../core/components/WeldixButton'
+
 // ── Helpers ─────────────────────────────────────────────────────────────────
 const codeTag = ({ code }) =>
   code && (
@@ -7,35 +9,41 @@ const codeTag = ({ code }) =>
   )
 
 const statusBadge = ({ estadoLabel, toneClasses }) => (
-  <span className={`rounded-full border px-2.5 py-0.5 text-[0.65rem] font-bold uppercase tracking-[0.14em] ${toneClasses.bg} ${toneClasses.text}`}>
+  <span
+    className={`rounded-full border px-2.5 py-0.5 text-[0.65rem] font-bold uppercase tracking-[0.14em] ${toneClasses.bg} ${toneClasses.text}`}
+  >
     {estadoLabel}
   </span>
 )
 
 const progressBar = ({ progreso }) => (
   <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-slate-800">
-    <div className="h-full rounded-full bg-amber-500 transition-all" style={{ width: `${progreso}%` }} />
+    <div
+      className="h-full rounded-full bg-amber-500 transition-all"
+      style={{ width: `${progreso}%` }}
+    />
   </div>
 )
 
 const operarioTag = ({ operario_name }) => (
   <div className="mt-3 flex items-center gap-2">
-    <span className="text-[0.65rem] font-bold uppercase tracking-[0.16em] text-slate-500">Operario</span>
-    {operario_name
-      ? <span className="rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-0.5 text-xs font-semibold text-amber-300">{operario_name}</span>
-      : <span className="text-xs text-slate-600 italic">Sin asignar</span>
-    }
+    <span className="text-[0.65rem] font-bold uppercase tracking-[0.16em] text-slate-500">
+      Operario
+    </span>
+    {operario_name ? (
+      <span className="rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-0.5 text-xs font-semibold text-amber-300">
+        {operario_name}
+      </span>
+    ) : (
+      <span className="text-xs text-slate-600 italic">Sin asignar</span>
+    )}
   </div>
 )
 
 const deleteButton = ({ onDelete }) => (
-  <button
-    type="button"
-    onClick={onDelete}
-    className="rounded-lg border border-rose-500/30 px-3 py-2 text-xs font-semibold text-rose-400 transition hover:border-rose-500/60 hover:bg-rose-500/10"
-  >
+  <WeldixButton variant="danger" size="sm" onClick={onDelete}>
     Eliminar
-  </button>
+  </WeldixButton>
 )
 
 // ── Componente ───────────────────────────────────────────────────────────────
@@ -52,9 +60,7 @@ const AdminJobCard = ({ job, onDelete }) => (
     <p className="mt-2 text-sm font-semibold text-slate-100">{job.titulo}</p>
     <p className="text-xs text-slate-400">{job.cliente}</p>
 
-    {job.fecha_inicio && (
-      <p className="mt-1 text-xs text-slate-500">Entrega: {job.fecha_inicio}</p>
-    )}
+    {job.fecha_inicio && <p className="mt-1 text-xs text-slate-500">Entrega: {job.fecha_inicio}</p>}
 
     {progressBar(job)}
     {operarioTag(job)}

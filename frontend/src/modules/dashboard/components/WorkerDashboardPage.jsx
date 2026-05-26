@@ -21,14 +21,17 @@ import TodayJobItem from './TodayJobItem'
 const loadingState = ({ isLoading, isEmpty }) =>
   (isLoading || isEmpty) && (
     <PanelCard>
-      <p className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-400">Cargando panel...</p>
+      <p className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-400">
+        Cargando panel...
+      </p>
       <div className="mt-3 h-2 w-full animate-pulse rounded bg-slate-800" />
       <div className="mt-2 h-2 w-2/3 animate-pulse rounded bg-slate-800" />
     </PanelCard>
   )
 
 const errorState = ({ isLoading, error, refresh }) =>
-  !isLoading && error && (
+  !isLoading &&
+  error && (
     <PanelCard className="border-rose-700/40">
       <p className="text-sm font-semibold text-rose-300">{error}</p>
       <button
@@ -60,7 +63,8 @@ const adminNewJobButton = ({ isAdmin, onOpen }) =>
   )
 
 const startByOrtButton = ({ isAdmin, hasActiveJob, onOpen }) =>
-  !isAdmin && !hasActiveJob && (
+  !isAdmin &&
+  !hasActiveJob && (
     <button
       type="button"
       onClick={onOpen}
@@ -73,11 +77,17 @@ const startByOrtButton = ({ isAdmin, hasActiveJob, onOpen }) =>
 const activeJobSection = ({ activeJob, onComplete, onOpenMaterialModal }) =>
   activeJob ? (
     <>
-      <ActiveJobCard job={activeJob} onComplete={onComplete} onRegisterMaterial={onOpenMaterialModal} />
+      <ActiveJobCard
+        job={activeJob}
+        onComplete={onComplete}
+        onRegisterMaterial={onOpenMaterialModal}
+      />
       <RegistroHorasOT jobId={activeJob.id} />
     </>
   ) : (
-    <PanelCard><p className="text-sm text-slate-400">Sin trabajo activo en este momento.</p></PanelCard>
+    <PanelCard>
+      <p className="text-sm text-slate-400">Sin trabajo activo en este momento.</p>
+    </PanelCard>
   )
 
 const pendingJobsSection = ({ todayJobs, onStartJob, canStart }) =>
@@ -99,14 +109,22 @@ const pendingJobsSection = ({ todayJobs, onStartJob, canStart }) =>
 
 const WorkerDashboardPage = () => {
   const { profile } = useAuthSession()
-  const { dashboard, isLoading, isEmpty, error, refresh, markActiveJobCompleted, startPendingJob, registerMaterialUsage } =
-    useWorkerDashboard()
+  const {
+    dashboard,
+    isLoading,
+    isEmpty,
+    error,
+    refresh,
+    markActiveJobCompleted,
+    startPendingJob,
+    registerMaterialUsage,
+  } = useWorkerDashboard()
   const { show: showOnboarding, complete: completeOnboarding } = useOnboarding(profile)
 
-  const [showModal, setShowModal]               = useState(false)
-  const [showOrtModal, setShowOrtModal]         = useState(false)
+  const [showModal, setShowModal] = useState(false)
+  const [showOrtModal, setShowOrtModal] = useState(false)
   const [showMaterialModal, setShowMaterialModal] = useState(false)
-  const [createdFeedback, setCreatedFeedback]   = useState('')
+  const [createdFeedback, setCreatedFeedback] = useState('')
 
   const isAdmin = profile?.role === 'admin'
   const { setPageContext } = useIaContext()
@@ -214,11 +232,12 @@ const WorkerDashboardPage = () => {
               </section>
             )}
 
-            {!isAdmin && pendingJobsSection({
-              todayJobs: dashboard.todayJobs,
-              onStartJob: startPendingJob,
-              canStart: !dashboard.activeJob,
-            })}
+            {!isAdmin &&
+              pendingJobsSection({
+                todayJobs: dashboard.todayJobs,
+                onStartJob: startPendingJob,
+                canStart: !dashboard.activeJob,
+              })}
 
             {isAdmin && <AdminJobsSection />}
           </>
@@ -227,10 +246,7 @@ const WorkerDashboardPage = () => {
 
       {showModal && <NewJobModal onClose={() => setShowModal(false)} onCreated={handleCreated} />}
       {showOrtModal && (
-        <StartJobByOrtModal
-          onClose={() => setShowOrtModal(false)}
-          onStart={startPendingJob}
-        />
+        <StartJobByOrtModal onClose={() => setShowOrtModal(false)} onStart={startPendingJob} />
       )}
       {showMaterialModal && dashboard?.stock && (
         <RegisterMaterialModal

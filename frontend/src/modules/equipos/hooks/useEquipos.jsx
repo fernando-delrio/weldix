@@ -8,11 +8,11 @@ import {
 } from '../services/equiposService'
 
 export const useEquipos = () => {
-  const [equipos,     setEquipos]     = useState([])
-  const [isLoading,   setIsLoading]   = useState(true)
-  const [isSubmitting,setIsSubmitting]= useState(false)
-  const [error,       setError]       = useState(null)
-  const [modalAbierto,setModalAbierto]= useState(false)
+  const [equipos, setEquipos] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState(null)
+  const [modalAbierto, setModalAbierto] = useState(false)
 
   const cargarEquipos = useCallback(async () => {
     setIsLoading(true)
@@ -27,7 +27,9 @@ export const useEquipos = () => {
     }
   }, [])
 
-  useEffect(() => { cargarEquipos() }, [cargarEquipos])
+  useEffect(() => {
+    cargarEquipos()
+  }, [cargarEquipos])
 
   const crearEquipo = useCallback(async (data) => {
     setIsSubmitting(true)

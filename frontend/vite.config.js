@@ -80,4 +80,7 @@ export default defineConfig({
     port: 5173,
     strictPort: false,
   },
+  optimizeDeps: {
+    entries: ['src/**/*.{js,jsx}'],
+  },
 });

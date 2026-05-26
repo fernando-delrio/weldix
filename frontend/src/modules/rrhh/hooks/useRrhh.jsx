@@ -10,14 +10,14 @@ import {
 } from '../services/rrhhService'
 
 export const useRrhh = ({ isAdmin = false } = {}) => {
-  const [saldo,          setSaldo]          = useState(null)
-  const [solicitudes,    setSolicitudes]    = useState([])
-  const [tipos,          setTipos]          = useState([])
-  const [isLoading,      setIsLoading]      = useState(true)
-  const [isSubmitting,   setIsSubmitting]   = useState(false)
-  const [error,          setError]          = useState(null)
-  const [modalCrear,     setModalCrear]     = useState(false)
-  const [revisandoId,    setRevisandoId]    = useState(null)  // id de solicitud que se está revisando
+  const [saldo, setSaldo] = useState(null)
+  const [solicitudes, setSolicitudes] = useState([])
+  const [tipos, setTipos] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState(null)
+  const [modalCrear, setModalCrear] = useState(false)
+  const [revisandoId, setRevisandoId] = useState(null) // id de solicitud que se está revisando
 
   const cargarDatos = useCallback(async () => {
     setIsLoading(true)
@@ -42,7 +42,9 @@ export const useRrhh = ({ isAdmin = false } = {}) => {
     }
   }, [isAdmin])
 
-  useEffect(() => { cargarDatos() }, [cargarDatos])
+  useEffect(() => {
+    cargarDatos()
+  }, [cargarDatos])
 
   const crear = useCallback(async (formData) => {
     setIsSubmitting(true)
@@ -61,21 +63,24 @@ export const useRrhh = ({ isAdmin = false } = {}) => {
     }
   }, [])
 
-  const cancelar = useCallback(async (solicitudId) => {
-    setError(null)
-    try {
-      await cancelarSolicitud(solicitudId)
-      setSolicitudes((prev) =>
-        prev.map((s) => (s.id === solicitudId ? { ...s, estado: 'cancelada' } : s))
-      )
-      if (!isAdmin) {
-        const saldoActualizado = await getMiSaldo()
-        setSaldo(saldoActualizado)
+  const cancelar = useCallback(
+    async (solicitudId) => {
+      setError(null)
+      try {
+        await cancelarSolicitud(solicitudId)
+        setSolicitudes((prev) =>
+          prev.map((s) => (s.id === solicitudId ? { ...s, estado: 'cancelada' } : s))
+        )
+        if (!isAdmin) {
+          const saldoActualizado = await getMiSaldo()
+          setSaldo(saldoActualizado)
+        }
+      } catch (err) {
+        setError(err.message)
       }
-    } catch (err) {
-      setError(err.message)
-    }
-  }, [isAdmin])
+    },
+    [isAdmin]
+  )
 
   const revisar = useCallback(async (solicitudId, { estado, comentario_admin }) => {
     setIsSubmitting(true)

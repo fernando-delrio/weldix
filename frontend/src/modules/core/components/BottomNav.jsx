@@ -23,7 +23,7 @@ const BottomNav = ({ items }) => {
                 'mx-0.5 my-1.5 flex flex-col items-center justify-center gap-1 rounded-xl transition',
                 isActive
                   ? 'bg-amber-500/15 text-amber-400 shadow-[inset_0_0_0_1px_rgba(245,158,11,0.3)]'
-                  : 'text-slate-500 hover:text-slate-300',
+                  : 'text-slate-500 hover:text-slate-300'
               )}
             >
               <NavIcon itemKey={item.key} className="h-[18px] w-[18px] shrink-0" />

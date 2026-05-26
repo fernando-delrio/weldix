@@ -2,11 +2,11 @@ import { useState } from 'react'
 import { getJobByCode } from '../services/workerDashboardService'
 
 export const useStartByOrtForm = ({ onStart, onClose }) => {
-  const [code, setCode]           = useState('')
-  const [job, setJob]             = useState(null)
+  const [code, setCode] = useState('')
+  const [job, setJob] = useState(null)
   const [isSearching, setIsSearching] = useState(false)
-  const [isStarting, setIsStarting]   = useState(false)
-  const [error, setError]         = useState('')
+  const [isStarting, setIsStarting] = useState(false)
+  const [error, setError] = useState('')
 
   const search = async (e) => {
     e.preventDefault()

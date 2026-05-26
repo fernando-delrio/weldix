@@ -30,7 +30,9 @@ export const getMiSaldo = async (year = new Date().getFullYear()) => {
 // ── Solicitudes operario ───────────────────────────────────────────────────────
 
 export const getMisSolicitudes = async () => {
-  const res = await fetch(`${API_BASE_URL}/rrhh/solicitudes/mis-solicitudes`, { headers: authHeaders() })
+  const res = await fetch(`${API_BASE_URL}/rrhh/solicitudes/mis-solicitudes`, {
+    headers: authHeaders(),
+  })
   if (!res.ok) throw new Error('Error al obtener solicitudes')
   return res.json()
 }

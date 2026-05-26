@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session, joinedload
 
 from backend.core.database import get_db
-from backend.features.auth.dependencies import get_current_user
+from backend.features.auth.dependencies import get_current_user, require_active_trial
 from backend.features.auth.model import User
 from backend.features.jobs.model import Job
 from backend.features.rrhh import service as rrhh_service
@@ -14,7 +14,11 @@ from backend.features.stock.model import Material
 from . import service
 from .schemas import ConsultaRequest, ConsultaResponse
 
-router = APIRouter(prefix="/ia", tags=["ia"])
+router = APIRouter(
+    prefix="/ia",
+    tags=["ia"],
+    dependencies=[Depends(require_active_trial)],
+)
 
 
 def _build_user_context(db: Session, user: User) -> str:

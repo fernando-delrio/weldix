@@ -6,8 +6,7 @@ import {
   iniciarRegistro,
 } from '../services/registroHorasService'
 
-const segundosDesde = (inicio) =>
-  Math.floor((Date.now() - new Date(inicio).getTime()) / 1000)
+const segundosDesde = (inicio) => Math.floor((Date.now() - new Date(inicio).getTime()) / 1000)
 
 const formatElapsed = (segundos) => {
   const h = Math.floor(segundos / 3600)
@@ -26,11 +25,11 @@ const formatHora = (iso) =>
  */
 export const useRegistroHoras = (jobId) => {
   const [registroActivo, setRegistroActivo] = useState(null)
-  const [resumen,        setResumen]        = useState(null)
-  const [elapsed,        setElapsed]        = useState('')
-  const [isLoading,      setIsLoading]      = useState(true)
-  const [isSubmitting,   setIsSubmitting]   = useState(false)
-  const [error,          setError]          = useState(null)
+  const [resumen, setResumen] = useState(null)
+  const [elapsed, setElapsed] = useState('')
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState(null)
   const intervalRef = useRef(null)
 
   const arrancarTicker = useCallback((inicio) => {
@@ -53,10 +52,7 @@ export const useRegistroHoras = (jobId) => {
     setIsLoading(true)
     setError(null)
     try {
-      const [activo, hrs] = await Promise.all([
-        getRegistroActivo(),
-        getHorasOT(jobId),
-      ])
+      const [activo, hrs] = await Promise.all([getRegistroActivo(), getHorasOT(jobId)])
       // El registro activo puede ser de otra OT — solo lo mostramos si es de esta
       const esDeEstaOT = activo?.job_id === jobId
       setRegistroActivo(esDeEstaOT ? activo : null)
@@ -70,7 +66,9 @@ export const useRegistroHoras = (jobId) => {
     }
   }, [jobId, arrancarTicker, pararTicker])
 
-  useEffect(() => { cargar() }, [cargar])
+  useEffect(() => {
+    cargar()
+  }, [cargar])
 
   const iniciar = useCallback(async () => {
     setIsSubmitting(true)

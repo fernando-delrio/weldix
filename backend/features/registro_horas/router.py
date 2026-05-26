@@ -2,13 +2,20 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from backend.core.database import get_db
-from backend.features.auth.dependencies import get_current_user, require_role
+from backend.features.auth.dependencies import (
+    get_current_user,
+    require_active_trial,
+    require_role,
+)
 from backend.features.auth.model import User
 
 from . import service
 from .schemas import HorasOTResponse, IniciarRegistroRequest, RegistroHorasResponse
 
-router = APIRouter(tags=["registro-horas"])
+router = APIRouter(
+    tags=["registro-horas"],
+    dependencies=[Depends(require_active_trial)],
+)
 
 
 @router.post(

@@ -16,13 +16,12 @@ export const ThemeProvider = ({ children }) => {
   const toggleTheme = () => {
     const next = !isDark
     localStorage.setItem('weldix_theme', next ? 'dark' : 'light')
-    if (!document.startViewTransition) { setIsDark(next); return }
+    if (!document.startViewTransition) {
+      setIsDark(next)
+      return
+    }
     document.startViewTransition(() => setIsDark(next))
   }
 
-  return (
-    <ThemeContext.Provider value={{ isDark, toggleTheme }}>
-      {children}
-    </ThemeContext.Provider>
-  )
+  return <ThemeContext.Provider value={{ isDark, toggleTheme }}>{children}</ThemeContext.Provider>
 }

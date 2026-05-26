@@ -6,22 +6,18 @@ import { getStatusConfig } from '../lib/statusConfig'
 // ── Subcomponentes ─────────────────────────────────────────────────────────────
 
 const searchingState = ({ isSearching }) =>
-  isSearching && (
-    <p className="px-4 py-6 text-center text-xs text-slate-500">Buscando...</p>
-  )
+  isSearching && <p className="px-4 py-6 text-center text-xs text-slate-500">Buscando...</p>
 
 const emptyState = ({ query, results, isSearching }) =>
-  !isSearching && query.trim().length >= 2 && results.length === 0 && (
-    <p className="px-4 py-6 text-center text-xs text-slate-500">
-      Sin resultados para "{query}"
-    </p>
+  !isSearching &&
+  query.trim().length >= 2 &&
+  results.length === 0 && (
+    <p className="px-4 py-6 text-center text-xs text-slate-500">Sin resultados para "{query}"</p>
   )
 
 const hintState = ({ query }) =>
   query.trim().length < 2 && (
-    <p className="px-4 py-6 text-center text-xs text-slate-600">
-      Escribe al menos 2 caracteres
-    </p>
+    <p className="px-4 py-6 text-center text-xs text-slate-600">Escribe al menos 2 caracteres</p>
   )
 
 const resultItem = (job, onSelect) => {
@@ -39,7 +35,9 @@ const resultItem = (job, onSelect) => {
           {job.code ?? `#${job.id}`} · {job.client}
         </p>
       </div>
-      <span className={`shrink-0 rounded border px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-[0.12em] ${bgClass}`}>
+      <span
+        className={`shrink-0 rounded border px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-[0.12em] ${bgClass}`}
+      >
         {label}
       </span>
     </button>
@@ -47,7 +45,8 @@ const resultItem = (job, onSelect) => {
 }
 
 const resultsList = ({ results, isSearching }, onSelect) =>
-  !isSearching && results.length > 0 && (
+  !isSearching &&
+  results.length > 0 && (
     <ul className="divide-y divide-slate-800/60">
       {results.map((job) => (
         <li key={job.id}>{resultItem(job, onSelect)}</li>
@@ -57,8 +56,8 @@ const resultsList = ({ results, isSearching }, onSelect) =>
 
 // ── Componente principal ───────────────────────────────────────────────────────
 const SearchModal = ({ isOpen, close, query, setQuery, results, isSearching }) => {
-  const navigate  = useNavigate()
-  const inputRef  = useRef(null)
+  const navigate = useNavigate()
+  const inputRef = useRef(null)
 
   // Foco automático al abrir
   useEffect(() => {
@@ -67,7 +66,10 @@ const SearchModal = ({ isOpen, close, query, setQuery, results, isSearching }) =
 
   if (!isOpen) return null
 
-  const selectJob = (id) => { navigate(`/app/trabajos/${id}`); close() }
+  const selectJob = (id) => {
+    navigate(`/app/trabajos/${id}`)
+    close()
+  }
 
   const state = { query, results, isSearching }
 
@@ -87,8 +89,19 @@ const SearchModal = ({ isOpen, close, query, setQuery, results, isSearching }) =
       >
         {/* Input */}
         <div className="flex items-center gap-3 border-b border-slate-800 px-4 py-3">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-4 w-4 shrink-0 text-slate-500">
-            <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={2}
+            stroke="currentColor"
+            className="h-4 w-4 shrink-0 text-slate-500"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
+            />
           </svg>
           <input
             ref={inputRef}
@@ -98,7 +111,9 @@ const SearchModal = ({ isOpen, close, query, setQuery, results, isSearching }) =
             placeholder="Buscar trabajo, cliente u OT..."
             className="flex-1 bg-transparent text-sm text-slate-100 placeholder-slate-600 outline-none"
           />
-          <kbd className="rounded border border-slate-700 px-1.5 py-0.5 text-[0.6rem] text-slate-600">ESC</kbd>
+          <kbd className="rounded border border-slate-700 px-1.5 py-0.5 text-[0.6rem] text-slate-600">
+            ESC
+          </kbd>
         </div>
 
         {/* Resultados */}
@@ -111,7 +126,9 @@ const SearchModal = ({ isOpen, close, query, setQuery, results, isSearching }) =
 
         {/* Footer */}
         <div className="border-t border-slate-800 px-4 py-2">
-          <p className="text-[0.6rem] text-slate-600">Ctrl+K para abrir · Enter o clic para ir al trabajo</p>
+          <p className="text-[0.6rem] text-slate-600">
+            Ctrl+K para abrir · Enter o clic para ir al trabajo
+          </p>
         </div>
       </div>
     </div>

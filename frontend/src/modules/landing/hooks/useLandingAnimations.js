@@ -27,43 +27,59 @@ const animateHero = () => {
   tl.from('[data-gsap="hero-badge"]', { y: -20, opacity: 0, duration: 0.6 })
 
   // Headline - cada linea sube con stagger (como Apple splash)
-  tl.from('[data-gsap="hero-line"]', {
-    y: 60,
-    opacity: 0,
-    duration: 0.7,
-    stagger: 0.12,
-    ease: 'power4.out',
-  }, '-=0.3')
+  tl.from(
+    '[data-gsap="hero-line"]',
+    {
+      y: 60,
+      opacity: 0,
+      duration: 0.7,
+      stagger: 0.12,
+      ease: 'power4.out',
+    },
+    '-=0.3'
+  )
 
   // Linea decorativa amber crece de izquierda a derecha
-  tl.from('[data-gsap="hero-bar"]', {
-    scaleX: 0,
-    transformOrigin: 'left center',
-    duration: 0.5,
-    ease: 'power2.out',
-  }, '-=0.4')
+  tl.from(
+    '[data-gsap="hero-bar"]',
+    {
+      scaleX: 0,
+      transformOrigin: 'left center',
+      duration: 0.5,
+      ease: 'power2.out',
+    },
+    '-=0.4'
+  )
 
   // Subtitulo
   tl.from('[data-gsap="hero-sub"]', { y: 20, opacity: 0, duration: 0.5 }, '-=0.3')
 
   // Botones CTA
-  tl.from('[data-gsap="hero-cta"]', {
-    y: 15,
-    opacity: 0,
-    duration: 0.5,
-    stagger: 0.1,
-  }, '-=0.25')
+  tl.from(
+    '[data-gsap="hero-cta"]',
+    {
+      y: 15,
+      opacity: 0,
+      duration: 0.5,
+      stagger: 0.1,
+    },
+    '-=0.25'
+  )
 
   // Stats grid
   tl.from('[data-gsap="hero-stats"]', { opacity: 0, duration: 0.4 }, '-=0.2')
 
   // Mockup entra desde la derecha - empieza en paralelo con el headline
-  tl.from('[data-gsap="hero-mockup"]', {
-    x: 60,
-    opacity: 0,
-    duration: 0.9,
-    ease: 'power3.out',
-  }, 0.3)
+  tl.from(
+    '[data-gsap="hero-mockup"]',
+    {
+      x: 60,
+      opacity: 0,
+      duration: 0.9,
+      ease: 'power3.out',
+    },
+    0.3
+  )
 
   return tl
 }
@@ -80,18 +96,6 @@ const animateHeroParallax = () => {
       end: 'bottom top',
       scrub: true,
     },
-  })
-}
-
-// ---- Mockup flotando en loop (idle animation estilo Apple) -----------------
-
-const animateMockupFloat = () => {
-  gsap.to('[data-gsap="hero-mockup"]', {
-    y: -8,
-    duration: 3.5,
-    ease: 'sine.inOut',
-    yoyo: true,
-    repeat: -1,
   })
 }
 
@@ -155,7 +159,8 @@ const animateFeatures = () => {
 // mientras baja por la pagina.
 
 const animateTimeline = () => {
-  gsap.fromTo('[data-gsap="timeline-progress"]',
+  gsap.fromTo(
+    '[data-gsap="timeline-progress"]',
     { scaleX: 0, transformOrigin: 'left center' },
     {
       scaleX: 1,
@@ -252,19 +257,28 @@ const animateCtaFinal = () => {
     duration: 0.8,
     ease: 'power3.out',
   })
-  .from('[data-gsap="cta-sub"]', {
-    y: 20,
-    opacity: 0,
-    duration: 0.5,
-  }, '-=0.4')
-  .from('[data-gsap="cta-buttons"]', {
-    y: 20,
-    opacity: 0,
-    duration: 0.5,
-    stagger: 0.1,
-  }, '-=0.3')
+    .from(
+      '[data-gsap="cta-sub"]',
+      {
+        y: 20,
+        opacity: 0,
+        duration: 0.5,
+      },
+      '-=0.4'
+    )
+    .from(
+      '[data-gsap="cta-buttons"]',
+      {
+        y: 20,
+        opacity: 0,
+        duration: 0.5,
+        stagger: 0.1,
+      },
+      '-=0.3'
+    )
 
-  gsap.fromTo('[data-gsap="cta-primary"]',
+  gsap.fromTo(
+    '[data-gsap="cta-primary"]',
     { boxShadow: '0 0 0 0 rgba(245,158,11,0)' },
     {
       boxShadow: '0 0 32px 8px rgba(245,158,11,0.35)',

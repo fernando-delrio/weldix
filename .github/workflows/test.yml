@@ -24,10 +24,16 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      # Cuando se implemente Alembic en Fase 10, descomentar esto:
+      # - name: Run migrations
+      #   run: alembic upgrade head
+      #   env:
+      #     DATABASE_URL: "sqlite:///./ci-test.db"
+
       - name: Run tests
         # DATABASE_URL vacío → SQLite en memoria (conftest.py lo gestiona)
         # PYTHONPATH=. permite que pytest encuentre el paquete backend desde la raíz
-        run: pytest tests/ -v
+        run: pytest tests/ -v --tb=short
         env:
           PYTHONPATH: "."
           SECRET_KEY: "ci-secret-key-not-used-in-production"
@@ -50,10 +56,26 @@ jobs:
       - name: Install dependencies
         run: cd frontend && npm ci
 
-      - name: Lint
+      - name: Format check (Prettier)
+        run: cd frontend && npm run format:check
+
+      - name: Lint (ESLint)
         run: cd frontend && npm run lint
 
       - name: Build
         run: cd frontend && npm run build
         env:
           VITE_API_URL: "http://localhost:8000"
+
+      - name: Check bundle size
+        # Budget: JS total < 400 KB gzip (actualmente ~310 KB)
+        # Target futuro < 150 KB inicial requiere lazy loading de rutas (Fase 7)
+        run: |
+          JS_BYTES=$(find frontend/dist/assets -name "*.js" ! -name "workbox-*" ! -name "sw.js" | xargs gzip -c | wc -c)
+          JS_KB=$((JS_BYTES / 1024))
+          echo "JS bundle size (gzip): ${JS_KB} KB"
+          if [ "$JS_BYTES" -gt 409600 ]; then
+            echo "ERROR: JS bundle exceeds 400 KB gzip budget (${JS_KB} KB)"
+            exit 1
+          fi
+          echo "OK: bundle within budget"

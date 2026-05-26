@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { finalizarJornada, getJornadaActiva, iniciarJornada, getMisJornadas } from '../services/fichajeService'
+import {
+  finalizarJornada,
+  getJornadaActiva,
+  iniciarJornada,
+  getMisJornadas,
+} from '../services/fichajeService'
 
 // "08:02" — hora real de inicio de jornada
 const formatHora = (iso) =>
@@ -13,17 +18,16 @@ const formatearElapsed = (segundos) => {
   return `${m}min`
 }
 
-const segundosDesde = (inicio) =>
-  Math.floor((Date.now() - new Date(inicio).getTime()) / 1000)
+const segundosDesde = (inicio) => Math.floor((Date.now() - new Date(inicio).getTime()) / 1000)
 
 export const useJornada = () => {
-  const [jornada,        setJornada]        = useState(null)
-  const [jornadaCerrada, setJornadaCerrada] = useState(null)  // última jornada finalizada
-  const [elapsed,        setElapsed]        = useState('')    // "2h 15min"
-  const [historial,      setHistorial]      = useState([])
-  const [isLoading,      setIsLoading]      = useState(true)
-  const [isSubmitting,   setIsSubmitting]   = useState(false)
-  const [error,          setError]          = useState(null)
+  const [jornada, setJornada] = useState(null)
+  const [jornadaCerrada, setJornadaCerrada] = useState(null) // última jornada finalizada
+  const [elapsed, setElapsed] = useState('') // "2h 15min"
+  const [historial, setHistorial] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState(null)
   const intervalRef = useRef(null)
 
   const arrancarTicker = useCallback((inicio) => {
@@ -57,13 +61,17 @@ export const useJornada = () => {
     }
   }, [arrancarTicker, pararTicker])
 
-  useEffect(() => { cargarJornada() }, [cargarJornada])
+  useEffect(() => {
+    cargarJornada()
+  }, [cargarJornada])
 
   const cargarHistorial = useCallback(async () => {
     try {
       const data = await getMisJornadas()
       setHistorial(data)
-    } catch { /* no-op — historial es secundario */ }
+    } catch {
+      /* no-op — historial es secundario */
+    }
   }, [])
 
   const iniciar = useCallback(async () => {
@@ -89,8 +97,8 @@ export const useJornada = () => {
       const cerrada = await finalizarJornada(jornada.id)
       pararTicker()
       setJornada(null)
-      setJornadaCerrada(cerrada)        // guardamos para mostrar el resumen
-      await cargarHistorial()           // refrescamos el historial
+      setJornadaCerrada(cerrada) // guardamos para mostrar el resumen
+      await cargarHistorial() // refrescamos el historial
     } catch (err) {
       setError(err.message)
     } finally {

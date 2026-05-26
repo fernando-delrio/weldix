@@ -12,7 +12,10 @@ const StageProgress = ({ stages, currentStage }) => {
         />
       </div>
 
-      <div className="grid gap-1" style={{ gridTemplateColumns: `repeat(${totalStages}, minmax(0, 1fr))` }}>
+      <div
+        className="grid gap-1"
+        style={{ gridTemplateColumns: `repeat(${totalStages}, minmax(0, 1fr))` }}
+      >
         {stages.map((stage, index) => {
           const isDone = index <= currentStage
 
@@ -21,10 +24,17 @@ const StageProgress = ({ stages, currentStage }) => {
               <span
                 className={cx(
                   'h-2 w-2 rounded-full border',
-                  isDone ? 'border-amber-300 bg-amber-300 shadow-[0_0_10px_rgba(56,189,248,0.45)]' : 'border-slate-700',
+                  isDone
+                    ? 'border-amber-300 bg-amber-300 shadow-[0_0_10px_rgba(56,189,248,0.45)]'
+                    : 'border-slate-700'
                 )}
               />
-              <span className={cx('text-[0.5rem] uppercase tracking-[0.12em]', isDone ? 'text-amber-300' : 'text-slate-500')}>
+              <span
+                className={cx(
+                  'text-[0.5rem] uppercase tracking-[0.12em]',
+                  isDone ? 'text-amber-300' : 'text-slate-500'
+                )}
+              >
                 {stage}
               </span>
             </div>

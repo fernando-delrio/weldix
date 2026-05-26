@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Date, DateTime, ForeignKey, Integer, String, Text, func
+from sqlalchemy import Boolean, Column, Date, DateTime, ForeignKey, Integer, String, Text, func
 from sqlalchemy.orm import relationship
 
 from backend.core.database import Base
@@ -17,6 +17,7 @@ class Job(Base):
     fecha_inicio = Column(Date, nullable=True)
     progreso = Column(Integer, nullable=False, default=0)
     descripcion = Column(Text, nullable=True)
+    is_demo = Column(Boolean, nullable=False, default=False)
     created_at = Column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )

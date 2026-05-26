@@ -56,5 +56,9 @@ class Settings(BaseSettings):
     # Si está vacío, fire_webhook() no hace nada (modo silencioso)
     n8n_webhook_url: str | None = None
 
+    # Super-admin interno — panel del founder para ver todos los workspaces
+    # Poner en .env: SUPERADMIN_KEY=una-clave-secreta-larga
+    superadmin_key: str | None = None
+
 
 settings = Settings()

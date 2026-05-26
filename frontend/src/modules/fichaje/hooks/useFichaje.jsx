@@ -1,25 +1,27 @@
 import { useCallback, useEffect, useState } from 'react'
-import { finalizarFichaje, getFichajeActivo, getHorasTotales, iniciarFichaje } from '../services/fichajeService'
+import {
+  finalizarRegistro,
+  getHorasOT,
+  getRegistroActivo,
+  iniciarRegistro,
+} from '../../registro_horas/services/registroHorasService'
 
 /**
  * Hook de fichaje para un trabajo concreto.
  * Gestiona: ¿hay fichaje abierto? → mostrar botón "Fichar salida" o "Fichar entrada".
  */
 export const useFichaje = (jobId) => {
-  const [fichajeActivo, setFichajeActivo]   = useState(null)
-  const [horasTotales,  setHorasTotales]    = useState(null)
-  const [isLoading,     setIsLoading]       = useState(true)
-  const [isSubmitting,  setIsSubmitting]    = useState(false)
-  const [error,         setError]           = useState(null)
+  const [fichajeActivo, setFichajeActivo] = useState(null)
+  const [horasTotales, setHorasTotales] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState(null)
 
   const cargarEstado = useCallback(async () => {
     setIsLoading(true)
     setError(null)
     try {
-      const [activo, horas] = await Promise.all([
-        getFichajeActivo(),
-        getHorasTotales(jobId),
-      ])
+      const [activo, horas] = await Promise.all([getRegistroActivo(), getHorasOT(jobId)])
       // El fichaje activo puede ser de otro trabajo — solo lo mostramos si es de este
       setFichajeActivo(activo?.job_id === jobId ? activo : null)
       setHorasTotales(horas)
@@ -30,13 +32,15 @@ export const useFichaje = (jobId) => {
     }
   }, [jobId])
 
-  useEffect(() => { cargarEstado() }, [cargarEstado])
+  useEffect(() => {
+    cargarEstado()
+  }, [cargarEstado])
 
   const ficharEntrada = useCallback(async () => {
     setIsSubmitting(true)
     setError(null)
     try {
-      const nuevo = await iniciarFichaje(jobId)
+      const nuevo = await iniciarRegistro(jobId)
       setFichajeActivo(nuevo)
     } catch (err) {
       setError(err.message)
@@ -50,7 +54,7 @@ export const useFichaje = (jobId) => {
     setIsSubmitting(true)
     setError(null)
     try {
-      await finalizarFichaje(fichajeActivo.id)
+      await finalizarRegistro(fichajeActivo.id)
       // Recargamos para actualizar horas totales
       await cargarEstado()
     } catch (err) {

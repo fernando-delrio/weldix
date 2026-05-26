@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { deleteDemoData } from '../../admin/services/adminService'
 import { cx } from '../lib/cx'
+import WeldixButton from './WeldixButton'
 
 const STEPS = [
   {
@@ -40,11 +42,11 @@ const STEPS = [
   },
 ]
 
-const StepDot = ({ index, current, total }) => (
+const StepDot = ({ index, current }) => (
   <span
     className={cx(
       'h-1.5 rounded-full transition-all duration-300',
-      index === current ? 'w-6 bg-amber-400' : 'w-1.5 bg-slate-700',
+      index === current ? 'w-6 bg-amber-400' : 'w-1.5 bg-slate-700'
     )}
     aria-hidden="true"
   />
@@ -52,6 +54,8 @@ const StepDot = ({ index, current, total }) => (
 
 const OnboardingWizard = ({ onComplete }) => {
   const [step, setStep] = useState(0)
+  const [isCleaning, setIsCleaning] = useState(false)
+  const [cleanDone, setCleanDone] = useState(false)
   const navigate = useNavigate()
 
   const current = STEPS[step]
@@ -59,11 +63,24 @@ const OnboardingWizard = ({ onComplete }) => {
   const isFirst = step === 0
 
   const goNext = () => {
-    if (isLast) { onComplete(); return }
+    if (isLast) {
+      onComplete()
+      return
+    }
     setStep((s) => s + 1)
   }
 
   const goBack = () => setStep((s) => s - 1)
+
+  const handleCleanDemo = async () => {
+    setIsCleaning(true)
+    try {
+      await deleteDemoData()
+      setCleanDone(true)
+    } finally {
+      setIsCleaning(false)
+    }
+  }
 
   const handleAction = () => {
     if (!current.action) return
@@ -79,20 +96,19 @@ const OnboardingWizard = ({ onComplete }) => {
       aria-label="Onboarding de Weldix"
     >
       <div className="w-full max-w-sm rounded-2xl border border-slate-700/60 bg-slate-900 shadow-2xl">
-
         {/* Cabecera */}
         <div className="flex items-center justify-between border-b border-slate-800 px-5 py-4">
           <span className="text-[0.6rem] font-bold uppercase tracking-[0.2em] text-slate-500">
             Paso {step + 1} de {STEPS.length}
           </span>
-          <button
-            type="button"
+          <WeldixButton
+            variant="ghost"
+            size="sm"
             onClick={onComplete}
-            className="text-xs text-slate-600 hover:text-slate-400 transition"
             aria-label="Saltar onboarding"
           >
             Saltar
-          </button>
+          </WeldixButton>
         </div>
 
         {/* Contenido */}
@@ -103,13 +119,37 @@ const OnboardingWizard = ({ onComplete }) => {
 
           {/* Botón de acción rápida (opcional) */}
           {current.action && (
-            <button
-              type="button"
+            <WeldixButton
+              variant="ghost"
+              size="sm"
               onClick={handleAction}
-              className="mt-1 text-sm font-semibold text-amber-400 underline hover:text-amber-300 transition"
+              className="mt-1 text-amber-400 underline hover:text-amber-300"
             >
               {current.action.label} →
-            </button>
+            </WeldixButton>
+          )}
+
+          {/* Último paso — botón para limpiar datos de demo */}
+          {isLast && (
+            <div className="mt-3 rounded-lg border border-slate-700 bg-slate-800/50 p-3">
+              <p className="text-xs text-slate-400 mb-2">
+                Tu taller incluye datos de ejemplo para que puedas explorar la app. Puedes
+                eliminarlos cuando estés listo para empezar con datos reales.
+              </p>
+              {cleanDone ? (
+                <p className="text-xs font-semibold text-emerald-400">✓ Datos de demo eliminados</p>
+              ) : (
+                <WeldixButton
+                  variant="danger"
+                  size="sm"
+                  onClick={handleCleanDemo}
+                  isLoading={isCleaning}
+                  loadingLabel="Eliminando datos de demo…"
+                >
+                  Limpiar datos de demo
+                </WeldixButton>
+              )}
+            </div>
           )}
         </div>
 
@@ -124,24 +164,20 @@ const OnboardingWizard = ({ onComplete }) => {
 
           <div className="flex items-center gap-2">
             {!isFirst && (
-              <button
-                type="button"
-                onClick={goBack}
-                className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs font-semibold text-slate-400 transition hover:bg-slate-800"
-              >
+              <WeldixButton variant="secondary" size="sm" onClick={goBack}>
                 Atrás
-              </button>
+              </WeldixButton>
             )}
-            <button
-              type="button"
+            <WeldixButton
+              variant="warning"
+              size="sm"
               onClick={goNext}
-              className="rounded-lg bg-amber-500 px-4 py-1.5 text-xs font-bold text-white transition hover:bg-amber-400 min-w-[72px]"
+              className="min-w-[72px] bg-amber-500 text-white"
             >
               {isLast ? 'Empezar' : 'Siguiente'}
-            </button>
+            </WeldixButton>
           </div>
         </div>
-
       </div>
     </div>
   )

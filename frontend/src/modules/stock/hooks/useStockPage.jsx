@@ -3,9 +3,9 @@ import * as stockService from '../services/stockService'
 
 export const useStockPage = () => {
   const [materials, setMaterials] = useState([])
-  const [isLoading, setIsLoading]   = useState(true)
-  const [error, setError]           = useState(null)
-  const [feedback, setFeedback]     = useState('')
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [feedback, setFeedback] = useState('')
 
   const showFeedback = (msg) => {
     setFeedback(msg)
@@ -25,7 +25,9 @@ export const useStockPage = () => {
     }
   }, [])
 
-  useEffect(() => { load() }, [load])
+  useEffect(() => {
+    load()
+  }, [load])
 
   const handleCreate = async (data) => {
     await stockService.createMaterial(data)

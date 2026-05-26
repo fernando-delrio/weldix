@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useFotos } from '../hooks/useFotos'
+import WeldixButton from '../../core/components/WeldixButton'
 
 const cardBase = 'rounded-xl border border-cyan-900/50 bg-slate-900/65 p-5'
 
@@ -27,21 +28,20 @@ const Lightbox = ({ foto, onClose, onDelete }) => (
           {foto.uploader_nombre}
         </span>
       )}
-      <button
-        type="button"
-        onClick={() => { onDelete(foto.id); onClose() }}
-        className="rounded-md border border-rose-700/50 bg-rose-500/10 px-3 py-1 text-[0.65rem] uppercase tracking-widest text-rose-400 transition hover:bg-rose-500/20"
+      <WeldixButton
+        variant="danger"
+        size="sm"
+        onClick={() => {
+          onDelete(foto.id)
+          onClose()
+        }}
       >
         Eliminar
-      </button>
+      </WeldixButton>
     </div>
-    <button
-      type="button"
-      onClick={onClose}
-      className="mt-4 text-xs uppercase tracking-widest text-slate-500 hover:text-slate-300"
-    >
+    <WeldixButton variant="ghost" size="sm" onClick={onClose} className="mt-4">
       Cerrar
-    </button>
+    </WeldixButton>
   </div>
 )
 
@@ -53,7 +53,8 @@ const EtiquetaSelector = ({ selected, onChange }) => (
         key={e}
         type="button"
         onClick={() => onChange(e)}
-        className={`rounded-md border px-2.5 py-1 text-[0.62rem] font-semibold uppercase tracking-widest transition ${
+        aria-pressed={selected === e}
+        className={`rounded-md border px-2.5 py-1 text-[0.62rem] font-semibold uppercase tracking-widest transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400 ${
           selected === e
             ? 'border-sky-500/60 bg-sky-500/15 text-sky-300'
             : 'border-slate-700 bg-slate-800/60 text-slate-500 hover:text-slate-300'
@@ -70,7 +71,8 @@ const FotoThumb = ({ foto, onClick }) => (
   <button
     type="button"
     onClick={() => onClick(foto)}
-    className="group relative aspect-square overflow-hidden rounded-lg border border-slate-800 bg-slate-800/60 transition hover:border-sky-500/50"
+    aria-label={`Ver foto: ${etiquetaLabel[foto.etiqueta] ?? foto.etiqueta}`}
+    className="group relative aspect-square overflow-hidden rounded-lg border border-slate-800 bg-slate-800/60 transition hover:border-sky-500/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400"
   >
     <img
       src={foto.url}
@@ -89,8 +91,16 @@ const FotosGallery = ({ jobId }) => {
   const [etiqueta, setEtiqueta] = useState('durante')
 
   const {
-    fotos, isLoading, isUploading, lightbox, error,
-    fileInputRef, abrirLightbox, cerrarLightbox, eliminarFoto, subirFoto,
+    fotos,
+    isLoading,
+    isUploading,
+    lightbox,
+    error,
+    fileInputRef,
+    abrirLightbox,
+    cerrarLightbox,
+    eliminarFoto,
+    subirFoto,
   } = useFotos(jobId)
 
   // Al seleccionar archivo, usamos la etiqueta actual del selector
@@ -104,9 +114,7 @@ const FotosGallery = ({ jobId }) => {
     <section className={cardBase}>
       <h2 className="mb-4 text-xs font-bold uppercase tracking-[0.16em] text-slate-400">
         Fotos del trabajo
-        {fotos.length > 0 && (
-          <span className="ml-2 text-slate-600">({fotos.length})</span>
-        )}
+        {fotos.length > 0 && <span className="ml-2 text-slate-600">({fotos.length})</span>}
       </h2>
 
       {error && <p className="mb-3 text-xs text-rose-400">{error}</p>}
@@ -136,7 +144,9 @@ const FotosGallery = ({ jobId }) => {
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploading}
-              className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-slate-700 bg-slate-800/30 py-3 text-xs font-semibold uppercase tracking-widest text-slate-500 transition hover:border-sky-500/50 hover:text-sky-400 disabled:opacity-50"
+              aria-busy={isUploading}
+              aria-label={isUploading ? 'Subiendo foto…' : 'Añadir foto'}
+              className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-slate-700 bg-slate-800/30 py-3 text-xs font-semibold uppercase tracking-widest text-slate-500 transition hover:border-sky-500/50 hover:text-sky-400 disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400"
             >
               {isUploading ? 'Subiendo...' : '+ Añadir foto'}
             </button>
@@ -153,13 +163,7 @@ const FotosGallery = ({ jobId }) => {
         </>
       )}
 
-      {lightbox && (
-        <Lightbox
-          foto={lightbox}
-          onClose={cerrarLightbox}
-          onDelete={eliminarFoto}
-        />
-      )}
+      {lightbox && <Lightbox foto={lightbox} onClose={cerrarLightbox} onDelete={eliminarFoto} />}
     </section>
   )
 }

@@ -16,7 +16,10 @@ const StockItem = ({ item }) => {
       </div>
 
       <div className="mt-3 h-1.5 w-full rounded-full bg-slate-800">
-        <div className={`h-1.5 rounded-full ${tone.stockBar}`} style={{ width: `${item.level}%` }} />
+        <div
+          className={`h-1.5 rounded-full ${tone.stockBar}`}
+          style={{ width: `${item.level}%` }}
+        />
       </div>
     </article>
   )

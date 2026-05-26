@@ -17,7 +17,7 @@ const advanceButton = ({ nextLabel, onComplete }) =>
 
 const ActiveJobCard = ({ job, onComplete, onRegisterMaterial }) => {
   const statusTone = toneFor(job.statusTone)
-  const dueTone    = toneFor(job.dueTone)
+  const dueTone = toneFor(job.dueTone)
   const { nextLabel } = getStatusConfig(job.statusKey)
   const { openChat } = useIaContext()
 
@@ -29,17 +29,23 @@ const ActiveJobCard = ({ job, onComplete, onRegisterMaterial }) => {
   return (
     <PanelCard className="border-amber-500/55">
       <div className="flex items-center justify-between gap-3">
-        <span className={`rounded-md border px-2 py-1 text-[0.62rem] font-bold uppercase tracking-[0.16em] ${statusTone.badge}`}>
+        <span
+          className={`rounded-md border px-2 py-1 text-[0.62rem] font-bold uppercase tracking-[0.16em] ${statusTone.badge}`}
+        >
           {job.status}
         </span>
-        <p className="text-[0.62rem] font-semibold uppercase tracking-[0.14em] text-slate-500">{job.code ?? `#${job.id}`}</p>
+        <p className="text-[0.62rem] font-semibold uppercase tracking-[0.14em] text-slate-500">
+          {job.code ?? `#${job.id}`}
+        </p>
       </div>
 
       <h3 className="mt-3 text-2xl font-bold leading-tight text-slate-100">{job.title}</h3>
       <p className="mt-1 text-sm text-slate-400">Cliente: {job.client}</p>
 
       <div className="mt-4 flex items-center justify-between">
-        <p className="text-[0.62rem] font-semibold uppercase tracking-[0.14em] text-slate-500">Progreso estimado</p>
+        <p className="text-[0.62rem] font-semibold uppercase tracking-[0.14em] text-slate-500">
+          Progreso estimado
+        </p>
         <span className="text-sm font-bold text-amber-300">{job.progress}%</span>
       </div>
 
@@ -64,7 +70,9 @@ const ActiveJobCard = ({ job, onComplete, onRegisterMaterial }) => {
       </div>
 
       <div className="mt-3 flex justify-end">
-        <span className={`rounded-md border px-2 py-1 text-[0.62rem] font-bold uppercase tracking-[0.14em] ${dueTone.badge}`}>
+        <span
+          className={`rounded-md border px-2 py-1 text-[0.62rem] font-bold uppercase tracking-[0.14em] ${dueTone.badge}`}
+        >
           {job.dueLabel}
         </span>
       </div>
