@@ -5,13 +5,21 @@ from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
 from backend.core.database import get_db
-from backend.features.auth.dependencies import get_current_user, require_role
+from backend.features.auth.dependencies import (
+    get_current_user,
+    require_active_trial,
+    require_role,
+)
 from backend.features.auth.model import User
 
 from . import service
 from .schemas import FichajeResponse, ForzarCierreRequest
 
-router = APIRouter(prefix="/fichajes", tags=["fichajes"])
+router = APIRouter(
+    prefix="/fichajes",
+    tags=["fichajes"],
+    dependencies=[Depends(require_active_trial)],
+)
 
 
 @router.post("/iniciar", response_model=FichajeResponse, status_code=201)

@@ -2,13 +2,17 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from backend.core.database import get_db
-from backend.features.auth.dependencies import require_role
+from backend.features.auth.dependencies import require_active_trial, require_role
 from backend.features.auth.model import User
 
 from . import service
 from .schemas import AdminDashboardResponse
 
-router = APIRouter(prefix="/admin", tags=["admin"])
+router = APIRouter(
+    prefix="/admin",
+    tags=["admin"],
+    dependencies=[Depends(require_active_trial)],
+)
 
 
 @router.get("/dashboard", response_model=AdminDashboardResponse)

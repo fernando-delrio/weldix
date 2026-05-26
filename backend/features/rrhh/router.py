@@ -7,7 +7,11 @@ from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from sqlalchemy.orm import Session
 
 from backend.core.database import get_db
-from backend.features.auth.dependencies import get_current_user, require_role
+from backend.features.auth.dependencies import (
+    get_current_user,
+    require_active_trial,
+    require_role,
+)
 from backend.features.auth.model import User
 
 from . import service
@@ -25,7 +29,11 @@ from .schemas import (
     SolicitudAusenciaResponse,
 )
 
-router = APIRouter(prefix="/rrhh", tags=["rrhh"])
+router = APIRouter(
+    prefix="/rrhh",
+    tags=["rrhh"],
+    dependencies=[Depends(require_active_trial)],
+)
 
 # Carpeta donde se guardan los justificantes
 MEDIA_DIR = "media/justificantes"

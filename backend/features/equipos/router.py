@@ -2,7 +2,11 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from backend.core.database import get_db
-from backend.features.auth.dependencies import get_current_user, require_role
+from backend.features.auth.dependencies import (
+    get_current_user,
+    require_active_trial,
+    require_role,
+)
 from backend.features.auth.model import User
 
 from . import service
@@ -13,7 +17,11 @@ from .schemas import (
     UpdateEquipoRequest,
 )
 
-router = APIRouter(prefix="/equipos", tags=["equipos"])
+router = APIRouter(
+    prefix="/equipos",
+    tags=["equipos"],
+    dependencies=[Depends(require_active_trial)],
+)
 
 
 @router.get("", response_model=list[EquipoResponse])

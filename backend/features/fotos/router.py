@@ -2,13 +2,16 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, Uplo
 from sqlalchemy.orm import Session
 
 from backend.core.database import get_db
-from backend.features.auth.dependencies import get_current_user
+from backend.features.auth.dependencies import get_current_user, require_active_trial
 from backend.features.auth.model import User
 
 from . import service
 from .schemas import FotoResponse
 
-router = APIRouter(tags=["fotos"])
+router = APIRouter(
+    tags=["fotos"],
+    dependencies=[Depends(require_active_trial)],
+)
 
 
 def _base_url(request: Request) -> str:

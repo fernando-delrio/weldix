@@ -2,13 +2,17 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from backend.core.database import get_db
-from backend.features.auth.dependencies import get_current_user
+from backend.features.auth.dependencies import get_current_user, require_active_trial
 from backend.features.auth.model import User
 
 from . import service
 from .schemas import WorkerDashboardResponse
 
-router = APIRouter(prefix="/dashboard", tags=["dashboard"])
+router = APIRouter(
+    prefix="/dashboard",
+    tags=["dashboard"],
+    dependencies=[Depends(require_active_trial)],
+)
 
 
 @router.get("/worker", response_model=WorkerDashboardResponse)
