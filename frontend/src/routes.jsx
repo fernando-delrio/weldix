@@ -17,6 +17,7 @@ import PrivacidadPage from './modules/core/components/PrivacidadPage'
 import TerminosPage from './modules/core/components/TerminosPage'
 import LandingPage from './modules/landing/components/LandingPage'
 import TrialExpiredPage from './modules/core/components/TrialExpiredPage'
+import SuperAdminPage from './modules/superadmin/components/SuperAdminPage'
 
 const Splash = ({ text }) => (
   <main className="grid min-h-screen place-items-center bg-slate-950 text-slate-300">
@@ -47,6 +48,7 @@ const AppRoutes = () => {
           <Route path="/privacidad" element={<PrivacidadPage />} />
           <Route path="/terminos" element={<TerminosPage />} />
           <Route path="/trial-expirado" element={<TrialExpiredPage />} />
+          <Route path="/superadmin" element={<SuperAdminPage />} />
 
           <Route element={<ProtectedRoute />}>
             <Route path="/app/inicio" element={<WorkerDashboardPage />} />

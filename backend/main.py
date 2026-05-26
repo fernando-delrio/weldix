@@ -19,6 +19,7 @@ from backend.features.jobs.router import router as jobs_router
 from backend.features.registro_horas.router import router as registro_horas_router
 from backend.features.rrhh.router import router as rrhh_router
 from backend.features.stock.router import router as stock_router
+from backend.features.superadmin.router import router as superadmin_router
 
 app = FastAPI(title="Weldix API", version="1.0.0")
 
@@ -54,6 +55,7 @@ app.include_router(ia_router)
 app.include_router(jobs_router)
 app.include_router(rrhh_router)
 app.include_router(stock_router)
+app.include_router(superadmin_router)
 
 
 @app.get("/health")
