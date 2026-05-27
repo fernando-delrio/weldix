@@ -7,6 +7,7 @@ import FichajesAdminSection from '../../fichaje/components/FichajesAdminSection'
 import WeldixButton from '../../core/components/WeldixButton'
 import { useAdminDashboard } from '../hooks/useAdminDashboard'
 import AdminUserRow from './AdminUserRow'
+import AdminChartsSection from './AdminChartsSection'
 import CreateUserModal from './CreateUserModal'
 
 // ── Guards de estado ─────────────────────────────────────────────────────────
@@ -101,6 +102,8 @@ const AdminDashboardPage = () => {
 
         {!isLoading && dashboard && (
           <>
+            <AdminChartsSection dashboard={dashboard} />
+
             <FichajesAdminSection operarios={dashboard.operarios} onRefresh={refresh} />
 
             <section className="space-y-3">
