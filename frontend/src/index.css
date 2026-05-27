@@ -1,58 +1,112 @@
 @import "tailwindcss";
 
-/* ── Tema claro — sobrescribe las variables de color de Tailwind v4 ─────────
-   Tailwind v4 genera clases como:
-     .bg-slate-950 { background-color: var(--color-slate-950, oklch(...)) }
-   Al redefinir --color-slate-* aquí, TODOS los componentes cambian sin tocar JSX.
-   Paleta: papel kraft / plano técnico industrial.
-──────────────────────────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════
+   CSS VARIABLES GLOBALES — theme-aware (dark por defecto)
+═══════════════════════════════════════════════════════════════════ */
+:root {
+  /* Sombra y borde de cards — modo oscuro */
+  --card-border: rgba(255, 255, 255, 0.06);
+  --card-shadow: 0 16px 40px rgba(2, 6, 23, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  --card-shadow-sm: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   TEMA CLARO — paleta limpia profesional (Linear / Notion)
+   Escala slate invertida: 950→fondo claro, 100→texto oscuro.
+   Acentos (amber, sky, rose, emerald) en sus tonos vibrantes.
+═══════════════════════════════════════════════════════════════════ */
 html[data-theme='light'] {
-  /* Fondos — del más oscuro al más claro (invertido respecto al dark) */
-  --color-slate-950: #f2ebe0;   /* fondo principal — crema cálido */
-  --color-slate-900: #ebe3d8;   /* fondo de cards */
-  --color-slate-800: #ddd5c8;   /* superficies elevadas / divisores */
-  --color-slate-700: #cfc7ba;   /* bordes */
-  --color-slate-600: #b8b0a4;   /* bordes sutiles */
+  /* ── Fondos ── */
+  --color-slate-950: #f1f5f9;   /* fondo principal */
+  --color-slate-900: #ffffff;   /* cards */
+  --color-slate-800: #f8fafc;   /* hover / skeleton / superficies elevadas */
+  --color-slate-700: #e2e8f0;   /* bordes principales */
+  --color-slate-600: #cbd5e1;   /* bordes sutiles */
 
-  /* Texto — del más suave al más fuerte (también invertido) */
-  --color-slate-500: #6b6560;   /* texto muy suave */
-  --color-slate-400: #514b46;   /* texto secundario */
-  --color-slate-300: #3d3830;   /* texto body */
-  --color-slate-200: #2a2520;   /* texto fuerte */
-  --color-slate-100: #1a1510;   /* texto más fuerte — casi negro cálido */
+  /* ── Texto ── */
+  --color-slate-500: #64748b;   /* muted */
+  --color-slate-400: #475569;   /* secundario */
+  --color-slate-300: #334155;   /* body */
+  --color-slate-200: #1e293b;   /* fuerte */
+  --color-slate-100: #0f172a;   /* encabezados */
 
-  /* Amber — más oscuro en light para legibilidad */
-  --color-amber-400: #b45309;
-  --color-amber-300: #92400e;
-  --color-amber-200: #92400e;
-  --color-amber-500: #d97706;
+  /* ── Amber ── */
+  --color-amber-400: #d97706;
+  --color-amber-300: #b45309;
+  --color-amber-500: #f59e0b;
 
-  /* Rose/emerald — ligeramente ajustados (300 y 400 se usan como texto) */
+  /* ── Sky / Cyan ── */
+  --color-sky-400: #0284c7;
+  --color-sky-300: #0369a1;
+  --color-cyan-300: #0e7490;
+
+  /* ── Rose / Emerald ── */
   --color-rose-400: #e11d48;
   --color-rose-300: #be123c;
   --color-emerald-400: #059669;
   --color-emerald-300: #047857;
 
-  /* Sky/cyan — acentos usados como TEXTO (text-sky-300/400, text-cyan-300).
-     Sin override quedan en su valor oscuro-mode (azul/cian claro) y resultan
-     casi invisibles sobre el fondo crema. Los mismos tonos sólo aparecen como
-     fondo en puntitos decorativos (bg-sky-400), así que oscurecerlos es seguro. */
-  --color-sky-400: #0369a1;
-  --color-sky-300: #0369a1;
-  --color-cyan-300: #155e75;
+  /* ── Violet ── */
+  --color-violet-300: #6d28d9;
+  --color-violet-400: #7c3aed;
+
+  /* ── Cards: borde y sombra light-mode ── */
+  --card-border: #e2e8f0;
+  --card-shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 4px 12px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(0, 0, 0, 0.03);
+  --card-shadow-sm: inset 0 1px 0 rgba(0, 0, 0, 0.04);
 }
 
-/* ── Tipografía base ─────────────────────────────────────────────── */
+/* ── Sidebar en modo claro ── */
+html[data-theme='light'] aside {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+}
+
+/* ── Header móvil en modo claro ── */
+html[data-theme='light'] header {
+  background-color: rgb(255 255 255 / 0.97) !important;
+  border-color: #e2e8f0 !important;
+}
+
+/* ── Cualquier border-white/* semitransparente → gris visible en light ──
+   Cubre border-white/[0.06], border-white/[0.07], border-white/10, etc.   */
+html[data-theme='light'] [class*="border-white"] {
+  border-color: #e2e8f0 !important;
+}
+
+/* ── Sombra outer oscura de cards (hardcoded en JSX legacy) ── */
+html[data-theme='light'] [class*="shadow-[0_16px"] {
+  box-shadow: var(--card-shadow) !important;
+}
+
+/* ── Inset glow blanco en cards (hardcoded en JSX legacy) ── */
+html[data-theme='light'] [class*="shadow-[inset_0_1px_0_rgba(255"] {
+  box-shadow: var(--card-shadow-sm) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   TIPOGRAFÍA BASE
+═══════════════════════════════════════════════════════════════════ */
 body {
   font-family: 'Inter', system-ui, sans-serif;
 }
 
-/* Rajdhani para titulares, métricas y brand */
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Rajdhani', system-ui, sans-serif;
 }
 
-/* ── Animación modal bottom-sheet ───────────────────────────────── */
+/* ── Animación de entrada de cards (CSS puro, sin librería) ── */
+article {
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+@starting-style {
+  article {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+/* ── Animación modal bottom-sheet ── */
 @keyframes slideUp {
   from { transform: translateY(100%); opacity: 0; }
   to   { transform: translateY(0);    opacity: 1; }

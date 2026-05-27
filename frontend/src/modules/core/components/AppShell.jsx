@@ -248,8 +248,8 @@ const Sidebar = ({
           <span className="hidden text-sm font-semibold tracking-wide lg:block">Salir</span>
         </button>
 
-        {/* Reloj — solo en desktop */}
-        <p className="hidden px-3 py-1 text-[0.6rem] font-semibold tracking-widest text-slate-600 lg:block">
+        {/* Reloj — visible en tablet y desktop */}
+        <p className="hidden px-3 py-1 font-mono text-[0.65rem] font-semibold tracking-widest text-slate-400 md:block">
           {timeLabel}
         </p>
       </div>
@@ -258,9 +258,9 @@ const Sidebar = ({
 }
 
 // ── Header móvil ────────────────────────────────────────────────────────────
-const MobileHeader = ({ roleLabel, onLogout, onSearchOpen }) => (
+const MobileHeader = ({ roleLabel, onLogout, onSearchOpen, timeLabel }) => (
   <header className="fixed inset-x-0 top-0 z-40 border-b border-slate-800 bg-slate-950/95 backdrop-blur md:hidden">
-    <div className="flex h-14 items-center justify-between px-4">
+    <div className="relative flex h-14 items-center justify-between px-4">
       <div className="flex items-center gap-2.5">
         <img src="/weldix-icon.svg" alt="Weldix" className="h-7 w-7 object-contain" />
         <p className="text-sm font-extrabold tracking-[0.18em] text-slate-100">WELDIX</p>
@@ -268,6 +268,11 @@ const MobileHeader = ({ roleLabel, onLogout, onSearchOpen }) => (
           {roleLabel}
         </span>
       </div>
+
+      {/* Reloj centrado */}
+      <span className="absolute left-1/2 -translate-x-1/2 font-mono text-[0.7rem] font-semibold tracking-widest text-slate-400">
+        {timeLabel}
+      </span>
       <div className="flex items-center gap-2">
         <button
           type="button"
@@ -348,7 +353,12 @@ const IaFab = () => {
       aria-label="Asistente IA"
       className="fixed bottom-[88px] right-4 z-40 flex h-12 w-12 items-center justify-center rounded-sm border border-amber-500/40 bg-amber-500/15 text-xl shadow-lg backdrop-blur transition hover:border-amber-400/70 hover:bg-amber-500/25 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400 md:bottom-6 md:right-6"
     >
-      🔧
+      {/* Anillo pulsante en idle */}
+      <span
+        className="pointer-events-none absolute inset-0 rounded-sm animate-ping bg-amber-500/15"
+        aria-hidden="true"
+      />
+      <i className="bx bx-bot relative text-xl text-amber-400" aria-hidden="true" />
     </button>
   )
 }
@@ -361,6 +371,7 @@ const AppShellInner = ({ children }) => {
   const search = useSearch()
   const { canInstall, triggerInstall } = usePwaInstall()
   const { showBanner, trial, dismiss } = useTrialStatus()
+  const { isDark } = useTheme()
 
   const role = profile?.role || 'operario'
   const roleLabel = role.toUpperCase()
@@ -368,12 +379,21 @@ const AppShellInner = ({ children }) => {
 
   return (
     <div className="relative min-h-screen bg-slate-950 text-slate-100">
-      {/* Efectos de fondo */}
-      <div className="pointer-events-none fixed inset-0 opacity-40 [background-image:linear-gradient(rgba(3,38,66,0.45)_1px,transparent_1px),linear-gradient(90deg,rgba(3,38,66,0.45)_1px,transparent_1px)] [background-size:30px_30px]" />
-      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(700px_430px_at_0%_50%,rgba(245,158,11,0.07),transparent_65%)]" />
+      {/* Efectos de fondo — solo en modo oscuro */}
+      {isDark && (
+        <>
+          <div className="pointer-events-none fixed inset-0 opacity-40 [background-image:linear-gradient(rgba(3,38,66,0.45)_1px,transparent_1px),linear-gradient(90deg,rgba(3,38,66,0.45)_1px,transparent_1px)] [background-size:30px_30px]" />
+          <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(700px_430px_at_0%_50%,rgba(245,158,11,0.07),transparent_65%)]" />
+        </>
+      )}
 
       {/* Header móvil */}
-      <MobileHeader roleLabel={roleLabel} onLogout={clearSession} onSearchOpen={search.open} />
+      <MobileHeader
+        roleLabel={roleLabel}
+        onLogout={clearSession}
+        onSearchOpen={search.open}
+        timeLabel={timeLabel}
+      />
 
       {/* Sidebar tablet/desktop */}
       <div className="hidden md:block">

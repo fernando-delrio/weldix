@@ -1,4 +1,14 @@
 import WeldixButton from '../../core/components/WeldixButton'
+import ProgressBar from '../../core/components/ProgressBar'
+
+// Acento lateral por estado — mismo sistema que JobCard
+const STATUS_ACCENT = {
+  pendiente: 'border-l-amber-500/70',
+  en_proceso: 'border-l-sky-500/70',
+  control: 'border-l-violet-500/70',
+  listo: 'border-l-emerald-500/70',
+  entregado: 'border-l-slate-600/50',
+}
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 const codeTag = ({ code }) =>
@@ -14,15 +24,6 @@ const statusBadge = ({ estadoLabel, toneClasses }) => (
   >
     {estadoLabel}
   </span>
-)
-
-const progressBar = ({ progreso }) => (
-  <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-slate-800">
-    <div
-      className="h-full rounded-full bg-amber-500 transition-all"
-      style={{ width: `${progreso}%` }}
-    />
-  </div>
 )
 
 const operarioTag = ({ operario_name }) => (
@@ -47,24 +48,32 @@ const deleteButton = ({ onDelete }) => (
 )
 
 // ── Componente ───────────────────────────────────────────────────────────────
-const AdminJobCard = ({ job, onDelete }) => (
-  <div className="rounded-xl border border-slate-700/60 bg-slate-900/60 p-4">
-    <div className="flex flex-wrap items-start justify-between gap-2">
-      <div className="flex flex-wrap items-center gap-2">
-        {codeTag(job)}
-        {statusBadge(job)}
+const AdminJobCard = ({ job, onDelete }) => {
+  const accentClass = STATUS_ACCENT[job.estado] ?? 'border-l-slate-600/50'
+
+  return (
+    <div
+      className={`rounded-xl border border-l-[3px] border-slate-700/60 bg-slate-900/60 p-4 ${accentClass}`}
+    >
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {codeTag(job)}
+          {statusBadge(job)}
+        </div>
+        {deleteButton({ onDelete: () => onDelete(job.id) })}
       </div>
-      {deleteButton({ onDelete: () => onDelete(job.id) })}
+
+      <p className="mt-2 text-sm font-semibold text-slate-100">{job.titulo}</p>
+      <p className="text-xs text-slate-400">{job.cliente}</p>
+
+      {job.fecha_inicio && (
+        <p className="mt-1 text-xs text-slate-500">Entrega: {job.fecha_inicio}</p>
+      )}
+
+      <ProgressBar value={job.progreso} />
+      {operarioTag(job)}
     </div>
-
-    <p className="mt-2 text-sm font-semibold text-slate-100">{job.titulo}</p>
-    <p className="text-xs text-slate-400">{job.cliente}</p>
-
-    {job.fecha_inicio && <p className="mt-1 text-xs text-slate-500">Entrega: {job.fecha_inicio}</p>}
-
-    {progressBar(job)}
-    {operarioTag(job)}
-  </div>
-)
+  )
+}
 
 export default AdminJobCard

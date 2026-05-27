@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { toneFor } from '../../core/lib/tones'
+import ProgressBar from '../../core/components/ProgressBar'
 
 // Acento lateral por estado — comunica el estado de un vistazo sin leer el badge
 const STATUS_ACCENT = {
@@ -10,19 +11,6 @@ const STATUS_ACCENT = {
   entregado: 'border-l-slate-600/50',
 }
 
-const progressBar = ({ progress }) =>
-  progress > 0 && (
-    <div className="mt-3">
-      <div className="h-1.5 w-full rounded-full bg-slate-800">
-        <div
-          className="h-1.5 rounded-full bg-gradient-to-r from-sky-400 to-cyan-300 transition-all"
-          style={{ width: `${progress}%` }}
-        />
-      </div>
-      <p className="mt-1 text-right text-[0.6rem] text-slate-500">{progress}%</p>
-    </div>
-  )
-
 const JobCard = ({ job }) => {
   const tone = toneFor(job.tone)
   const accentClass = STATUS_ACCENT[job.statusKey] ?? STATUS_ACCENT.pendiente
@@ -30,7 +18,7 @@ const JobCard = ({ job }) => {
   return (
     <Link to={`/app/trabajos/${job.id}`} className="block">
       <article
-        className={`rounded-xl border border-l-[3px] border-cyan-900/50 bg-slate-900/65 p-4 transition hover:border-cyan-700/60 hover:bg-slate-900/80 ${accentClass}`}
+        className={`rounded-xl border border-l-[3px] border-slate-700/60 bg-slate-900/65 p-4 transition hover:border-slate-600/60 hover:bg-slate-900/80 ${accentClass}`}
       >
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
@@ -52,7 +40,7 @@ const JobCard = ({ job }) => {
           <span>{job.due}</span>
         </div>
 
-        {progressBar(job)}
+        {job.progress > 0 && <ProgressBar value={job.progress} showLabel />}
       </article>
     </Link>
   )
