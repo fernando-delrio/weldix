@@ -48,6 +48,16 @@ export const createUser = async (data) => {
   return res.json()
 }
 
+export const changeJobStatus = async (jobId, estado) => {
+  const res = await fetch(`${API_BASE_URL}/trabajos/${jobId}/estado`, {
+    method: 'PATCH',
+    headers: jsonHeaders(),
+    body: JSON.stringify({ estado }),
+  })
+  if (!res.ok) throw new Error('Error al cambiar el estado del trabajo')
+  return res.json()
+}
+
 export const deleteDemoData = async () => {
   const res = await fetch(`${API_BASE_URL}/admin/demo-data`, {
     method: 'DELETE',

@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import { useAdminDashboard } from '../hooks/useAdminDashboard'
 import AdminJobCard from './AdminJobCard'
+import KanbanView from './KanbanView'
 import PanelCard from '../../core/components/PanelCard'
 
 // ── Constantes ───────────────────────────────────────────────────────────────
@@ -66,39 +67,75 @@ const metricPills = ({ metrics }) => (
   </div>
 )
 
+// ── Toggle de vista ───────────────────────────────────────────────────────────
+const viewToggle = ({ view, onToggle }) => (
+  <div className="flex rounded-lg border p-0.5" style={{ borderColor: 'var(--card-border)' }}>
+    {[
+      { id: 'list', icon: 'bx bx-list-ul', label: 'Lista' },
+      { id: 'kanban', icon: 'bx bx-grid-alt', label: 'Kanban' },
+    ].map((v) => (
+      <button
+        key={v.id}
+        type="button"
+        onClick={() => onToggle(v.id)}
+        aria-pressed={view === v.id}
+        aria-label={v.label}
+        title={v.label}
+        className={`flex items-center gap-1 rounded-md px-2.5 py-1.5 text-[0.68rem] font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400 ${
+          view === v.id ? 'bg-amber-500/20 text-amber-300' : 'text-slate-500 hover:text-slate-300'
+        }`}
+      >
+        <i className={`${v.icon} text-sm`} />
+        <span className="hidden sm:inline">{v.label}</span>
+      </button>
+    ))}
+  </div>
+)
+
 // ── Componente ───────────────────────────────────────────────────────────────
 const AdminJobsSection = () => {
-  const { dashboard, isLoading, removeJob } = useAdminDashboard()
+  const { dashboard, isLoading, removeJob, changeJobStatus } = useAdminDashboard()
   const [activeFilter, setActiveFilter] = useState('Todos')
-
+  const [view, setView] = useState('list')
   if (isLoading || !dashboard) return null
 
   const filteredJobs = applyFilter(dashboard.jobs, activeFilter)
+
+  const handleMoveJob = (jobId, toEstado) => changeJobStatus(jobId, toEstado)
 
   return (
     <section className="space-y-3">
       {metricPills({ metrics: dashboard.metrics })}
 
-      <p className="text-[0.64rem] font-bold uppercase tracking-[0.2em] text-amber-300">
-        Todos los trabajos
-      </p>
-
-      <div className="flex gap-1.5 overflow-x-auto pb-1">
-        {STATUS_FILTERS.map((f) =>
-          filterTab({
-            key: f,
-            label: FILTER_LABELS[f] ?? f,
-            isActive: activeFilter === f,
-            onClick: () => setActiveFilter(f),
-          })
-        )}
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-[0.64rem] font-bold uppercase tracking-[0.2em] text-amber-300">
+          Todos los trabajos
+        </p>
+        {viewToggle({ view, onToggle: setView })}
       </div>
 
-      {noJobsMessage({ filteredJobs, activeFilter })}
+      {view === 'list' && (
+        <>
+          <div className="flex gap-1.5 overflow-x-auto pb-1">
+            {STATUS_FILTERS.map((f) =>
+              filterTab({
+                key: f,
+                label: FILTER_LABELS[f] ?? f,
+                isActive: activeFilter === f,
+                onClick: () => setActiveFilter(f),
+              })
+            )}
+          </div>
 
-      {filteredJobs.map((job) => (
-        <AdminJobCard key={job.id} job={job} onDelete={removeJob} />
-      ))}
+          {noJobsMessage({ filteredJobs, activeFilter })}
+
+          {filteredJobs.map((job) => (
+            <AdminJobCard key={job.id} job={job} onDelete={removeJob} />
+          ))}
+        </>
+      )}
+
+      {view === 'kanban' && <KanbanView jobs={dashboard.jobs} onMoveJob={handleMoveJob} />}
     </section>
   )
 }
