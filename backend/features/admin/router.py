@@ -23,6 +23,21 @@ def admin_dashboard(
     return service.get_admin_dashboard(db, tenant_id=current_user.tenant_id)
 
 
+@router.get("/operarios")
+def list_operarios(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("admin")),
+):
+    """Lista ligera de operarios del tenant — id + nombre — para selectores."""
+    operarios = (
+        db.query(User.id, User.full_name)
+        .filter(User.tenant_id == current_user.tenant_id, User.role == "operario")
+        .order_by(User.full_name)
+        .all()
+    )
+    return [{"id": op.id, "full_name": op.full_name} for op in operarios]
+
+
 @router.delete("/demo-data")
 def delete_demo_data(
     db: Session = Depends(get_db),

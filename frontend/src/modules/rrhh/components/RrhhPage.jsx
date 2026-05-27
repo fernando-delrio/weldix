@@ -5,6 +5,8 @@ import { useAuthSession } from '../../auth/hooks/useAuthSession'
 import { useRrhh } from '../hooks/useRrhh'
 import { cx } from '../../core/lib/cx'
 import { useIaContext } from '../../ia/lib/IaContext'
+import NominasAdminSection from './NominasAdminSection'
+import MisNominasSection from './MisNominasSection'
 
 // ── Estrategia de colores por estado ─────────────────────────────────────────
 const ESTADO_CONFIG = {
@@ -724,6 +726,15 @@ const RrhhPage = () => {
               onRevisar={setRevisandoId}
             />
           ))}
+
+        {/* ── Nóminas ────────────────────────────────────────────────────── */}
+        <div className="pt-4 border-t border-slate-700/50">
+          <h2 className="text-base font-bold tracking-tight text-slate-100 mb-4 flex items-center gap-2">
+            <i className="bx bxs-file-pdf text-rose-400" aria-hidden="true" />
+            Nóminas
+          </h2>
+          {isAdmin ? <NominasAdminSection /> : <MisNominasSection />}
+        </div>
       </div>
 
       {modalCrear && (
