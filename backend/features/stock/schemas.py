@@ -97,6 +97,10 @@ class ConsumeMaterialRequest(BaseModel):
     consumed: float = Field(gt=0)
 
 
+class RestockMaterialRequest(BaseModel):
+    cantidad: float = Field(gt=0)
+
+
 # ─── Generador de variantes ───────────────────────────────────────────────────
 
 MAX_VARIANTES = 500
@@ -143,3 +147,18 @@ class GenerarVariantesResponse(BaseModel):
     creadas: int
     omitidas: int  # ya existían con el mismo display_name
     materiales: list[StockItemResponse]
+
+
+# ─── Albarán IA ───────────────────────────────────────────────────────────────
+
+
+class ParseAlbaranRequest(BaseModel):
+    texto: str = Field(min_length=10)
+
+
+class AlbaranLineResult(BaseModel):
+    material_id: int
+    name: str
+    cantidad: float
+    linea_albaran: str = ""
+    confianza: str = "media"  # alta | media | baja

@@ -11,10 +11,13 @@ from backend.features.auth.model import User
 
 from . import service
 from .schemas import (
+    AlbaranLineResult,
     ConsumeMaterialRequest,
     CreateMaterialRequest,
     GenerarVariantesRequest,
     GenerarVariantesResponse,
+    ParseAlbaranRequest,
+    RestockMaterialRequest,
     StockItemResponse,
     UpdateMaterialRequest,
 )
@@ -62,6 +65,20 @@ def generar_variantes(
         raise HTTPException(status_code=400, detail=str(exc))
 
 
+@router.post("/parse-albaran", response_model=list[AlbaranLineResult])
+def parse_albaran(
+    body: ParseAlbaranRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("admin")),
+):
+    try:
+        return service.parse_albaran_with_ia(db, body.texto, tenant_id=current_user.tenant_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    except Exception:
+        raise HTTPException(status_code=502, detail="Error al contactar con la IA. Inténtalo de nuevo.")
+
+
 @router.post("/{material_id}/consume", response_model=StockItemResponse)
 def consume_material(
     material_id: int,
@@ -77,6 +94,23 @@ def consume_material(
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
+
+
+@router.post("/{material_id}/restock", response_model=StockItemResponse)
+def restock_material(
+    material_id: int,
+    body: RestockMaterialRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    try:
+        return StockItemResponse.from_orm_material(
+            service.restock_material(
+                db, material_id, body.cantidad, tenant_id=current_user.tenant_id
+            )
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
 
 
 @router.patch("/{material_id}", response_model=StockItemResponse)

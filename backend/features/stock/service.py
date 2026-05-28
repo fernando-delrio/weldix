@@ -113,12 +113,98 @@ def consume_material(
     return material
 
 
+def restock_material(
+    db: Session, material_id: int, cantidad: float, tenant_id: int | None = None
+) -> Material:
+    material = get_material_by_id(db, material_id, tenant_id)
+    material.quantity = material.quantity + cantidad
+    db.commit()
+    db.refresh(material)
+    return material
+
+
 def delete_material(
     db: Session, material_id: int, tenant_id: int | None = None
 ) -> None:
     material = get_material_by_id(db, material_id, tenant_id)
     db.delete(material)
     db.commit()
+
+
+def parse_albaran_with_ia(
+    db: Session, texto: str, tenant_id: int | None = None
+) -> list[dict]:
+    import json
+
+    from mistralai import Mistral
+
+    from backend.core.config import settings
+
+    if not settings.mistral_api_key:
+        raise ValueError("MISTRAL_API_KEY no configurada")
+
+    materials = get_all_materials(db, tenant_id=tenant_id)
+    if not materials:
+        return []
+
+    catalog = "\n".join(
+        f"  ID {m.id}: {m.display_name or m.name} [unidad: {m.unit}]"
+        for m in materials
+    )
+
+    prompt = f"""Analiza el siguiente albarán y extrae los materiales recibidos.
+
+CATÁLOGO DE MATERIALES DEL TALLER:
+{catalog}
+
+TEXTO DEL ALBARÁN:
+{texto}
+
+TAREA:
+- Identifica cada línea de producto en el albarán.
+- Para cada una, busca el material del catálogo que mejor coincida por nombre, tipo o medida.
+- Extrae la cantidad recibida. Si la unidad es diferente pero la conversión es obvia, conviértela.
+- Solo incluye materiales que aparezcan claramente en el albarán.
+- Indica la confianza: "alta" (coincidencia muy clara), "media" (probable), "baja" (dudoso).
+
+RESPONDE ÚNICAMENTE con JSON puro, sin markdown, sin explicación:
+[
+  {{"material_id": <id_catalogo>, "name": "<nombre del catalogo>", "cantidad": <numero>, "linea_albaran": "<texto original de esa linea>", "confianza": "<alta|media|baja>"}}
+]
+
+Si no hay ninguna coincidencia, responde: []"""
+
+    client = Mistral(api_key=settings.mistral_api_key)
+    response = client.chat.complete(
+        model="mistral-small-latest",
+        messages=[{"role": "user", "content": prompt}],
+    )
+
+    content = response.choices[0].message.content.strip()
+
+    # Strip markdown fences if the model wraps the JSON
+    if "```" in content:
+        for part in content.split("```"):
+            stripped = part.strip()
+            if stripped.startswith("json"):
+                stripped = stripped[4:].strip()
+            if stripped.startswith("[") or stripped.startswith("{"):
+                content = stripped
+                break
+
+    try:
+        result = json.loads(content)
+    except (json.JSONDecodeError, TypeError):
+        raise ValueError("La IA no devolvió un formato reconocible. Inténtalo de nuevo.")
+
+    valid_ids = {m.id for m in materials}
+    return [
+        r
+        for r in result
+        if isinstance(r, dict)
+        and r.get("material_id") in valid_ids
+        and float(r.get("cantidad", 0)) > 0
+    ]
 
 
 def generar_variantes(
