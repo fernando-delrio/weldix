@@ -9,8 +9,8 @@ const fieldShell =
   'flex min-h-[48px] items-center rounded-lg border border-slate-700 bg-slate-900/70 transition focus-within:border-amber-500 focus-within:ring-2 focus-within:ring-amber-500/20'
 const inputBase =
   'w-full bg-transparent px-3.5 text-[0.95rem] text-slate-100 outline-none placeholder:text-slate-500'
-const labelBase = 'mt-3 text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-slate-400'
-const cardBase = 'rounded-xl border border-slate-900/50 bg-slate-900/65 p-5'
+const labelBase = 'mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-400'
+const cardBase = 'rounded-xl border border-slate-900/50 bg-slate-900/65 p-4'
 
 const feedbackOk = ({ msg }) => msg && <p className="mt-2 text-sm text-emerald-400">{msg}</p>
 const feedbackErr = ({ msg }) => msg && <p className="mt-2 text-sm text-rose-400">{msg}</p>
@@ -18,7 +18,7 @@ const submitBtn = ({ label, loading }) => (
   <button
     type="submit"
     disabled={loading}
-    className="mt-4 h-11 w-full rounded-xl bg-gradient-to-r from-amber-500 to-blue-600 text-sm font-bold tracking-[0.08em] text-white transition hover:from-amber-400 hover:to-blue-500 disabled:opacity-60"
+    className="mt-3 h-10 w-full rounded-xl bg-gradient-to-r from-amber-500 to-blue-600 text-sm font-bold tracking-[0.08em] text-white transition hover:from-amber-400 hover:to-blue-500 disabled:opacity-60"
   >
     {loading ? 'Guardando...' : label}
   </button>
@@ -31,19 +31,24 @@ const ProfilePage = () => {
 
   return (
     <AppShell>
-      <div className="mx-auto w-full max-w-[520px] space-y-5 pb-5">
+      <div className="mx-auto w-full max-w-[520px] space-y-3">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-300">Cuenta</p>
+          <h1 className="text-2xl font-extrabold tracking-tight text-slate-100">Perfil</h1>
+        </div>
+
         {/* Info de cuenta — solo lectura */}
         <section className={cardBase}>
           <h2 className="text-lg font-bold tracking-tight text-slate-100">Mi cuenta</h2>
-          <div className="mt-4 grid gap-3">
+          <div className="mt-2 grid gap-2">
             <div>
-              <p className="text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-slate-500">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
                 Email
               </p>
               <p className="mt-0.5 text-sm text-slate-300">{state.profile?.email}</p>
             </div>
             <div>
-              <p className="text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-slate-500">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
                 Rol
               </p>
               <p className="mt-0.5 text-sm text-slate-300">{roleLabel(state.profile?.role)}</p>
@@ -54,7 +59,7 @@ const ProfilePage = () => {
         {/* Editar nombre */}
         <section className={cardBase}>
           <h2 className="text-lg font-bold tracking-tight text-slate-100">Datos personales</h2>
-          <form onSubmit={state.submitProfile} className="mt-2">
+          <form onSubmit={state.submitProfile} className="mt-1">
             <label className={labelBase}>Nombre completo</label>
             <div className={fieldShell}>
               <input
@@ -85,7 +90,7 @@ const ProfilePage = () => {
         {/* Cambiar contraseña */}
         <section className={cardBase}>
           <h2 className="text-lg font-bold tracking-tight text-slate-100">Cambiar contraseña</h2>
-          <form onSubmit={state.submitPassword} className="mt-2">
+          <form onSubmit={state.submitPassword} className="mt-1">
             <label className={labelBase}>Contraseña actual</label>
             <div className={fieldShell}>
               <input
