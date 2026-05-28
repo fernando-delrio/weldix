@@ -1,4 +1,5 @@
 from backend.features.admin.router import router as admin_router
+from backend.features.pdf.router import router as pdf_router
 from backend.features.auth.router import router as auth_router
 from backend.features.billing.router import router as billing_router
 from backend.features.dashboard.router import router as dashboard_router
@@ -27,6 +28,7 @@ ENABLED_ROUTERS = [
     ia_router,
     jobs_router,
     nominas_router,
+    pdf_router,
     rrhh_router,
     stock_router,
     superadmin_router,

@@ -31,3 +31,4 @@ stripe==15.0.1
 python-multipart==0.0.20
 psycopg[binary]==3.3.2
 resend==2.10.0
+fpdf2==2.8.3

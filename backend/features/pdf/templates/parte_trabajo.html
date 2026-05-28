@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<style>
+  /* ── Reset y base ───────────────────────────────────────────── */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  @page {
+    size: A4;
+    margin: 18mm 16mm 20mm 16mm;
+    @bottom-right {
+      content: "Pág. " counter(page) " de " counter(pages);
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-size: 8pt;
+      color: #9ca3af;
+    }
+  }
+
+  body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 9.5pt;
+    color: #1e293b;
+    line-height: 1.45;
+    background: #ffffff;
+  }
+
+  /* ── Cabecera ───────────────────────────────────────────────── */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 2.5px solid #0f172a;
+    padding-bottom: 10px;
+    margin-bottom: 18px;
+  }
+
+  .header-brand { display: flex; flex-direction: column; gap: 2px; }
+
+  .header-brand .logo-text {
+    font-size: 18pt;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #0f172a;
+  }
+
+  .header-brand .taller-name {
+    font-size: 9pt;
+    color: #64748b;
+    font-weight: 500;
+  }
+
+  .header-meta {
+    text-align: right;
+    font-size: 8pt;
+    color: #64748b;
+    line-height: 1.6;
+  }
+
+  .doc-type {
+    font-size: 11pt;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 3px;
+  }
+
+  /* ── Badge de estado ────────────────────────────────────────── */
+  .status-badge {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 4px;
+    font-size: 7.5pt;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .status-pendiente  { background: #fef3c7; color: #92400e; }
+  .status-en_proceso { background: #e0f2fe; color: #075985; }
+  .status-control    { background: #ede9fe; color: #5b21b6; }
+  .status-listo      { background: #d1fae5; color: #065f46; }
+  .status-entregado  { background: #f1f5f9; color: #475569; }
+
+  /* ── Sección genérica ───────────────────────────────────────── */
+  .section {
+    margin-bottom: 16px;
+    page-break-inside: avoid;
+  }
+
+  .section-title {
+    font-size: 7.5pt;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #64748b;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 4px;
+    margin-bottom: 10px;
+  }
+
+  /* ── Grid de campos ─────────────────────────────────────────── */
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 24px;
+  }
+
+  .info-grid-3 {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+
+  .field-label {
+    font-size: 7pt;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #94a3b8;
+    margin-bottom: 2px;
+  }
+
+  .field-value {
+    font-size: 9.5pt;
+    color: #1e293b;
+    font-weight: 500;
+  }
+
+  /* ── Cabecera del trabajo ───────────────────────────────────── */
+  .job-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 18px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 12px 14px;
+  }
+
+  .job-code {
+    font-size: 8pt;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: #64748b;
+    margin-bottom: 3px;
+    text-transform: uppercase;
+  }
+
+  .job-title {
+    font-size: 14pt;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.2;
+    margin-bottom: 2px;
+  }
+
+  .job-client {
+    font-size: 9.5pt;
+    color: #475569;
+  }
+
+  /* ── Barra de progreso ──────────────────────────────────────── */
+  .progress-bar-wrap {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .progress-track {
+    flex: 1;
+    height: 6px;
+    background: #e2e8f0;
+    border-radius: 99px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #38bdf8, #06b6d4);
+    border-radius: 99px;
+  }
+
+  .progress-label {
+    font-size: 8pt;
+    font-weight: 700;
+    color: #475569;
+    white-space: nowrap;
+  }
+
+  /* ── Descripción ────────────────────────────────────────────── */
+  .description-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 5px;
+    padding: 10px 12px;
+    font-size: 9pt;
+    color: #334155;
+    line-height: 1.55;
+  }
+
+  /* ── Tabla ──────────────────────────────────────────────────── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9pt;
+  }
+
+  thead th {
+    background: #f1f5f9;
+    font-size: 7.5pt;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #64748b;
+    padding: 6px 8px;
+    text-align: left;
+    border-bottom: 1.5px solid #e2e8f0;
+  }
+
+  tbody tr:nth-child(even) { background: #f8fafc; }
+
+  tbody td {
+    padding: 6px 8px;
+    color: #1e293b;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  .text-right { text-align: right; }
+  .text-center { text-align: center; }
+  .font-mono { font-family: 'Courier New', monospace; font-size: 8.5pt; }
+
+  /* ── Total horas ─────────────────────────────────────────────── */
+  .total-row td {
+    font-weight: 700;
+    color: #0f172a;
+    border-top: 1.5px solid #cbd5e1;
+    background: #f1f5f9;
+  }
+
+  /* ── Pie de firma ────────────────────────────────────────────── */
+  .firma-section {
+    margin-top: 24px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    page-break-inside: avoid;
+  }
+
+  .firma-box {
+    border-top: 1.5px solid #cbd5e1;
+    padding-top: 8px;
+  }
+
+  .firma-label {
+    font-size: 8pt;
+    color: #94a3b8;
+    margin-bottom: 32px;
+  }
+
+  .firma-name {
+    font-size: 9pt;
+    font-weight: 600;
+    color: #475569;
+  }
+
+  /* ── Vacío state ─────────────────────────────────────────────── */
+  .empty-note {
+    font-size: 8.5pt;
+    color: #94a3b8;
+    font-style: italic;
+  }
+
+  /* ── Divisor ─────────────────────────────────────────────────── */
+  .divider {
+    border: none;
+    border-top: 1px solid #e2e8f0;
+    margin: 14px 0;
+  }
+</style>
+</head>
+<body>
+
+<!-- ── Cabecera del documento ──────────────────────────────────── -->
+<header class="header">
+  <div class="header-brand">
+    <span class="logo-text">Weldix</span>
+    <span class="taller-name">{{ taller_nombre }}</span>
+  </div>
+  <div class="header-meta">
+    <span class="doc-type">Parte de Trabajo</span>
+    Generado: {{ fecha_generacion }}<br />
+    Ref. interna: {{ job.code or '#' + job.id|string }}
+  </div>
+</header>
+
+<!-- ── Bloque principal del trabajo ───────────────────────────── -->
+<div class="job-header">
+  <div>
+    <div class="job-code">{{ job.code or ('OT #' + job.id|string) }}</div>
+    <div class="job-title">{{ job.titulo }}</div>
+    <div class="job-client">{{ job.cliente }}</div>
+  </div>
+  <div style="text-align: right; flex-shrink: 0;">
+    <span class="status-badge status-{{ job.estado }}">{{ estado_label }}</span>
+    {% if job.progreso > 0 %}
+    <div class="progress-bar-wrap" style="margin-top: 8px; justify-content: flex-end;">
+      <div class="progress-track" style="width: 100px;">
+        <div class="progress-fill" style="width: {{ job.progreso }}%;"></div>
+      </div>
+      <span class="progress-label">{{ job.progreso }}%</span>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- ── Info general ────────────────────────────────────────────── -->
+<div class="section">
+  <div class="section-title">Información general</div>
+  <div class="info-grid info-grid-3">
+    <div>
+      <div class="field-label">Operario asignado</div>
+      <div class="field-value">{{ operario_nombre or '—' }}</div>
+    </div>
+    <div>
+      <div class="field-label">Fecha de inicio</div>
+      <div class="field-value">{{ job.fecha_inicio.strftime('%d/%m/%Y') if job.fecha_inicio else '—' }}</div>
+    </div>
+    <div>
+      <div class="field-label">Creado el</div>
+      <div class="field-value">{{ job.created_at.strftime('%d/%m/%Y') if job.created_at else '—' }}</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Descripción ─────────────────────────────────────────────── -->
+{% if job.descripcion %}
+<div class="section">
+  <div class="section-title">Descripción / Notas del trabajo</div>
+  <div class="description-box">{{ job.descripcion }}</div>
+</div>
+{% endif %}
+
+<!-- ── Registro de horas ───────────────────────────────────────── -->
+<div class="section">
+  <div class="section-title">Horas imputadas</div>
+  {% if registros %}
+  <table>
+    <thead>
+      <tr>
+        <th>Operario</th>
+        <th>Inicio</th>
+        <th>Fin</th>
+        <th class="text-right">Horas</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in registros %}
+      <tr>
+        <td>{{ r.operario_nombre }}</td>
+        <td class="font-mono">{{ r.inicio_fmt }}</td>
+        <td class="font-mono">{{ r.fin_fmt }}</td>
+        <td class="text-right font-mono">{{ '%.2f'|format(r.horas) if r.horas else '—' }}</td>
+      </tr>
+      {% endfor %}
+      {% if total_horas %}
+      <tr class="total-row">
+        <td colspan="3">Total horas</td>
+        <td class="text-right font-mono">{{ '%.2f'|format(total_horas) }}</td>
+      </tr>
+      {% endif %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="empty-note">Sin registros de horas imputadas.</p>
+  {% endif %}
+</div>
+
+<!-- ── Historial de eventos ────────────────────────────────────── -->
+<div class="section">
+  <div class="section-title">Historial de estados</div>
+  {% if historial %}
+  <table>
+    <thead>
+      <tr>
+        <th>Fecha</th>
+        <th>Evento</th>
+        <th>Usuario</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for ev in historial %}
+      <tr>
+        <td class="font-mono">{{ ev.fecha_fmt }}</td>
+        <td>{{ ev.descripcion }}</td>
+        <td>{{ ev.usuario }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="empty-note">Sin historial registrado.</p>
+  {% endif %}
+</div>
+
+<!-- ── Firmas ──────────────────────────────────────────────────── -->
+<div class="firma-section">
+  <div class="firma-box">
+    <div class="firma-label">Firma del operario</div>
+    <div class="firma-name">{{ operario_nombre or '____________________' }}</div>
+  </div>
+  <div class="firma-box">
+    <div class="firma-label">Firma del responsable / Conforme del cliente</div>
+    <div class="firma-name">____________________</div>
+  </div>
+</div>
+
+</body>
+</html>

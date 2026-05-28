@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import AppShell from '../../core/components/AppShell'
@@ -8,10 +8,11 @@ import { useJobDetail } from '../hooks/useJobDetail'
 import FotosGallery from './FotosGallery'
 import RegistroHorasOT from '../../registro_horas/components/RegistroHorasOT'
 import { useIaContext } from '../../ia/lib/IaContext'
+import { downloadJobPdf } from '../services/jobsService'
 
 // ── Estilos base ──────────────────────────────────────────────────────────────
 const cardBase = 'rounded-xl border border-cyan-900/50 bg-slate-900/65 p-5'
-const labelBase = 'text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-slate-500'
+const labelBase = 'text-xs font-semibold uppercase tracking-[0.14em] text-slate-500'
 
 // ── Subcomponentes nombrados — Guard Clauses (CLAUDE.md §7) ───────────────────
 
@@ -45,7 +46,7 @@ const progressBar = ({ progress }) => (
         style={{ width: `${progress}%` }}
       />
     </div>
-    <p className="mt-1 text-right text-[0.65rem] text-slate-500">{progress}%</p>
+    <p className="mt-1 text-right text-xs text-slate-500">{progress}%</p>
   </div>
 )
 
@@ -98,7 +99,7 @@ const historyTimeline = ({ history }) =>
             </div>
             <div className="pb-2">
               <p className="text-sm text-slate-200">{event.descripcion}</p>
-              <p className="mt-0.5 text-[0.68rem] text-slate-500">
+              <p className="mt-0.5 text-xs text-slate-500">
                 {event.date} · {event.time} · {event.usuario}
               </p>
             </div>
@@ -108,7 +109,7 @@ const historyTimeline = ({ history }) =>
     </section>
   )
 
-const jobContent = (state) => {
+const jobContent = (state, onDownloadPdf, isDownloading) => {
   const { isLoading, error, job, history, isAdvancing, advance, canAdvance } = state
   if (isLoading || error || !job) return null
 
@@ -120,17 +121,30 @@ const jobContent = (state) => {
       <section className={cardBase}>
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-[0.62rem] uppercase tracking-[0.14em] text-slate-500">
+            <p className="text-xs uppercase tracking-[0.12em] text-slate-500">
               {job.code ?? `#${job.id}`}
             </p>
             <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-100">{job.title}</h1>
             <p className="mt-0.5 text-sm text-slate-400">{job.client}</p>
           </div>
-          <span
-            className={`shrink-0 rounded-md border px-2 py-1 text-[0.6rem] font-bold uppercase tracking-[0.14em] ${statusCfg.bgClass}`}
-          >
-            {job.status}
-          </span>
+          <div className="flex shrink-0 flex-col items-end gap-2">
+            <span
+              className={`rounded-md border px-2 py-1 text-xs font-bold uppercase tracking-[0.10em] ${statusCfg.bgClass}`}
+            >
+              {job.status}
+            </span>
+            <WeldixButton
+              variant="ghost"
+              size="sm"
+              onClick={onDownloadPdf}
+              disabled={isDownloading}
+              aria-busy={isDownloading}
+              aria-label={isDownloading ? 'Generando PDF…' : 'Descargar parte de trabajo en PDF'}
+            >
+              <i className="bx bx-file-pdf mr-1 text-base" aria-hidden="true" />
+              {isDownloading ? 'Generando…' : 'PDF'}
+            </WeldixButton>
+          </div>
         </div>
         {progressBar(job)}
       </section>
@@ -168,8 +182,8 @@ const JobDetailPage = () => {
   const navigate = useNavigate()
   const state = useJobDetail()
   const { setPageContext } = useIaContext()
+  const [isDownloading, setIsDownloading] = useState(false)
 
-  // Inyectar contexto del trabajo en la IA cuando carga el detalle
   const { job } = state
 
   useEffect(() => {
@@ -187,6 +201,18 @@ const JobDetailPage = () => {
     return () => setPageContext(null)
   }, [job, setPageContext])
 
+  const handleDownloadPdf = useCallback(async () => {
+    if (!job || isDownloading) return
+    setIsDownloading(true)
+    try {
+      await downloadJobPdf(job.id)
+    } catch {
+      // el service lanza, el hook captura — aquí solo reseteamos el flag
+    } finally {
+      setIsDownloading(false)
+    }
+  }, [job, isDownloading])
+
   return (
     <AppShell>
       {/* max-w-[720px] en lugar de 620 para que las fotos tengan más espacio en tablet */}
@@ -202,7 +228,7 @@ const JobDetailPage = () => {
 
         {loadingSkeleton(state)}
         {errorBanner(state)}
-        {jobContent(state)}
+        {jobContent(state, handleDownloadPdf, isDownloading)}
       </div>
     </AppShell>
   )
