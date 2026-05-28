@@ -43,7 +43,7 @@ const feedbackBanner = ({ feedback }) =>
 // ── Sección usuarios ─────────────────────────────────────────────────────────
 const sectionHeader = ({ title, action }) => (
   <div className="flex items-center justify-between">
-    <p className="text-[0.64rem] font-bold uppercase tracking-[0.2em] text-amber-300">{title}</p>
+    <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-300">{title}</p>
     {action}
   </div>
 )
@@ -84,10 +84,8 @@ const AdminDashboardPage = () => {
         {/* Cabecera */}
         <div className="flex items-end justify-between">
           <div>
-            <p className="text-[0.64rem] font-bold uppercase tracking-[0.2em] text-rose-300">
-              Panel
-            </p>
-            <h1 className="mt-1 text-4xl font-extrabold tracking-tight text-slate-100">
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-300">Admin</p>
+            <h1 className="text-3xl font-extrabold tracking-tight text-slate-100">
               Administración
             </h1>
           </div>

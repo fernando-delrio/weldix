@@ -7,7 +7,7 @@ const AppHeader = ({ roleLabel, timeLabel, onLogout, onSearchOpen }) => (
         <img src="/weldix-icon.svg" alt="Weldix" className="h-9 w-9 object-contain" />
         <div className="flex items-center gap-3">
           <p className="text-sm font-extrabold tracking-[0.18em] text-slate-100">WELDIX</p>
-          <span className="rounded border border-sky-700/60 bg-sky-500/10 px-2 py-0.5 text-[0.62rem] font-bold tracking-[0.18em] text-sky-300">
+          <span className="rounded border border-sky-700/60 bg-sky-500/10 px-2 py-0.5 text-xs font-bold tracking-[0.18em] text-sky-300">
             {roleLabel}
           </span>
         </div>
@@ -22,7 +22,7 @@ const AppHeader = ({ roleLabel, timeLabel, onLogout, onSearchOpen }) => (
         <button
           type="button"
           onClick={onSearchOpen}
-          className="flex items-center gap-2 rounded-lg border border-slate-700/60 bg-slate-800/60 px-3 py-1.5 text-[0.65rem] text-slate-400 transition hover:border-sky-600/50 hover:text-slate-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400"
+          className="flex items-center gap-2 rounded-lg border border-slate-700/60 bg-slate-800/60 px-3 py-1.5 text-xs text-slate-400 transition hover:border-sky-600/50 hover:text-slate-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400"
           title="Buscar (Ctrl+K)"
           aria-label="Buscar (Ctrl+K)"
         >
@@ -41,7 +41,7 @@ const AppHeader = ({ roleLabel, timeLabel, onLogout, onSearchOpen }) => (
             />
           </svg>
           <span className="hidden sm:inline">Buscar</span>
-          <kbd className="hidden rounded border border-slate-600 px-1 py-0.5 text-[0.55rem] text-slate-500 sm:inline">
+          <kbd className="hidden rounded border border-slate-600 px-1 py-0.5 text-xs text-slate-500 sm:inline">
             Ctrl+K
           </kbd>
         </button>
@@ -52,7 +52,7 @@ const AppHeader = ({ roleLabel, timeLabel, onLogout, onSearchOpen }) => (
           aria-label="Cerrar sesión"
           className={cx(
             'flex items-center gap-1.5 rounded-lg border border-slate-600/60 bg-slate-800/80',
-            'px-3 py-1.5 text-[0.65rem] font-bold uppercase tracking-[0.18em] text-slate-300',
+            'px-3 py-1.5 text-xs font-bold uppercase tracking-[0.18em] text-slate-300',
             'transition hover:border-rose-500/50 hover:bg-rose-500/10 hover:text-rose-300',
             'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-400'
           )}

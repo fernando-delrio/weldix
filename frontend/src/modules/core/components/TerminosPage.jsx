@@ -11,8 +11,10 @@ const TerminosPage = () => (
   <AppShell>
     <div className="mx-auto w-full max-w-[720px] space-y-8 pb-8">
       <header className="space-y-1">
-        <p className="text-[0.62rem] font-bold uppercase tracking-[0.2em] text-slate-500">Legal</p>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-100">Términos y Condiciones</h1>
+        <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-300">Legal</p>
+        <h1 className="text-3xl font-extrabold tracking-tight text-slate-100">
+          Términos y Condiciones
+        </h1>
         <p className="text-xs text-slate-500">Última actualización: abril 2026 · Weldix SaaS</p>
       </header>
 

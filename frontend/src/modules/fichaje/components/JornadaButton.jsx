@@ -88,10 +88,10 @@ const HistorialModal = ({ historial, onClose }) => {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-slate-800">
-                  <th className="px-5 py-2.5 text-left text-[0.6rem] font-bold uppercase tracking-widest text-slate-500">
+                  <th className="px-5 py-2.5 text-left text-xs font-bold uppercase tracking-widest text-slate-500">
                     Día
                   </th>
-                  <th className="py-2.5 pr-5 text-right text-[0.6rem] font-bold uppercase tracking-widest text-slate-500">
+                  <th className="py-2.5 pr-5 text-right text-xs font-bold uppercase tracking-widest text-slate-500">
                     Total
                   </th>
                 </tr>
@@ -116,11 +116,11 @@ const HistorialModal = ({ historial, onClose }) => {
 const ResumenCierre = ({ jornada }) =>
   jornada && (
     <div className="mt-2 flex items-center gap-2 rounded-lg border border-slate-700/50 bg-slate-800/40 px-3 py-2">
-      <span className="text-[0.65rem] text-slate-500">Última jornada:</span>
+      <span className="text-xs text-slate-500">Última jornada:</span>
       <span className="font-mono text-xs text-slate-300">
         {fmtHora(jornada.inicio)} → {fmtHora(jornada.fin)}
       </span>
-      <span className="rounded-md bg-slate-700/60 px-1.5 py-0.5 font-mono text-[0.65rem] font-bold text-cyan-300">
+      <span className="rounded-md bg-slate-700/60 px-1.5 py-0.5 font-mono text-xs font-bold text-cyan-300">
         {fmtHoras(jornada.horas)}
       </span>
     </div>
@@ -160,11 +160,9 @@ const JornadaButton = () => {
           <div className="flex flex-wrap items-center gap-2">
             <div className="flex items-center gap-2 rounded-lg border border-emerald-700/50 bg-emerald-500/10 px-3 py-2">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-              <span className="text-[0.65rem] text-emerald-500 uppercase tracking-widest">
-                Entrada
-              </span>
+              <span className="text-xs text-emerald-500 uppercase tracking-widest">Entrada</span>
               <span className="font-mono text-sm font-bold text-emerald-300">{horaEntrada}</span>
-              {elapsed && <span className="text-[0.62rem] text-emerald-600">· {elapsed}</span>}
+              {elapsed && <span className="text-xs text-emerald-600">· {elapsed}</span>}
             </div>
 
             <WeldixButton
@@ -214,7 +212,7 @@ const JornadaButton = () => {
 
         <ResumenCierre jornada={jornadaCerrada} />
 
-        {error && <p className="text-[0.65rem] text-rose-400">{error}</p>}
+        {error && <p className="text-xs text-rose-400">{error}</p>}
 
         {historialAbierto && (
           <HistorialModal historial={historial} onClose={() => setHistorialAbierto(false)} />

@@ -25,7 +25,7 @@ const filterTab = ({ key, label, isActive, onClick }) => (
     type="button"
     onClick={onClick}
     aria-pressed={isActive}
-    className={`shrink-0 rounded-lg px-3 py-1.5 text-[0.68rem] font-bold uppercase tracking-[0.12em] transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400 ${
+    className={`shrink-0 rounded-lg px-3 py-1.5 text-xs font-bold uppercase tracking-[0.10em] transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400 ${
       isActive
         ? 'bg-amber-500/20 text-amber-300 shadow-[inset_0_0_0_1px_rgba(56,189,248,0.4)]'
         : 'text-slate-500 hover:text-slate-300'
@@ -52,7 +52,7 @@ const metricPills = ({ metrics }) => (
       <span className="text-lg font-extrabold leading-none text-yellow-300">
         {metrics.pendiente}
       </span>
-      <span className="mt-0.5 text-[0.6rem] font-bold uppercase tracking-[0.16em] text-yellow-300/80">
+      <span className="mt-0.5 text-xs font-bold uppercase tracking-[0.12em] text-yellow-300/80">
         Pendientes
       </span>
     </div>
@@ -60,7 +60,7 @@ const metricPills = ({ metrics }) => (
       <span className="text-lg font-extrabold leading-none text-amber-300">
         {metrics.en_proceso}
       </span>
-      <span className="mt-0.5 text-[0.6rem] font-bold uppercase tracking-[0.16em] text-amber-300/80">
+      <span className="mt-0.5 text-xs font-bold uppercase tracking-[0.12em] text-amber-300/80">
         En proceso
       </span>
     </div>
@@ -81,7 +81,7 @@ const viewToggle = ({ view, onToggle }) => (
         aria-pressed={view === v.id}
         aria-label={v.label}
         title={v.label}
-        className={`flex items-center gap-1 rounded-md px-2.5 py-1.5 text-[0.68rem] font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400 ${
+        className={`flex items-center gap-1 rounded-md px-2.5 py-1.5 text-xs font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400 ${
           view === v.id ? 'bg-amber-500/20 text-amber-300' : 'text-slate-500 hover:text-slate-300'
         }`}
       >
@@ -108,7 +108,7 @@ const AdminJobsSection = () => {
       {metricPills({ metrics: dashboard.metrics })}
 
       <div className="flex items-center justify-between gap-2">
-        <p className="text-[0.64rem] font-bold uppercase tracking-[0.2em] text-amber-300">
+        <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-300">
           Todos los trabajos
         </p>
         {viewToggle({ view, onToggle: setView })}

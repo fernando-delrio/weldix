@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { getStatusConfig } from '../lib/statusConfig'
+import useFocusTrap from '../hooks/useFocusTrap'
 
 // ── Subcomponentes ─────────────────────────────────────────────────────────────
 
@@ -31,12 +32,12 @@ const resultItem = (job, onSelect) => {
     >
       <div className="min-w-0">
         <p className="truncate text-sm font-semibold text-slate-100">{job.title}</p>
-        <p className="mt-0.5 truncate text-[0.68rem] text-slate-500">
+        <p className="mt-0.5 truncate text-xs text-slate-500">
           {job.code ?? `#${job.id}`} · {job.client}
         </p>
       </div>
       <span
-        className={`shrink-0 rounded border px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-[0.12em] ${bgClass}`}
+        className={`shrink-0 rounded border px-2 py-0.5 text-xs font-bold uppercase tracking-[0.10em] ${bgClass}`}
       >
         {label}
       </span>
@@ -58,6 +59,8 @@ const resultsList = ({ results, isSearching }, onSelect) =>
 const SearchModal = ({ isOpen, close, query, setQuery, results, isSearching }) => {
   const navigate = useNavigate()
   const inputRef = useRef(null)
+  const modalRef = useRef(null)
+  useFocusTrap(modalRef)
 
   // Foco automático al abrir
   useEffect(() => {
@@ -84,6 +87,10 @@ const SearchModal = ({ isOpen, close, query, setQuery, results, isSearching }) =
 
       {/* Panel */}
       <div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Buscar trabajo"
         className="relative w-full max-w-lg overflow-hidden rounded-sm border border-slate-700 bg-slate-900 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
@@ -111,7 +118,7 @@ const SearchModal = ({ isOpen, close, query, setQuery, results, isSearching }) =
             placeholder="Buscar trabajo, cliente u OT..."
             className="flex-1 bg-transparent text-sm text-slate-100 placeholder-slate-600 outline-none"
           />
-          <kbd className="rounded border border-slate-700 px-1.5 py-0.5 text-[0.6rem] text-slate-600">
+          <kbd className="rounded border border-slate-700 px-1.5 py-0.5 text-xs text-slate-600">
             ESC
           </kbd>
         </div>
@@ -126,7 +133,7 @@ const SearchModal = ({ isOpen, close, query, setQuery, results, isSearching }) =
 
         {/* Footer */}
         <div className="border-t border-slate-800 px-4 py-2">
-          <p className="text-[0.6rem] text-slate-600">
+          <p className="text-xs text-slate-600">
             Ctrl+K para abrir · Enter o clic para ir al trabajo
           </p>
         </div>

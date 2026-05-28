@@ -98,7 +98,7 @@ const OnboardingWizard = ({ onComplete }) => {
       <div className="w-full max-w-sm rounded-2xl border border-slate-700/60 bg-slate-900 shadow-2xl">
         {/* Cabecera */}
         <div className="flex items-center justify-between border-b border-slate-800 px-5 py-4">
-          <span className="text-[0.6rem] font-bold uppercase tracking-[0.2em] text-slate-500">
+          <span className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
             Paso {step + 1} de {STEPS.length}
           </span>
           <WeldixButton

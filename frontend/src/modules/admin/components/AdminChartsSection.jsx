@@ -16,20 +16,18 @@ import { buildEstadoData, buildCargaOperarioData, buildPorMesData } from '../lib
 
 // ── Estilos compartidos para tooltips ────────────────────────────────────────
 const tooltipStyle = {
-  backgroundColor: '#0f172a',
-  border: '1px solid rgba(255,255,255,0.08)',
+  backgroundColor: 'var(--card-bg)',
+  border: '1px solid var(--card-border)',
   borderRadius: 10,
-  color: '#e2e8f0',
+  color: 'var(--app-text)',
   fontSize: 12,
 }
 
 const axisStyle = { fill: '#64748b', fontSize: 11 }
-const gridStyle = { stroke: 'rgba(255,255,255,0.05)' }
+const gridStyle = { stroke: 'rgba(148, 163, 184, 0.2)' }
 
 const chartLabel = (title) => (
-  <p className="mb-3 text-[0.62rem] font-bold uppercase tracking-[0.18em] text-amber-300">
-    {title}
-  </p>
+  <p className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-amber-300">{title}</p>
 )
 
 // ── Donut: trabajos por estado ────────────────────────────────────────────────
@@ -65,7 +63,7 @@ const DonutEstado = ({ data }) => {
           {/* Total centrado */}
           <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
             <span className="text-xl font-extrabold text-slate-100">{total}</span>
-            <span className="text-[0.55rem] uppercase tracking-widest text-slate-500">total</span>
+            <span className="text-xs uppercase tracking-widest text-slate-500">total</span>
           </div>
         </div>
 
@@ -74,7 +72,7 @@ const DonutEstado = ({ data }) => {
           {data.map((d) => (
             <li key={d.name} className="flex items-center gap-2">
               <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: d.color }} />
-              <span className="text-[0.7rem] text-slate-300">
+              <span className="text-xs text-slate-300">
                 {d.name} <span className="font-semibold text-slate-100">{d.value}</span>
               </span>
             </li>
@@ -150,7 +148,7 @@ const AdminChartsSection = ({ dashboard }) => {
 
   return (
     <section className="space-y-3">
-      <p className="text-[0.64rem] font-bold uppercase tracking-[0.2em] text-amber-300">Análisis</p>
+      <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-300">Análisis</p>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <DonutEstado data={estadoData} />
         <BarCargaOperario data={cargaData} />

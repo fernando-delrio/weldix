@@ -55,8 +55,10 @@ const JobsPage = () => {
     <AppShell>
       <div className="mx-auto w-full max-w-[680px] space-y-4 pb-5">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-sky-300">Modulo</p>
-          <h1 className="mt-1 text-4xl font-extrabold tracking-tight text-slate-100">Trabajos</h1>
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-300">Trabajos</p>
+          <h1 className="text-3xl font-extrabold tracking-tight text-slate-100">
+            Órdenes de trabajo
+          </h1>
         </div>
 
         <JobStatusFilter activeFilter={activeFilter} onFilterChange={setActiveFilter} />

@@ -5,9 +5,11 @@
 // - Soporte para consumo de múltiples materiales en una sola acción
 // - Validación de unidades (no mezclar kg con ud)
 
+import { useRef } from 'react'
 import { useRegisterMaterialForm } from '../hooks/useRegisterMaterialForm'
+import useFocusTrap from '../../core/hooks/useFocusTrap'
 
-const labelBase = 'mt-3 text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-slate-400'
+const labelBase = 'mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-400'
 const selectBase =
   'w-full rounded-lg border border-slate-700 bg-slate-900/70 px-3.5 py-2.5 text-sm text-slate-100 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20'
 const inputBase =
@@ -39,6 +41,8 @@ const errorBanner = ({ error }) => error && <p className="mt-3 text-sm text-rose
 
 // ── Componente principal ─────────────────────────────────────────────────────
 const RegisterMaterialModal = ({ stock, onClose, onConfirm }) => {
+  const modalRef = useRef(null)
+  useFocusTrap(modalRef)
   const form = useRegisterMaterialForm({ stock, onConfirm, onClose })
 
   return (
@@ -49,7 +53,13 @@ const RegisterMaterialModal = ({ stock, onClose, onConfirm }) => {
         aria-hidden="true"
       />
 
-      <div className="modal-slide-up relative z-10 w-full max-w-[420px] rounded-t-2xl border border-slate-700/80 bg-slate-900 p-5 shadow-2xl sm:rounded-2xl">
+      <div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Registrar material usado"
+        className="modal-slide-up relative z-10 w-full max-w-[420px] rounded-t-2xl border border-slate-700/80 bg-slate-900 p-5 shadow-2xl sm:rounded-2xl"
+      >
         {/* Drag handle — indica bottom-sheet en móvil */}
         <div
           className="mx-auto mb-4 h-1 w-8 rounded-full bg-slate-600 sm:hidden"

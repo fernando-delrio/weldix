@@ -22,20 +22,20 @@ const JobCard = ({ job }) => {
       >
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-[0.62rem] uppercase tracking-[0.12em] text-slate-500">
+            <p className="text-xs uppercase tracking-[0.12em] text-slate-500">
               {job.code ?? `#${job.id}`}
             </p>
             <h4 className="mt-1 truncate text-lg font-semibold text-slate-100">{job.title}</h4>
             <p className="mt-0.5 text-sm text-slate-400">{job.client}</p>
           </div>
           <span
-            className={`shrink-0 rounded-md border px-2 py-1 text-[0.58rem] font-bold uppercase tracking-[0.12em] ${tone.badge}`}
+            className={`shrink-0 rounded-md border px-2 py-1 text-xs font-bold uppercase tracking-[0.10em] ${tone.badge}`}
           >
             {job.status}
           </span>
         </div>
 
-        <div className="mt-3 flex items-center justify-between text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-slate-500">
+        <div className="mt-3 flex items-center justify-between text-xs font-semibold uppercase tracking-[0.10em] text-slate-500">
           <span>{job.type}</span>
           <span>{job.due}</span>
         </div>

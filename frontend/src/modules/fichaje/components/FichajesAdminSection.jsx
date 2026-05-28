@@ -97,7 +97,7 @@ const ForzarCierreModal = ({ fichaje, onClose, onConfirm, isSubmitting, error })
         </p>
 
         <div className="mt-4">
-          <label className="text-[0.68rem] font-bold uppercase tracking-[0.2em] text-slate-400">
+          <label className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">
             Horas trabajadas reales
           </label>
           <input
@@ -143,12 +143,12 @@ const OperarioCalendar = ({ fichajes }) => {
 
   return (
     <div className="space-y-2">
-      <p className="text-[0.6rem] font-bold uppercase tracking-[0.16em] text-slate-500">
+      <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
         Calendario mensual
       </p>
       <div className="grid grid-cols-7 gap-1">
         {weekDays.map((d) => (
-          <div key={d} className="text-center text-[0.55rem] font-bold uppercase text-slate-600">
+          <div key={d} className="text-center text-xs font-bold uppercase text-slate-600">
             {d}
           </div>
         ))}
@@ -168,7 +168,7 @@ const OperarioCalendar = ({ fichajes }) => {
                   ? `${dateObj.toLocaleDateString('es-ES')}: ${hours.toFixed(2)}h`
                   : dateObj.toLocaleDateString('es-ES')
               }
-              className={`flex h-7 items-center justify-center rounded-md border text-[0.65rem] font-semibold ${levelClass(hours)}`}
+              className={`flex h-7 items-center justify-center rounded-md border text-xs font-semibold ${levelClass(hours)}`}
             >
               {dateObj.getDate()}
             </div>
@@ -181,9 +181,7 @@ const OperarioCalendar = ({ fichajes }) => {
 
 const ActiveJobs = ({ jobs }) => (
   <div className="space-y-1.5">
-    <p className="text-[0.6rem] font-bold uppercase tracking-[0.16em] text-slate-500">
-      Ordenes activas
-    </p>
+    <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">Ordenes activas</p>
     {jobs.length === 0 && <p className="text-xs text-slate-500">Sin OTs activas.</p>}
     {jobs.map((job) => (
       <div
@@ -193,7 +191,7 @@ const ActiveJobs = ({ jobs }) => (
         <p className="text-xs font-semibold text-slate-200">
           {job.code || `OT-${job.id}`} - {job.titulo}
         </p>
-        <p className="mt-0.5 text-[0.65rem] text-slate-500">Estado: {job.estado}</p>
+        <p className="mt-0.5 text-xs text-slate-500">Estado: {job.estado}</p>
       </div>
     ))}
   </div>
@@ -204,7 +202,7 @@ const FichajesTable = ({ fichajes }) => {
 
   return (
     <div className="space-y-1.5">
-      <p className="text-[0.6rem] font-bold uppercase tracking-[0.16em] text-slate-500">
+      <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
         Fichajes recientes
       </p>
       <div className="rounded-lg border border-slate-800/80 bg-slate-950/35">
@@ -212,13 +210,13 @@ const FichajesTable = ({ fichajes }) => {
           <table className="w-full table-fixed">
             <thead className="sticky top-0 z-10">
               <tr className="border-b border-slate-800 bg-slate-950/95 backdrop-blur">
-                <th className="w-[41%] py-2.5 pl-3 pr-2 text-left text-[0.58rem] font-bold uppercase tracking-widest text-slate-500">
+                <th className="w-[41%] py-2.5 pl-3 pr-2 text-left text-xs font-bold uppercase tracking-widest text-slate-500">
                   Entrada
                 </th>
-                <th className="w-[41%] py-2.5 pr-2 text-left text-[0.58rem] font-bold uppercase tracking-widest text-slate-500">
+                <th className="w-[41%] py-2.5 pr-2 text-left text-xs font-bold uppercase tracking-widest text-slate-500">
                   Salida
                 </th>
-                <th className="w-[18%] py-2.5 pr-3 text-left text-[0.58rem] font-bold uppercase tracking-widest text-slate-500">
+                <th className="w-[18%] py-2.5 pr-3 text-left text-xs font-bold uppercase tracking-widest text-slate-500">
                   Horas
                 </th>
               </tr>
@@ -226,13 +224,13 @@ const FichajesTable = ({ fichajes }) => {
             <tbody>
               {recientes.map((f) => (
                 <tr key={f.id} className="border-b border-slate-800/60 last:border-0">
-                  <td className="py-2.5 pl-3 pr-2 text-[0.76rem] text-slate-300">
+                  <td className="py-2.5 pl-3 pr-2 text-xs text-slate-300">
                     {formatFecha(f.inicio)}
                   </td>
-                  <td className="py-2.5 pr-2 text-[0.76rem] text-slate-400">
+                  <td className="py-2.5 pr-2 text-xs text-slate-400">
                     {f.fin ? formatFecha(f.fin) : 'En jornada'}
                   </td>
-                  <td className="py-2.5 pr-3 text-[0.76rem] font-semibold text-slate-300">
+                  <td className="py-2.5 pr-3 text-xs font-semibold text-slate-300">
                     {formatHoras(f.horas)}
                   </td>
                 </tr>
@@ -260,7 +258,7 @@ const OperarioCard = ({ operario, onForzarCierre, isExpanded, onToggle }) => {
     <article className={`${cardBase} p-4`}>
       <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-800/80 pb-3">
         <div className="min-w-[180px]">
-          <p className="text-[0.62rem] font-bold uppercase tracking-[0.16em] text-slate-500">
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
             {workerCode(operario.worker_number)}
           </p>
           <h3 className="mt-1 text-base font-bold text-slate-100">
@@ -270,13 +268,13 @@ const OperarioCard = ({ operario, onForzarCierre, isExpanded, onToggle }) => {
         </div>
 
         <div className="flex flex-wrap items-center justify-end gap-1.5">
-          <span className="rounded-md border border-sky-700/50 bg-sky-500/10 px-2 py-0.5 text-[0.58rem] font-bold uppercase tracking-widest text-sky-300">
+          <span className="rounded-md border border-sky-700/50 bg-sky-500/10 px-2 py-0.5 text-xs font-bold uppercase tracking-widest text-sky-300">
             {operario.active_jobs_count} OTs activas
           </span>
-          <span className="rounded-md border border-amber-700/50 bg-amber-500/10 px-2 py-0.5 text-[0.58rem] font-bold uppercase tracking-widest text-amber-300">
+          <span className="rounded-md border border-amber-700/50 bg-amber-500/10 px-2 py-0.5 text-xs font-bold uppercase tracking-widest text-amber-300">
             {operario.pending_vacaciones_count} vacaciones pendientes
           </span>
-          <span className="rounded-md border border-violet-700/50 bg-violet-500/10 px-2 py-0.5 text-[0.58rem] font-bold uppercase tracking-widest text-violet-300">
+          <span className="rounded-md border border-violet-700/50 bg-violet-500/10 px-2 py-0.5 text-xs font-bold uppercase tracking-widest text-violet-300">
             {operario.pending_vacaciones_dias} dias
           </span>
           <WeldixButton
@@ -372,9 +370,7 @@ const FichajesAdminSection = ({ operarios = [], onRefresh }) => {
   return (
     <section className="space-y-3">
       <div className="flex items-center justify-between">
-        <p className="text-[0.64rem] font-bold uppercase tracking-[0.2em] text-sky-300">
-          Operarios
-        </p>
+        <p className="text-xs font-bold uppercase tracking-[0.16em] text-sky-300">Operarios</p>
         <div className="flex items-center gap-2">
           <WeldixButton
             variant="success"
@@ -407,7 +403,7 @@ const FichajesAdminSection = ({ operarios = [], onRefresh }) => {
           >
             Colapsar todo
           </WeldixButton>
-          <span className="rounded-md border border-slate-700/60 bg-slate-800/40 px-2 py-0.5 text-[0.58rem] font-bold uppercase tracking-widest text-slate-300">
+          <span className="rounded-md border border-slate-700/60 bg-slate-800/40 px-2 py-0.5 text-xs font-bold uppercase tracking-widest text-slate-300">
             {sortedOperarios.length} en plantilla
           </span>
         </div>

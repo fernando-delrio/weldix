@@ -27,7 +27,7 @@ const BottomNav = ({ items }) => {
               )}
             >
               <NavIcon itemKey={item.key} className="h-[18px] w-[18px] shrink-0" />
-              <span className="text-[0.6rem] font-semibold tracking-[0.1em]">{item.label}</span>
+              <span className="text-xs font-semibold tracking-[0.08em]">{item.label}</span>
             </Link>
           )
         })}

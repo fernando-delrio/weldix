@@ -24,7 +24,7 @@ const YEARS = Array.from({ length: 5 }, (_, i) => currentYear - i)
 
 const inputCls =
   'w-full rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 outline-none focus:border-sky-500'
-const labelCls = 'block text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-slate-500 mb-1'
+const labelCls = 'block text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 mb-1'
 
 // ── Fila de nómina ────────────────────────────────────────────────────────────
 
@@ -34,7 +34,7 @@ const NominaRow = ({ nomina, onDelete, onDownload }) => (
       <i className="bx bxs-file-pdf text-rose-400 text-lg shrink-0" />
       <div className="min-w-0">
         <p className="font-medium text-slate-100 truncate">{nomina.operario_nombre}</p>
-        <p className="text-[0.7rem] text-slate-500">
+        <p className="text-xs text-slate-500">
           {nomina.month_label} {nomina.year}
         </p>
       </div>
@@ -89,9 +89,7 @@ const UploadForm = ({ operarios, onUpload, uploading, uploadError }) => {
       onSubmit={handleSubmit}
       className="rounded-xl border border-cyan-900/50 bg-slate-900/60 p-4 space-y-3"
     >
-      <h3 className="text-[0.75rem] font-bold uppercase tracking-widest text-slate-400">
-        Subir nómina
-      </h3>
+      <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400">Subir nómina</h3>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div>
@@ -165,7 +163,7 @@ const UploadForm = ({ operarios, onUpload, uploading, uploadError }) => {
           required
         />
         {file && (
-          <p className="mt-1 text-[0.7rem] text-slate-500">
+          <p className="mt-1 text-xs text-slate-500">
             <i className="bx bxs-file-pdf text-rose-400 mr-1" />
             {file.name} — {(file.size / 1024).toFixed(0)} KB
           </p>

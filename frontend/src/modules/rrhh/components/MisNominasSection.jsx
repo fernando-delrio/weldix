@@ -14,7 +14,7 @@ const NominaRow = ({ nomina, onDownload }) => (
         <p className="text-sm font-semibold text-slate-100">
           {nomina.month_label} {nomina.year}
         </p>
-        <p className="text-[0.7rem] text-slate-500">
+        <p className="text-xs text-slate-500">
           Subida el {new Date(nomina.uploaded_at).toLocaleDateString('es-ES')}
         </p>
       </div>
@@ -44,7 +44,7 @@ const MisNominasSection = () => {
       <div className="flex items-center gap-3">
         <label
           htmlFor="mis-nominas-year"
-          className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-slate-500"
+          className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500"
         >
           Año
         </label>

@@ -34,14 +34,14 @@ const AdminUserRow = ({ user }) => {
           <p className="text-sm font-semibold text-slate-100">{user.full_name || '-'}</p>
           <p className="text-xs text-slate-400">{user.email}</p>
           {workerCode && (
-            <p className="mt-0.5 text-[0.62rem] font-bold uppercase tracking-widest text-slate-500">
+            <p className="mt-0.5 text-xs font-bold uppercase tracking-widest text-slate-500">
               {workerCode}
             </p>
           )}
         </div>
       </div>
       <span
-        className={`rounded-full border px-2.5 py-0.5 text-[0.65rem] font-bold uppercase tracking-[0.14em] ${user.roleConfig.classes}`}
+        className={`rounded-full border px-2.5 py-0.5 text-xs font-bold uppercase tracking-[0.12em] ${user.roleConfig.classes}`}
       >
         {user.roleConfig.label}
       </span>

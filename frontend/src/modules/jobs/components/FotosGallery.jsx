@@ -20,11 +20,11 @@ const Lightbox = ({ foto, onClose, onDelete }) => (
       onClick={(e) => e.stopPropagation()}
     />
     <div className="mt-4 flex gap-3" onClick={(e) => e.stopPropagation()}>
-      <span className="rounded-md border border-slate-700 bg-slate-800 px-3 py-1 text-[0.65rem] uppercase tracking-widest text-slate-400">
+      <span className="rounded-md border border-slate-700 bg-slate-800 px-3 py-1 text-xs uppercase tracking-widest text-slate-400">
         {etiquetaLabel[foto.etiqueta] ?? foto.etiqueta}
       </span>
       {foto.uploader_nombre && (
-        <span className="rounded-md border border-slate-700 bg-slate-800 px-3 py-1 text-[0.65rem] text-slate-400">
+        <span className="rounded-md border border-slate-700 bg-slate-800 px-3 py-1 text-xs text-slate-400">
           {foto.uploader_nombre}
         </span>
       )}
@@ -54,7 +54,7 @@ const EtiquetaSelector = ({ selected, onChange }) => (
         type="button"
         onClick={() => onChange(e)}
         aria-pressed={selected === e}
-        className={`rounded-md border px-2.5 py-1 text-[0.62rem] font-semibold uppercase tracking-widest transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400 ${
+        className={`rounded-md border px-2.5 py-1 text-xs font-semibold uppercase tracking-widest transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400 ${
           selected === e
             ? 'border-sky-500/60 bg-sky-500/15 text-sky-300'
             : 'border-slate-700 bg-slate-800/60 text-slate-500 hover:text-slate-300'
@@ -79,7 +79,7 @@ const FotoThumb = ({ foto, onClick }) => (
       alt={foto.etiqueta}
       className="h-full w-full object-cover transition group-hover:scale-105"
     />
-    <span className="absolute bottom-0 left-0 right-0 bg-slate-900/80 px-1.5 py-0.5 text-center text-[0.55rem] uppercase tracking-widest text-slate-400">
+    <span className="absolute bottom-0 left-0 right-0 bg-slate-900/80 px-1.5 py-0.5 text-center text-xs uppercase tracking-widest text-slate-400">
       {etiquetaLabel[foto.etiqueta] ?? foto.etiqueta}
     </span>
   </button>
