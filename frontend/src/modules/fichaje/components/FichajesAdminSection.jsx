@@ -1,5 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
-import { descargarFichajesCsv, forzarCierreJornada } from '../services/fichajeService'
+import {
+  descargarFichajesCsvRango,
+  forzarCierreJornada,
+  getResumenExtras,
+} from '../services/fichajeService'
 import WeldixButton from '../../core/components/WeldixButton'
 
 const cardBase = 'rounded-xl border border-white/[0.06] bg-slate-900'
@@ -317,6 +321,113 @@ const OperarioCard = ({ operario, onForzarCierre, isExpanded, onToggle }) => {
   )
 }
 
+const todayStr = () => {
+  const d = new Date()
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`
+}
+const firstOfMonthStr = () => {
+  const d = new Date()
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-01`
+}
+
+const ExtrasRow = ({ row }) => {
+  const hasExtras = row.horas_extra > 0
+  return (
+    <tr className="border-b border-slate-800/60 last:border-0">
+      <td className="py-2.5 pl-3 pr-2 text-xs font-semibold text-slate-200">
+        {row.operario_nombre}
+      </td>
+      <td className="py-2.5 pr-2 text-center text-xs text-slate-400">{row.total_jornadas}</td>
+      <td className="py-2.5 pr-2 text-center text-xs text-slate-300">
+        {row.total_horas.toFixed(2)}h
+      </td>
+      <td className="py-2.5 pr-2 text-center text-xs text-slate-400">
+        {row.horas_ordinarias.toFixed(2)}h
+      </td>
+      <td
+        className={`py-2.5 pr-3 text-center text-xs font-bold ${hasExtras ? 'text-amber-400' : 'text-slate-600'}`}
+      >
+        {hasExtras ? `+${row.horas_extra.toFixed(2)}h` : '—'}
+      </td>
+    </tr>
+  )
+}
+
+const ResumenExtrasPanel = ({ desde, hasta }) => {
+  const [resumen, setResumen] = useState([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    setIsLoading(true)
+    setError('')
+    getResumenExtras({ desde, hasta })
+      .then(setResumen)
+      .catch((err) => setError(err.message))
+      .finally(() => setIsLoading(false))
+  }, [desde, hasta])
+
+  const totalExtras = resumen.reduce((s, r) => s + r.horas_extra, 0)
+
+  return (
+    <div className="rounded-xl border border-amber-700/30 bg-amber-500/5 p-4">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-bold uppercase tracking-[0.14em] text-amber-400">
+          Resumen de horas extras
+        </p>
+        {totalExtras > 0 && (
+          <span className="rounded-md border border-amber-700/50 bg-amber-500/15 px-2 py-0.5 text-xs font-bold text-amber-300">
+            {totalExtras.toFixed(2)}h extras en total
+          </span>
+        )}
+      </div>
+
+      {isLoading && <p className="mt-3 text-xs text-slate-500">Calculando…</p>}
+      {error && <p className="mt-3 text-xs text-rose-400">{error}</p>}
+
+      {!isLoading && !error && (
+        <div className="mt-3 rounded-lg border border-slate-800/80 bg-slate-950/35">
+          <div className="max-h-[320px] overflow-y-auto">
+            <table className="w-full table-fixed">
+              <thead className="sticky top-0 z-10">
+                <tr className="border-b border-slate-800 bg-slate-950/95 backdrop-blur">
+                  <th className="w-[34%] py-2 pl-3 pr-2 text-left text-xs font-bold uppercase tracking-widest text-slate-500">
+                    Operario
+                  </th>
+                  <th className="w-[13%] py-2 pr-2 text-center text-xs font-bold uppercase tracking-widest text-slate-500">
+                    Jornadas
+                  </th>
+                  <th className="w-[18%] py-2 pr-2 text-center text-xs font-bold uppercase tracking-widest text-slate-500">
+                    Total
+                  </th>
+                  <th className="w-[18%] py-2 pr-2 text-center text-xs font-bold uppercase tracking-widest text-slate-500">
+                    Ordinarias
+                  </th>
+                  <th className="w-[17%] py-2 pr-3 text-center text-xs font-bold uppercase tracking-widest text-amber-500">
+                    Extras
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {resumen.map((row) => (
+                  <ExtrasRow key={row.operario_id} row={row} />
+                ))}
+                {resumen.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="py-8 text-center text-xs text-slate-500">
+                      Sin datos en el rango seleccionado.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 const FichajesAdminSection = ({ operarios = [], onRefresh }) => {
   const [cierreFichaje, setCierreFichaje] = useState(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -324,6 +435,9 @@ const FichajesAdminSection = ({ operarios = [], onRefresh }) => {
   const [isExportingCsv, setIsExportingCsv] = useState(false)
   const [exportError, setExportError] = useState('')
   const [expandedByOperario, setExpandedByOperario] = useState({})
+  const [showExtras, setShowExtras] = useState(false)
+  const [desde, setDesde] = useState(firstOfMonthStr)
+  const [hasta, setHasta] = useState(todayStr)
 
   const sortedOperarios = useMemo(() => [...operarios].sort(alphaByName), [operarios])
 
@@ -355,11 +469,10 @@ const FichajesAdminSection = ({ operarios = [], onRefresh }) => {
   }
 
   const handleExportCsv = async () => {
-    const now = new Date()
     setIsExportingCsv(true)
     setExportError('')
     try {
-      await descargarFichajesCsv({ year: now.getFullYear(), month: now.getMonth() + 1 })
+      await descargarFichajesCsvRango({ desde: desde || undefined, hasta: hasta || undefined })
     } catch (err) {
       setExportError(err.message || 'No se pudo exportar el CSV')
     } finally {
@@ -369,18 +482,12 @@ const FichajesAdminSection = ({ operarios = [], onRefresh }) => {
 
   return (
     <section className="space-y-3">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-xs font-bold uppercase tracking-[0.16em] text-sky-300">Operarios</p>
-        <div className="flex items-center gap-2">
-          <WeldixButton
-            variant="success"
-            size="sm"
-            onClick={handleExportCsv}
-            isLoading={isExportingCsv}
-            loadingLabel="Exportando CSV…"
-          >
-            Exportar CSV
-          </WeldixButton>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="rounded-md border border-slate-700/60 bg-slate-800/40 px-2 py-0.5 text-xs font-bold uppercase tracking-widest text-slate-300">
+            {sortedOperarios.length} en plantilla
+          </span>
           <WeldixButton
             variant="ghost"
             size="sm"
@@ -403,13 +510,56 @@ const FichajesAdminSection = ({ operarios = [], onRefresh }) => {
           >
             Colapsar todo
           </WeldixButton>
-          <span className="rounded-md border border-slate-700/60 bg-slate-800/40 px-2 py-0.5 text-xs font-bold uppercase tracking-widest text-slate-300">
-            {sortedOperarios.length} en plantilla
-          </span>
         </div>
       </div>
 
+      {/* Barra de rango de fechas + acciones de exportación */}
+      <div className="flex flex-wrap items-end gap-2 rounded-xl border border-slate-800/60 bg-slate-900/60 px-4 py-3">
+        <div className="flex flex-col gap-1">
+          <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
+            Desde
+          </label>
+          <input
+            type="date"
+            value={desde}
+            onChange={(e) => setDesde(e.target.value)}
+            className="rounded-lg border border-slate-700 bg-slate-800 px-2.5 py-1.5 text-xs text-slate-200 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20"
+          />
+        </div>
+        <div className="flex flex-col gap-1">
+          <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
+            Hasta
+          </label>
+          <input
+            type="date"
+            value={hasta}
+            onChange={(e) => setHasta(e.target.value)}
+            className="rounded-lg border border-slate-700 bg-slate-800 px-2.5 py-1.5 text-xs text-slate-200 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20"
+          />
+        </div>
+        <WeldixButton
+          variant="success"
+          size="sm"
+          onClick={handleExportCsv}
+          isLoading={isExportingCsv}
+          loadingLabel="Exportando…"
+        >
+          <i className="bx bx-download mr-1" aria-hidden="true" />
+          Exportar CSV (Inspección de Trabajo)
+        </WeldixButton>
+        <WeldixButton
+          variant={showExtras ? 'primary' : 'secondary'}
+          size="sm"
+          onClick={() => setShowExtras((v) => !v)}
+        >
+          <i className="bx bx-time-five mr-1" aria-hidden="true" />
+          {showExtras ? 'Ocultar extras' : 'Ver horas extras'}
+        </WeldixButton>
+      </div>
+
       {exportError && <p className="text-xs text-rose-400">{exportError}</p>}
+
+      {showExtras && <ResumenExtrasPanel desde={desde || undefined} hasta={hasta || undefined} />}
 
       {sortedOperarios.length === 0 && (
         <div className={`${cardBase} p-4`}>

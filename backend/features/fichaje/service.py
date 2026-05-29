@@ -1,6 +1,7 @@
 import csv
 import io
-from datetime import datetime, timedelta, timezone
+from collections import defaultdict
+from datetime import date, datetime, timedelta, timezone
 
 from sqlalchemy import extract
 from sqlalchemy.orm import Session
@@ -177,4 +178,110 @@ def build_fichajes_csv(
             ]
         )
 
+    return out.getvalue()
+
+
+def _dt_desde(d: date) -> datetime:
+    return datetime.combine(d, datetime.min.time()).replace(tzinfo=timezone.utc)
+
+
+def _dt_hasta(d: date) -> datetime:
+    return datetime.combine(d, datetime.max.time()).replace(tzinfo=timezone.utc)
+
+
+def get_resumen_extras(
+    db: Session,
+    tenant_id: int | None = None,
+    desde: date | None = None,
+    hasta: date | None = None,
+) -> list[dict]:
+    """Horas ordinarias y extras por operario en el rango indicado.
+
+    Hora extra = cada hora trabajada en un día por encima de 8h ordinarias.
+    Agrupa todos los fichajes del día antes de calcular el exceso — evita
+    contar como extra un corte de jornada partido en dos fichajes.
+    """
+    from backend.features.auth.model import User
+
+    q = db.query(Fichaje, User).join(User, User.id == Fichaje.operario_id)
+    if tenant_id is not None:
+        q = q.filter(Fichaje.tenant_id == tenant_id)
+    if desde:
+        q = q.filter(Fichaje.inicio >= _dt_desde(desde))
+    if hasta:
+        q = q.filter(Fichaje.inicio <= _dt_hasta(hasta))
+
+    rows = q.order_by(Fichaje.inicio.asc()).all()
+
+    # { operario_id: { user, days: {day_key: horas}, total_fichajes } }
+    by_op: dict = defaultdict(lambda: {"user": None, "days": defaultdict(float), "n": 0})
+    for fichaje, user in rows:
+        if fichaje.horas is None:
+            continue
+        entry = by_op[user.id]
+        entry["user"] = user
+        entry["n"] += 1
+        inicio = fichaje.inicio
+        if inicio.tzinfo is None:
+            inicio = inicio.replace(tzinfo=timezone.utc)
+        entry["days"][inicio.strftime("%Y-%m-%d")] += float(fichaje.horas)
+
+    ORDINARIA = 8.0
+    result = []
+    for operario_id, data in by_op.items():
+        user = data["user"]
+        if not user:
+            continue
+        total = sum(data["days"].values())
+        extras = sum(max(0.0, h - ORDINARIA) for h in data["days"].values())
+        result.append({
+            "operario_id": operario_id,
+            "operario_nombre": user.full_name or user.email,
+            "email": user.email,
+            "total_jornadas": len(data["days"]),
+            "total_fichajes": data["n"],
+            "total_horas": round(total, 2),
+            "horas_ordinarias": round(total - extras, 2),
+            "horas_extra": round(extras, 2),
+        })
+
+    return sorted(result, key=lambda x: (x["operario_nombre"] or "").lower())
+
+
+def build_fichajes_csv_rango(
+    db: Session,
+    tenant_id: int | None = None,
+    desde: date | None = None,
+    hasta: date | None = None,
+) -> str:
+    """CSV para Inspección de Trabajo filtrado por rango libre de fechas."""
+    from backend.features.auth.model import User
+
+    q = db.query(Fichaje, User).join(User, User.id == Fichaje.operario_id)
+    if tenant_id is not None:
+        q = q.filter(Fichaje.tenant_id == tenant_id, User.tenant_id == tenant_id)
+    if desde:
+        q = q.filter(Fichaje.inicio >= _dt_desde(desde))
+    if hasta:
+        q = q.filter(Fichaje.inicio <= _dt_hasta(hasta))
+
+    rows = q.order_by(User.full_name.asc().nulls_last(), Fichaje.inicio.asc()).all()
+
+    out = io.StringIO()
+    writer = csv.writer(out)
+    writer.writerow([
+        "fichaje_id", "worker_number", "operario", "email",
+        "inicio_utc", "fin_utc", "horas", "estado",
+    ])
+    for fichaje, user in rows:
+        writer.writerow([
+            fichaje.id,
+            user.worker_number or "",
+            user.full_name or user.email,
+            user.email,
+            _fmt_dt(fichaje.inicio),
+            _fmt_dt(fichaje.fin),
+            "" if fichaje.horas is None else round(float(fichaje.horas), 2),
+            "abierta" if fichaje.fin is None else "cerrada",
+        ])
     return out.getvalue()
