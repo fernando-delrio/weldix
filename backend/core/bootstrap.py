@@ -18,6 +18,7 @@ from backend.features.jobs.model import Job
 from backend.features.registro_horas.model import (  # noqa: F401 — necesario para create_all
     RegistroHoras,
 )
+from backend.features.nominas.model import Nomina  # noqa: F401 — necesario para create_all
 from backend.features.rrhh.model import (  # noqa: F401 — necesario para create_all
     ConfiguracionLaboral,
     DocumentoJustificante,

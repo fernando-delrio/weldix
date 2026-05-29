@@ -58,7 +58,7 @@ const colorDia = ({ horas, abierto }) => {
 
 // ── Leyenda ───────────────────────────────────────────────────────────────────
 const Leyenda = () => (
-  <div className="flex items-center gap-3 text-[0.6rem] uppercase tracking-widest text-slate-500">
+  <div className="flex items-center gap-3 text-xs uppercase tracking-widest text-slate-500">
     <span className="flex items-center gap-1">
       <span className="h-2 w-2 rounded-full bg-emerald-500/60" /> ≥ 8h
     </span>
@@ -84,7 +84,7 @@ const DiaCelda = ({ dia, datos, isHoy }) => {
     >
       {dia}
       {datos && datos.horas > 0 && (
-        <span className="absolute bottom-0.5 text-[0.48rem] leading-none opacity-70">
+        <span className="absolute bottom-0.5 text-[0.6rem] leading-none opacity-70">
           {fmtHoras(datos.horas)}
         </span>
       )}
@@ -170,7 +170,7 @@ const FichajeCalendar = () => {
         {DIAS_SEMANA.map((d) => (
           <p
             key={d}
-            className="text-center text-[0.6rem] font-bold uppercase tracking-widest text-slate-600"
+            className="text-center text-xs font-bold uppercase tracking-widest text-slate-600"
           >
             {d}
           </p>

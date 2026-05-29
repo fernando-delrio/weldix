@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 const actionLink = ({ actionLabel, actionTo }) =>
   actionLabel &&
   actionTo && (
-    <Link to={actionTo} className="text-[0.68rem] font-semibold tracking-[0.14em] text-amber-400">
+    <Link to={actionTo} className="text-xs font-semibold tracking-[0.12em] text-amber-400">
       {actionLabel}
     </Link>
   )

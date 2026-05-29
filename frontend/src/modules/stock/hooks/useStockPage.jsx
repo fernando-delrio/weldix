@@ -31,7 +31,7 @@ export const useStockPage = () => {
 
   const handleCreate = async (data) => {
     await stockService.createMaterial(data)
-    showFeedback('Material creado correctamente.')
+    showFeedback('Material creado.')
     load()
   }
 
@@ -45,6 +45,26 @@ export const useStockPage = () => {
     await stockService.deleteMaterial(id)
     showFeedback('Material eliminado.')
     load()
+  }
+
+  const handleRestock = async (id, cantidad) => {
+    await stockService.restockMaterial(id, cantidad)
+    showFeedback('Stock actualizado.')
+    load()
+  }
+
+  const handleBulkRestock = async (entries) => {
+    for (const { id, cantidad } of entries) {
+      await stockService.restockMaterial(id, cantidad)
+    }
+    showFeedback(
+      `${entries.length} entrada${entries.length !== 1 ? 's' : ''} registrada${entries.length !== 1 ? 's' : ''}.`
+    )
+    load()
+  }
+
+  const handleParseAlbaran = async (texto) => {
+    return await stockService.parseAlbaran(texto)
   }
 
   const handleGenerarVariantes = async (data) => {
@@ -63,6 +83,9 @@ export const useStockPage = () => {
     handleCreate,
     handleUpdate,
     handleDelete,
+    handleRestock,
+    handleBulkRestock,
     handleGenerarVariantes,
+    handleParseAlbaran,
   }
 }

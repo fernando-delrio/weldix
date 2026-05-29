@@ -19,11 +19,11 @@ const cardBase = 'rounded-xl border border-cyan-900/50 bg-slate-900/65 p-5'
 const ResumenHoras = ({ horasTotales }) =>
   horasTotales && (
     <div className="flex items-center gap-2">
-      <span className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-slate-500">
+      <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
         Total acumulado
       </span>
       <span className="text-sm font-bold text-cyan-300">{horasTotales.total_horas}h</span>
-      <span className="text-[0.65rem] text-slate-600">({horasTotales.num_fichajes} sesiones)</span>
+      <span className="text-xs text-slate-600">({horasTotales.num_fichajes} sesiones)</span>
     </div>
   )
 
@@ -34,7 +34,7 @@ const FichajeEnCurso = ({ fichaje, isSubmitting, onFicharSalida }) => (
       <span className={`h-2 w-2 rounded-full ${colorTiempo(fichaje.inicio)} animate-pulse`} />
       <div>
         <p className="text-sm font-semibold text-slate-100">Fichaje activo</p>
-        <p className="text-[0.68rem] text-slate-400">
+        <p className="text-xs text-slate-400">
           Inicio:{' '}
           {new Date(fichaje.inicio).toLocaleTimeString('es-ES', {
             hour: '2-digit',

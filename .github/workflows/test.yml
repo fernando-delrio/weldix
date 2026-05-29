@@ -69,14 +69,14 @@ jobs:
           VITE_API_URL: "http://localhost:8000"
 
       - name: Check bundle size
-        # Budget: JS total < 400 KB gzip (actualmente ~310 KB)
-        # Target futuro < 150 KB inicial requiere lazy loading de rutas (Fase 7)
+        # Budget: JS total < 512 KB gzip (Recharts añade ~80 KB para charts Fase 7, ~430 KB actual)
+        # Target futuro < 150 KB inicial requiere lazy loading de rutas por feature
         run: |
           JS_BYTES=$(find frontend/dist/assets -name "*.js" ! -name "workbox-*" ! -name "sw.js" | xargs gzip -c | wc -c)
           JS_KB=$((JS_BYTES / 1024))
           echo "JS bundle size (gzip): ${JS_KB} KB"
-          if [ "$JS_BYTES" -gt 409600 ]; then
-            echo "ERROR: JS bundle exceeds 400 KB gzip budget (${JS_KB} KB)"
+          if [ "$JS_BYTES" -gt 524288 ]; then
+            echo "ERROR: JS bundle exceeds 512 KB gzip budget (${JS_KB} KB)"
             exit 1
           fi
           echo "OK: bundle within budget"

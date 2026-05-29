@@ -36,7 +36,7 @@ const cardBase = 'rounded-xl border border-cyan-900/50 bg-slate-900/65 p-5'
 // ── Subcomponente: badge de alerta de mantenimiento ────────────────────────────
 const AlertaBadge = ({ equipo }) =>
   equipo.alerta_mantenimiento && (
-    <span className="rounded-md border border-amber-700/60 bg-amber-400/10 px-2 py-0.5 text-[0.55rem] font-bold uppercase tracking-widest text-amber-300">
+    <span className="rounded-md border border-amber-700/60 bg-amber-400/10 px-2 py-0.5 text-xs font-bold uppercase tracking-widest text-amber-300">
       Mantenimiento vencido · {equipo.dias_desde_mantenimiento}d
     </span>
   )
@@ -53,10 +53,10 @@ const EquipoCard = ({ equipo, onCambiarEstado, onRegistrarMantenimiento, onElimi
             <span className={`h-2 w-2 shrink-0 rounded-full ${cfg.dot}`} />
             <h3 className="truncate text-sm font-bold text-slate-100">{equipo.nombre}</h3>
           </div>
-          {equipo.tipo && <p className="mt-0.5 text-[0.68rem] text-slate-500">{equipo.tipo}</p>}
+          {equipo.tipo && <p className="mt-0.5 text-xs text-slate-500">{equipo.tipo}</p>}
         </div>
         <span
-          className={`shrink-0 rounded-md border px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-widest ${cfg.badge}`}
+          className={`shrink-0 rounded-md border px-2 py-0.5 text-xs font-bold uppercase tracking-widest ${cfg.badge}`}
         >
           {cfg.label}
         </span>
@@ -67,7 +67,7 @@ const EquipoCard = ({ equipo, onCambiarEstado, onRegistrarMantenimiento, onElimi
       <div className="flex flex-wrap items-center gap-2">
         <AlertaBadge equipo={equipo} />
         {equipo.ultimo_mantenimiento && (
-          <span className="text-[0.62rem] text-slate-600">
+          <span className="text-xs text-slate-600">
             Último mant.: {equipo.ultimo_mantenimiento} · cada {equipo.intervalo_dias}d
           </span>
         )}
@@ -80,7 +80,7 @@ const EquipoCard = ({ equipo, onCambiarEstado, onRegistrarMantenimiento, onElimi
           <select
             value={equipo.estado}
             onChange={(e) => onCambiarEstado(equipo.id, e.target.value)}
-            className="rounded-md border border-slate-700 bg-slate-800 px-2 py-1 text-[0.68rem] text-slate-300 outline-none focus:border-sky-500"
+            className="rounded-md border border-slate-700 bg-slate-800 px-2 py-1 text-xs text-slate-300 outline-none focus:border-sky-500"
           >
             {ESTADOS_OPCIONES.map((e) => (
               <option key={e} value={e}>
@@ -135,8 +135,7 @@ const NuevoEquipoModal = ({ onClose, onSubmit, isSubmitting }) => {
 
   const inputBase =
     'w-full rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 outline-none focus:border-sky-500 placeholder:text-slate-600'
-  const labelBase =
-    'block text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-slate-500 mb-1'
+  const labelBase = 'block text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 mb-1'
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
@@ -284,8 +283,11 @@ const EquiposPage = () => {
         {/* Cabecera */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-slate-100">Equipos del taller</h1>
-            <p className="text-xs text-slate-500">{equipos.length} equipos registrados</p>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-300">GMAO</p>
+            <h1 className="text-3xl font-extrabold tracking-tight text-slate-100">
+              Equipos del taller
+            </h1>
+            <p className="mt-1 text-xs text-slate-500">{equipos.length} equipos registrados</p>
           </div>
           {isAdmin && (
             <WeldixButton variant="primary" size="sm" onClick={() => setModalAbierto(true)}>

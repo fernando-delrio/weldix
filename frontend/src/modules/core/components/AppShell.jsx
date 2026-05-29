@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuthSession } from '../../auth/hooks/useAuthSession'
 import { useClock } from '../hooks/useClock'
@@ -95,13 +96,13 @@ const Sidebar = ({
   const location = useLocation()
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-40 flex w-16 flex-col border-r border-slate-800 bg-slate-950/98 backdrop-blur lg:w-56">
+    <aside className="flex h-full w-full flex-col border-r border-slate-800 bg-slate-950/98 backdrop-blur">
       {/* Logo */}
       <div className="flex h-16 shrink-0 items-center gap-3 border-b border-slate-800 px-4">
         <img src="/weldix-icon.svg" alt="Weldix" className="h-8 w-8 shrink-0 object-contain" />
         <div className="hidden lg:block">
           <p className="text-sm font-extrabold tracking-[0.18em] text-slate-100">WELDIX</p>
-          <span className="rounded-sm border border-amber-700/50 bg-amber-500/10 px-1.5 py-0.5 text-[0.55rem] font-bold tracking-[0.18em] text-amber-400">
+          <span className="rounded-sm border border-amber-700/50 bg-amber-500/10 px-1.5 py-0.5 text-xs font-bold tracking-[0.12em] text-amber-400">
             {roleLabel}
           </span>
         </div>
@@ -248,8 +249,8 @@ const Sidebar = ({
           <span className="hidden text-sm font-semibold tracking-wide lg:block">Salir</span>
         </button>
 
-        {/* Reloj — solo en desktop */}
-        <p className="hidden px-3 py-1 text-[0.6rem] font-semibold tracking-widest text-slate-600 lg:block">
+        {/* Reloj — visible en tablet y desktop */}
+        <p className="hidden px-3 py-1 font-mono text-xs font-semibold tracking-widest text-slate-400 md:block">
           {timeLabel}
         </p>
       </div>
@@ -258,16 +259,21 @@ const Sidebar = ({
 }
 
 // ── Header móvil ────────────────────────────────────────────────────────────
-const MobileHeader = ({ roleLabel, onLogout, onSearchOpen }) => (
+const MobileHeader = ({ roleLabel, onLogout, onSearchOpen, timeLabel }) => (
   <header className="fixed inset-x-0 top-0 z-40 border-b border-slate-800 bg-slate-950/95 backdrop-blur md:hidden">
-    <div className="flex h-14 items-center justify-between px-4">
+    <div className="relative flex h-14 items-center justify-between px-4">
       <div className="flex items-center gap-2.5">
         <img src="/weldix-icon.svg" alt="Weldix" className="h-7 w-7 object-contain" />
         <p className="text-sm font-extrabold tracking-[0.18em] text-slate-100">WELDIX</p>
-        <span className="rounded-sm border border-amber-700/50 bg-amber-500/10 px-1.5 py-0.5 text-[0.55rem] font-bold tracking-[0.18em] text-amber-400">
+        <span className="rounded-sm border border-amber-700/50 bg-amber-500/10 px-1.5 py-0.5 text-xs font-bold tracking-[0.12em] text-amber-400">
           {roleLabel}
         </span>
       </div>
+
+      {/* Reloj centrado */}
+      <span className="absolute left-1/2 -translate-x-1/2 font-mono text-xs font-semibold tracking-widest text-slate-400">
+        {timeLabel}
+      </span>
       <div className="flex items-center gap-2">
         <button
           type="button"
@@ -341,15 +347,21 @@ const MobileHeader = ({ roleLabel, onLogout, onSearchOpen }) => (
 // ── FAB IA ─────────────────────────────────────────────────────────────────
 const IaFab = () => {
   const { openChat } = useIaContext()
-  return (
+  return createPortal(
     <button
       type="button"
       onClick={() => openChat()}
       aria-label="Asistente IA"
-      className="fixed bottom-[88px] right-4 z-40 flex h-12 w-12 items-center justify-center rounded-sm border border-amber-500/40 bg-amber-500/15 text-xl shadow-lg backdrop-blur transition hover:border-amber-400/70 hover:bg-amber-500/25 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400 md:bottom-6 md:right-6"
+      style={{ position: 'fixed', bottom: '2rem', right: '2rem', zIndex: 9999 }}
+      className="flex h-12 w-12 items-center justify-center rounded-sm border border-amber-500/40 bg-amber-500/15 shadow-lg backdrop-blur transition hover:border-amber-400/70 hover:bg-amber-500/25 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
     >
-      🔧
-    </button>
+      <span
+        className="pointer-events-none absolute inset-0 rounded-sm animate-ping bg-amber-500/20"
+        aria-hidden="true"
+      />
+      <i className="bx bx-bot relative text-xl text-amber-400" aria-hidden="true" />
+    </button>,
+    document.body
   )
 }
 
@@ -361,22 +373,24 @@ const AppShellInner = ({ children }) => {
   const search = useSearch()
   const { canInstall, triggerInstall } = usePwaInstall()
   const { showBanner, trial, dismiss } = useTrialStatus()
+  const { isDark } = useTheme()
 
   const role = profile?.role || 'operario'
   const roleLabel = role.toUpperCase()
   const navItems = getNavItems(role)
 
   return (
-    <div className="relative min-h-screen bg-slate-950 text-slate-100">
-      {/* Efectos de fondo */}
-      <div className="pointer-events-none fixed inset-0 opacity-40 [background-image:linear-gradient(rgba(3,38,66,0.45)_1px,transparent_1px),linear-gradient(90deg,rgba(3,38,66,0.45)_1px,transparent_1px)] [background-size:30px_30px]" />
-      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(700px_430px_at_0%_50%,rgba(245,158,11,0.07),transparent_65%)]" />
+    <div className="flex h-screen bg-[var(--app-bg)] text-[var(--app-text)]">
+      {/* Efectos de fondo — solo en modo oscuro */}
+      {isDark && (
+        <>
+          <div className="pointer-events-none fixed inset-0 opacity-40 [background-image:linear-gradient(rgba(3,38,66,0.45)_1px,transparent_1px),linear-gradient(90deg,rgba(3,38,66,0.45)_1px,transparent_1px)] [background-size:30px_30px]" />
+          <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(700px_430px_at_0%_50%,rgba(245,158,11,0.07),transparent_65%)]" />
+        </>
+      )}
 
-      {/* Header móvil */}
-      <MobileHeader roleLabel={roleLabel} onLogout={clearSession} onSearchOpen={search.open} />
-
-      {/* Sidebar tablet/desktop */}
-      <div className="hidden md:block">
+      {/* Sidebar tablet/desktop — flex child, fills full height */}
+      <div className="hidden md:flex md:w-16 lg:w-56 shrink-0 flex-col">
         <Sidebar
           navItems={navItems}
           roleLabel={roleLabel}
@@ -388,29 +402,32 @@ const AppShellInner = ({ children }) => {
         />
       </div>
 
-      {/* Contenido principal */}
-      <main
-        className={[
-          'relative min-h-screen',
-          // Móvil: padding top por header + bottom por BottomNav
-          'pt-[62px] pb-[90px] px-4',
-          // Tablet: sidebar 64px + padding propio
-          'md:ml-16 md:pt-6 md:pb-8 md:px-6',
-          // Desktop: sidebar 224px
-          'lg:ml-56 lg:px-8',
-        ].join(' ')}
-      >
-        <div className="mx-auto w-full max-w-[1100px]">
-          {showBanner && <TrialBanner daysLeft={trial.days_left} onDismiss={dismiss} />}
-          {children}
-        </div>
-      </main>
+      {/* Columna de contenido — ocupa todo el espacio restante */}
+      <div className="flex flex-1 flex-col overflow-hidden">
+        {/* Espaciador para el header fijo en móvil */}
+        <div className="h-14 shrink-0 md:hidden" aria-hidden="true" />
 
-      {/* Bottom nav — solo móvil */}
+        <main className="min-h-0 flex-1 overflow-y-auto px-4 py-3 md:px-6 md:py-4 lg:px-8">
+          <div className="mx-auto w-full max-w-[1100px]">
+            {showBanner && <TrialBanner daysLeft={trial.days_left} onDismiss={dismiss} />}
+            {children}
+          </div>
+        </main>
+
+        {/* Espaciador para el bottom nav fijo en móvil */}
+        <div className="h-[68px] shrink-0 md:hidden" aria-hidden="true" />
+      </div>
+
+      {/* Overlays fijos — siempre relativos al viewport */}
+      <MobileHeader
+        roleLabel={roleLabel}
+        onLogout={clearSession}
+        onSearchOpen={search.open}
+        timeLabel={timeLabel}
+      />
       <div className="md:hidden">
         <BottomNav items={navItems} />
       </div>
-
       <IaFab />
       {iaIsOpen && <IaChatPanel />}
       <SearchModal {...search} />

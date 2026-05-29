@@ -27,11 +27,9 @@ const ControlHoras = ({ registroActivo, horaInicio, elapsed, isSubmitting, inici
           {/* Indicador de tiempo activo en esta OT */}
           <div className="flex items-center gap-2 rounded-lg border border-sky-700/50 bg-sky-500/10 px-3 py-2">
             <span className="h-1.5 w-1.5 rounded-full bg-sky-400 animate-pulse shrink-0" />
-            <span className="text-[0.65rem] uppercase tracking-widest text-sky-500">
-              Trabajando desde
-            </span>
+            <span className="text-xs uppercase tracking-widest text-sky-500">Trabajando desde</span>
             <span className="font-mono text-sm font-bold text-sky-300">{horaInicio}</span>
-            {elapsed && <span className="text-[0.62rem] text-sky-600">· {elapsed}</span>}
+            {elapsed && <span className="text-xs text-sky-600">· {elapsed}</span>}
           </div>
           <WeldixButton
             variant="warning"
@@ -62,7 +60,7 @@ const ResumenOperarios = ({ resumen }) => {
 
   return (
     <div className="mt-4 space-y-2">
-      <p className="text-[0.62rem] font-bold uppercase tracking-widest text-slate-500">
+      <p className="text-xs font-bold uppercase tracking-widest text-slate-500">
         Horas por operario · Total OT:{' '}
         <span className="text-cyan-300">{fmtHoras(resumen.total_horas)}</span>
       </p>
@@ -74,7 +72,7 @@ const ResumenOperarios = ({ resumen }) => {
           >
             <span className="text-sm text-slate-200">{op.operario_nombre}</span>
             <div className="flex items-center gap-3">
-              <span className="text-[0.65rem] text-slate-500">
+              <span className="text-xs text-slate-500">
                 {op.num_sesiones} sesión{op.num_sesiones !== 1 ? 'es' : ''}
               </span>
               <span className="font-mono text-sm font-bold text-cyan-300">
@@ -98,7 +96,7 @@ const HistorialSesiones = ({ registros }) => {
 
   return (
     <details className="mt-3">
-      <summary className="cursor-pointer text-[0.62rem] font-bold uppercase tracking-widest text-slate-600 hover:text-slate-400">
+      <summary className="cursor-pointer text-xs font-bold uppercase tracking-widest text-slate-600 hover:text-slate-400">
         Ver sesiones ({cerradas.length})
       </summary>
       <div className="mt-2 space-y-1">
@@ -109,9 +107,7 @@ const HistorialSesiones = ({ registros }) => {
           >
             <div>
               <span className="text-xs text-slate-400">{r.operario_nombre}</span>
-              <span className="ml-2 font-mono text-[0.65rem] text-slate-600">
-                {fmtFecha(r.inicio)}
-              </span>
+              <span className="ml-2 font-mono text-xs text-slate-600">{fmtFecha(r.inicio)}</span>
             </div>
             <span className="font-mono text-xs font-semibold text-slate-300">
               {fmtHoras(r.horas)}

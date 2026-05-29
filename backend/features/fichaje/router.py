@@ -13,7 +13,7 @@ from backend.features.auth.dependencies import (
 from backend.features.auth.model import User
 
 from . import service
-from .schemas import FichajeResponse, ForzarCierreRequest
+from .schemas import FichajeResponse, ForzarCierreRequest, ResumenExtrasResponse
 
 router = APIRouter(
     prefix="/fichajes",
@@ -54,6 +54,44 @@ def export_fichajes_csv(
         content=csv_content,
         media_type="text/csv; charset=utf-8",
         headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+@router.get("/export/csv-rango")
+def export_fichajes_csv_rango(
+    desde: date | None = Query(default=None),
+    hasta: date | None = Query(default=None),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("admin")),
+):
+    csv_content = service.build_fichajes_csv_rango(
+        db,
+        tenant_id=current_user.tenant_id,
+        desde=desde,
+        hasta=hasta,
+    )
+    desde_str = str(desde) if desde else "inicio"
+    hasta_str = str(hasta) if hasta else "hoy"
+    filename = f"fichajes-{desde_str}-a-{hasta_str}.csv"
+    return Response(
+        content=csv_content,
+        media_type="text/csv; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+@router.get("/admin/resumen-extras", response_model=list[ResumenExtrasResponse])
+def resumen_extras(
+    desde: date | None = Query(default=None),
+    hasta: date | None = Query(default=None),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("admin")),
+):
+    return service.get_resumen_extras(
+        db,
+        tenant_id=current_user.tenant_id,
+        desde=desde,
+        hasta=hasta,
     )
 
 

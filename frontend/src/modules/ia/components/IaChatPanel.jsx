@@ -39,7 +39,7 @@ const TypingIndicator = () => (
 const sectionBanner = ({ pageContext }) =>
   pageContext?.seccion && (
     <div className="mx-4 mt-3 rounded-lg border border-sky-700/40 bg-sky-500/10 px-3 py-2">
-      <p className="text-[0.6rem] font-bold uppercase tracking-widest text-sky-400">
+      <p className="text-xs font-bold uppercase tracking-widest text-sky-400">
         Contexto · {pageContext.seccion}
       </p>
       {pageContext.resumen && (
@@ -128,7 +128,7 @@ const IaChatPanel = () => {
             </div>
             <div>
               <p className="text-sm font-bold text-slate-100">Weldix AI</p>
-              <p className="text-[0.62rem] text-slate-500 uppercase tracking-widest">
+              <p className="text-xs text-slate-500 uppercase tracking-widest">
                 {pageContext?.seccion ? pageContext.seccion : 'Asistente de taller'}
               </p>
             </div>
@@ -215,7 +215,7 @@ const IaChatPanel = () => {
               </svg>
             </button>
           </div>
-          <p className="mt-1.5 text-center text-[0.58rem] text-slate-600">
+          <p className="mt-1.5 text-center text-xs text-slate-600">
             Enter para enviar · Shift+Enter para nueva línea
           </p>
         </form>

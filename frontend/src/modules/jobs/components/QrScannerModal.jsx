@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Html5Qrcode } from 'html5-qrcode'
 import WeldixButton from '../../core/components/WeldixButton'
+import useFocusTrap from '../../core/hooks/useFocusTrap'
 
 /**
  * 🆕 html5-qrcode — librería que accede a la cámara del dispositivo y decodifica QRs.
@@ -11,6 +12,8 @@ import WeldixButton from '../../core/components/WeldixButton'
  */
 
 const QrScannerModal = ({ onDetected, onClose }) => {
+  const modalRef = useRef(null)
+  useFocusTrap(modalRef)
   const [error, setError] = useState(null)
   const [ready, setReady] = useState(false)
   const scannerRef = useRef(null)
@@ -45,7 +48,13 @@ const QrScannerModal = ({ onDetected, onClose }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 backdrop-blur-sm">
-      <div className="relative w-full max-w-[360px] rounded-2xl border border-slate-700 bg-slate-900 p-5 shadow-2xl">
+      <div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Escanear QR"
+        className="relative w-full max-w-[360px] rounded-2xl border border-slate-700 bg-slate-900 p-5 shadow-2xl"
+      >
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-bold tracking-tight text-slate-100">Escanear QR</h2>
           <WeldixButton
@@ -68,9 +77,7 @@ const QrScannerModal = ({ onDetected, onClose }) => {
             )}
             {/* html5-qrcode monta el video dentro de este div */}
             <div id={containerId} className="overflow-hidden rounded-xl border border-slate-800" />
-            <p className="mt-3 text-center text-[0.65rem] text-slate-500">
-              Apunta al código QR de la OT
-            </p>
+            <p className="mt-3 text-center text-xs text-slate-500">Apunta al código QR de la OT</p>
           </>
         )}
       </div>

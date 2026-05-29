@@ -21,8 +21,8 @@ const VARIANT = {
 // WCAG 2.1 §2.5.5 — target size mínimo 44×44 px en interactivos (aquí usamos 44 como mínimo,
 // 48 para `lg` que es el tamaño recomendado en contexto táctil de taller)
 const SIZE = {
-  sm: 'min-h-[36px]  px-2.5 py-1    text-[0.62rem]',
-  md: 'min-h-[44px]  px-4   py-2    text-[0.7rem]',
+  sm: 'min-h-[36px]  px-2.5 py-1    text-xs',
+  md: 'min-h-[44px]  px-4   py-2    text-sm',
   lg: 'min-h-[48px]  px-6   py-2.5  text-sm',
   // icon: el tamaño lo pone el padre (w-11 h-11 = 44px). aria-label obligatorio.
   icon: 'min-h-[44px]  min-w-[44px] p-0',

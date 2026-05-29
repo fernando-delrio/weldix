@@ -6,7 +6,7 @@ const filterLabel = (key) => (key === 'todos' ? 'Todos' : getStatusConfig(key).l
 
 const filterButtonClass = ({ activeFilter, filter }) =>
   cx(
-    'shrink-0 rounded-full px-3 py-1 text-[0.68rem] font-bold uppercase tracking-[0.14em] transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400',
+    'shrink-0 rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.10em] transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400',
     activeFilter === filter
       ? 'bg-sky-500/20 text-sky-300 shadow-[inset_0_0_0_1px_rgba(56,189,248,0.4)]'
       : 'text-slate-400 hover:text-slate-300'

@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { mapAdminDashboard } from '../lib/adminModel'
 import {
   assignJob as apiAssignJob,
+  changeJobStatus as apiChangeJobStatus,
   createUser as apiCreateUser,
   deleteJob as apiDeleteJob,
   getAdminDashboard,
@@ -53,6 +54,14 @@ export const useAdminDashboard = () => {
     [refresh]
   )
 
+  const changeJobStatus = useCallback(
+    async (jobId, estado) => {
+      await apiChangeJobStatus(jobId, estado)
+      await refresh()
+    },
+    [refresh]
+  )
+
   const createUser = useCallback(
     async (data) => {
       await apiCreateUser(data)
@@ -61,5 +70,5 @@ export const useAdminDashboard = () => {
     [refresh]
   )
 
-  return { dashboard, isLoading, error, refresh, assignJob, removeJob, createUser }
+  return { dashboard, isLoading, error, refresh, assignJob, removeJob, createUser, changeJobStatus }
 }

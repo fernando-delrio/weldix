@@ -1,58 +1,164 @@
 @import "tailwindcss";
 
-/* ── Tema claro — sobrescribe las variables de color de Tailwind v4 ─────────
-   Tailwind v4 genera clases como:
-     .bg-slate-950 { background-color: var(--color-slate-950, oklch(...)) }
-   Al redefinir --color-slate-* aquí, TODOS los componentes cambian sin tocar JSX.
-   Paleta: papel kraft / plano técnico industrial.
-──────────────────────────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════
+   CSS VARIABLES GLOBALES — theme-aware (dark por defecto)
+═══════════════════════════════════════════════════════════════════ */
+:root {
+  /* ── Fondo de app y cards ── */
+  --app-bg:   #020617;   /* slate-950 */
+  --app-text: #f1f5f9;   /* slate-100 */
+  --card-bg:  #0f172a;   /* slate-900 */
+
+  /* ── Sombra y borde de cards ── */
+  --card-border:    rgba(255, 255, 255, 0.06);
+  --card-shadow:    0 16px 40px rgba(2, 6, 23, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  --card-shadow-sm: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   TEMA CLARO — paleta limpia profesional (Linear / Notion)
+   Escala slate invertida: 950→fondo claro, 100→texto oscuro.
+   Acentos (amber, sky, rose, emerald) en sus tonos vibrantes.
+═══════════════════════════════════════════════════════════════════ */
 html[data-theme='light'] {
-  /* Fondos — del más oscuro al más claro (invertido respecto al dark) */
-  --color-slate-950: #f2ebe0;   /* fondo principal — crema cálido */
-  --color-slate-900: #ebe3d8;   /* fondo de cards */
-  --color-slate-800: #ddd5c8;   /* superficies elevadas / divisores */
-  --color-slate-700: #cfc7ba;   /* bordes */
-  --color-slate-600: #b8b0a4;   /* bordes sutiles */
+  /* ── Fondos ── */
+  --color-slate-950: #f1f5f9;   /* fondo principal */
+  --color-slate-900: #ffffff;   /* cards */
+  --color-slate-800: #f8fafc;   /* hover / skeleton / superficies elevadas */
+  --color-slate-700: #e2e8f0;   /* bordes principales */
+  --color-slate-600: #cbd5e1;   /* bordes sutiles */
 
-  /* Texto — del más suave al más fuerte (también invertido) */
-  --color-slate-500: #6b6560;   /* texto muy suave */
-  --color-slate-400: #514b46;   /* texto secundario */
-  --color-slate-300: #3d3830;   /* texto body */
-  --color-slate-200: #2a2520;   /* texto fuerte */
-  --color-slate-100: #1a1510;   /* texto más fuerte — casi negro cálido */
+  /* ── Texto ── */
+  --color-slate-500: #64748b;   /* muted */
+  --color-slate-400: #475569;   /* secundario */
+  --color-slate-300: #334155;   /* body */
+  --color-slate-200: #1e293b;   /* fuerte */
+  --color-slate-100: #0f172a;   /* encabezados */
 
-  /* Amber — más oscuro en light para legibilidad */
-  --color-amber-400: #b45309;
-  --color-amber-300: #92400e;
-  --color-amber-200: #92400e;
-  --color-amber-500: #d97706;
+  /* ── Amber ── */
+  --color-amber-400: #d97706;
+  --color-amber-300: #b45309;
+  --color-amber-500: #f59e0b;
 
-  /* Rose/emerald — ligeramente ajustados (300 y 400 se usan como texto) */
+  /* ── Sky / Cyan ── */
+  --color-sky-400: #0284c7;
+  --color-sky-300: #0369a1;
+  --color-cyan-300: #0e7490;
+
+  /* ── Rose / Emerald ── */
   --color-rose-400: #e11d48;
   --color-rose-300: #be123c;
   --color-emerald-400: #059669;
   --color-emerald-300: #047857;
 
-  /* Sky/cyan — acentos usados como TEXTO (text-sky-300/400, text-cyan-300).
-     Sin override quedan en su valor oscuro-mode (azul/cian claro) y resultan
-     casi invisibles sobre el fondo crema. Los mismos tonos sólo aparecen como
-     fondo en puntitos decorativos (bg-sky-400), así que oscurecerlos es seguro. */
-  --color-sky-400: #0369a1;
-  --color-sky-300: #0369a1;
-  --color-cyan-300: #155e75;
+  /* ── Violet ── */
+  --color-violet-300: #6d28d9;
+  --color-violet-400: #7c3aed;
+
+  /* ── Fondo de app y cards ── */
+  --app-bg:   #f1f5f9;   /* slate-100 */
+  --app-text: #0f172a;   /* slate-900 */
+  --card-bg:  #ffffff;
+
+  /* ── Cards: borde y sombra light-mode ── */
+  --card-border:    #e2e8f0;
+  --card-shadow:    0 1px 3px rgba(15, 23, 42, 0.06), 0 4px 12px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(0, 0, 0, 0.03);
+  --card-shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06), 0 2px 8px rgba(15, 23, 42, 0.06);
 }
 
-/* ── Tipografía base ─────────────────────────────────────────────── */
+/* ── Sidebar ── */
+html[data-theme='light'] aside {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+}
+
+/* ── Header móvil ── */
+html[data-theme='light'] header {
+  background-color: rgb(255 255 255 / 0.97) !important;
+  border-color: #e2e8f0 !important;
+}
+
+/* ── border-white/* semitransparente → gris visible ── */
+html[data-theme='light'] [class*="border-white"] {
+  border-color: #e2e8f0 !important;
+}
+
+/* ── Sombras dark hardcodeadas ── */
+html[data-theme='light'] [class*="shadow-[0_16px"] {
+  box-shadow: var(--card-shadow) !important;
+}
+html[data-theme='light'] [class*="shadow-[inset_0_1px_0_rgba(255"] {
+  box-shadow: var(--card-shadow-sm) !important;
+}
+
+/* ══ TEXTO — paleta -300 invisible en light: redirigir a tonos oscuros ═══════
+   Las clases text-*-300 son vibrantes sobre oscuro pero ilegibles sobre blanco.
+   Usamos las variables redefinidas en este mismo data-theme='light' block.      */
+html[data-theme='light'] .text-amber-300   { color: var(--color-amber-300)   !important; }
+html[data-theme='light'] .text-sky-300     { color: var(--color-sky-300)     !important; }
+html[data-theme='light'] .text-emerald-300 { color: var(--color-emerald-300) !important; }
+html[data-theme='light'] .text-violet-300  { color: var(--color-violet-300)  !important; }
+html[data-theme='light'] .text-rose-300    { color: var(--color-rose-300)    !important; }
+html[data-theme='light'] .text-slate-100   { color: var(--color-slate-100)   !important; }
+html[data-theme='light'] .text-slate-200   { color: var(--color-slate-200)   !important; }
+html[data-theme='light'] .text-slate-300   { color: var(--color-slate-300)   !important; }
+html[data-theme='light'] .text-slate-400   { color: var(--color-slate-400)   !important; }
+html[data-theme='light'] .text-slate-500   { color: var(--color-slate-500)   !important; }
+html[data-theme='light'] .text-slate-600   { color: var(--color-slate-500)   !important; }
+
+/* ══ FONDOS bg-slate-8xx — skeletons, hovers, badges ═══════════════════════ */
+html[data-theme='light'] [class*="bg-slate-800"] {
+  background-color: #f1f5f9 !important;
+}
+
+/* ══ BORDES slate oscuros → border light ══════════════════════════════════== */
+html[data-theme='light'] [class*="border-slate-600"],
+html[data-theme='light'] [class*="border-slate-700"],
+html[data-theme='light'] [class*="border-slate-800"],
+html[data-theme='light'] [class*="border-slate-900"] {
+  border-color: #e2e8f0 !important;
+}
+
+/* ══ SIDEBAR — nav hovers en light mode ════════════════════════════════════ */
+html[data-theme='light'] aside nav a:hover,
+html[data-theme='light'] aside nav button:hover,
+html[data-theme='light'] aside button:hover {
+  background-color: #f1f5f9 !important;
+  color: #334155 !important;
+}
+html[data-theme='light'] aside nav a.bg-amber-500\/15 {
+  background-color: rgba(245, 158, 11, 0.12) !important;
+}
+
+/* ══ HERO GRADIENT — from-amber-900 + via-slate-900 → ámbar suave en light ══ */
+html[data-theme='light'] [class*="from-amber-900"][class*="via-slate-900"] {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(248, 250, 252, 1) 70%) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   TIPOGRAFÍA BASE
+═══════════════════════════════════════════════════════════════════ */
 body {
   font-family: 'Inter', system-ui, sans-serif;
+  background-color: var(--app-bg);
 }
 
-/* Rajdhani para titulares, métricas y brand */
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Rajdhani', system-ui, sans-serif;
 }
 
-/* ── Animación modal bottom-sheet ───────────────────────────────── */
+/* ── Animación de entrada de cards (CSS puro, sin librería) ── */
+article {
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+@starting-style {
+  article {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+/* ── Animación modal bottom-sheet ── */
 @keyframes slideUp {
   from { transform: translateY(100%); opacity: 0; }
   to   { transform: translateY(0);    opacity: 1; }

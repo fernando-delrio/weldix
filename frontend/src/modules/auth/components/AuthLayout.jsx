@@ -77,6 +77,13 @@ const AuthLayout = ({ mode, title, subtitle, feedback, error, children }) => {
 
         <section className={authTw.panelSection}>
           <div className={authTw.panelCard}>
+            <Link
+              to="/"
+              className="mb-4 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-slate-500 transition hover:text-slate-300"
+            >
+              <i className="bx bx-arrow-back text-sm" />
+              Volver al inicio
+            </Link>
             <div className={authTw.modeSwitch}>
               <Link to="/login" className={modeButtonClass(mode, 'login')}>
                 Iniciar sesion

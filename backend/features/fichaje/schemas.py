@@ -42,5 +42,21 @@ class ResumenJornadaResponse(BaseModel):
     operario_nombre: str
     total_fichajes: int
     total_horas: float
-    # el más reciente primero
     ultimo_fichaje: datetime | None
+
+
+class ResumenExtrasResponse(BaseModel):
+    """Resumen de horas ordinarias y extras por operario en un rango de fechas.
+
+    Horas extra = horas trabajadas en un día por encima de 8h (jornada ordinaria).
+    Útil para calcular complementos salariales y cumplimiento del Estatuto de los Trabajadores.
+    """
+
+    operario_id: int
+    operario_nombre: str
+    email: str
+    total_jornadas: int
+    total_fichajes: int
+    total_horas: float
+    horas_ordinarias: float
+    horas_extra: float

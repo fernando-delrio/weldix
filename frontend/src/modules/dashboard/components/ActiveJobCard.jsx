@@ -3,16 +3,13 @@ import { useIaContext } from '../../ia/lib/IaContext'
 import PanelCard from '../../core/components/PanelCard'
 import { toneFor } from '../../core/lib/tones'
 import StageProgress from './StageProgress'
+import WeldixButton from '../../core/components/WeldixButton'
 
 const advanceButton = ({ nextLabel, onComplete }) =>
   nextLabel && (
-    <button
-      type="button"
-      onClick={onComplete}
-      className="h-11 rounded-xl bg-gradient-to-r from-amber-500 to-blue-500 text-sm font-bold tracking-[0.03em] text-white transition hover:from-amber-400 hover:to-blue-400"
-    >
+    <WeldixButton variant="primary" size="lg" onClick={onComplete} className="w-full">
       {nextLabel}
-    </button>
+    </WeldixButton>
   )
 
 const ActiveJobCard = ({ job, onComplete, onRegisterMaterial }) => {
@@ -30,11 +27,11 @@ const ActiveJobCard = ({ job, onComplete, onRegisterMaterial }) => {
     <PanelCard className="border-amber-500/55">
       <div className="flex items-center justify-between gap-3">
         <span
-          className={`rounded-md border px-2 py-1 text-[0.62rem] font-bold uppercase tracking-[0.16em] ${statusTone.badge}`}
+          className={`rounded-md border px-2 py-1 text-xs font-bold uppercase tracking-[0.16em] ${statusTone.badge}`}
         >
           {job.status}
         </span>
-        <p className="text-[0.62rem] font-semibold uppercase tracking-[0.14em] text-slate-500">
+        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
           {job.code ?? `#${job.id}`}
         </p>
       </div>
@@ -43,7 +40,7 @@ const ActiveJobCard = ({ job, onComplete, onRegisterMaterial }) => {
       <p className="mt-1 text-sm text-slate-400">Cliente: {job.client}</p>
 
       <div className="mt-4 flex items-center justify-between">
-        <p className="text-[0.62rem] font-semibold uppercase tracking-[0.14em] text-slate-500">
+        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
           Progreso estimado
         </p>
         <span className="text-sm font-bold text-amber-300">{job.progress}%</span>
@@ -53,25 +50,22 @@ const ActiveJobCard = ({ job, onComplete, onRegisterMaterial }) => {
 
       <div className="mt-4 flex flex-col gap-2.5">
         {advanceButton({ nextLabel, onComplete })}
-        <button
-          type="button"
-          onClick={onRegisterMaterial}
-          className="h-11 rounded-xl border border-slate-700 bg-slate-900/80 text-sm font-semibold text-slate-300 transition hover:border-slate-500 hover:text-slate-200"
-        >
+        <WeldixButton variant="ghost" size="lg" onClick={onRegisterMaterial} className="w-full">
           Registrar materiales usados
-        </button>
-        <button
-          type="button"
+        </WeldixButton>
+        <WeldixButton
+          variant="ghost"
+          size="lg"
           onClick={handleAskIA}
-          className="h-11 rounded-xl border border-amber-700/40 bg-amber-500/5 text-sm font-semibold text-amber-400 transition hover:border-amber-500/60 hover:bg-amber-500/10"
+          className="w-full border-amber-700/40 bg-amber-500/5 text-amber-400 hover:border-amber-500/60 hover:bg-amber-500/10"
         >
           🔧 Consultar IA sobre este trabajo
-        </button>
+        </WeldixButton>
       </div>
 
       <div className="mt-3 flex justify-end">
         <span
-          className={`rounded-md border px-2 py-1 text-[0.62rem] font-bold uppercase tracking-[0.14em] ${dueTone.badge}`}
+          className={`rounded-md border px-2 py-1 text-xs font-bold uppercase tracking-[0.14em] ${dueTone.badge}`}
         >
           {job.dueLabel}
         </span>

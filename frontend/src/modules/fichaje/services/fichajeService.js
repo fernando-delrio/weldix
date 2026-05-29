@@ -61,6 +61,45 @@ export const forzarCierreJornada = async (fichajeId, horasReales) => {
   return res.json()
 }
 
+export const getResumenExtras = async ({ desde, hasta } = {}) => {
+  const params = new URLSearchParams()
+  if (desde) params.set('desde', desde)
+  if (hasta) params.set('hasta', hasta)
+  const qs = params.toString() ? `?${params.toString()}` : ''
+  const res = await fetch(`${API_BASE_URL}/fichajes/admin/resumen-extras${qs}`, {
+    headers: authHeaders(),
+  })
+  if (!res.ok) throw new Error('Error al obtener resumen de extras')
+  return res.json()
+}
+
+export const descargarFichajesCsvRango = async ({ desde, hasta } = {}) => {
+  const params = new URLSearchParams()
+  if (desde) params.set('desde', desde)
+  if (hasta) params.set('hasta', hasta)
+  const qs = params.toString() ? `?${params.toString()}` : ''
+
+  const res = await fetch(`${API_BASE_URL}/fichajes/export/csv-rango${qs}`, {
+    headers: authHeaders(),
+  })
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}))
+    throw new Error(err.detail ?? 'Error al exportar CSV de fichajes')
+  }
+
+  const blob = await res.blob()
+  const url = window.URL.createObjectURL(blob)
+  const desdeStr = desde ?? 'inicio'
+  const hastaStr = hasta ?? 'hoy'
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `fichajes-${desdeStr}-a-${hastaStr}.csv`
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  window.URL.revokeObjectURL(url)
+}
+
 export const descargarFichajesCsv = async ({ year, month }) => {
   const params = new URLSearchParams()
   if (year) params.set('year', String(year))

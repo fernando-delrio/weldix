@@ -5,7 +5,14 @@ const StageProgress = ({ stages, currentStage }) => {
 
   return (
     <div className="mt-3">
-      <div className="mb-2 h-1.5 w-full rounded-full bg-slate-800">
+      <div
+        role="progressbar"
+        aria-valuenow={Math.round(((currentStage + 1) / totalStages) * 100)}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label="Progreso de etapas"
+        className="mb-2 h-1.5 w-full rounded-full bg-slate-800"
+      >
         <div
           className="h-1.5 rounded-full bg-gradient-to-r from-amber-400 to-slate-300"
           style={{ width: `${((currentStage + 1) / totalStages) * 100}%` }}
@@ -25,13 +32,13 @@ const StageProgress = ({ stages, currentStage }) => {
                 className={cx(
                   'h-2 w-2 rounded-full border',
                   isDone
-                    ? 'border-amber-300 bg-amber-300 shadow-[0_0_10px_rgba(56,189,248,0.45)]'
+                    ? 'border-amber-300 bg-amber-300 shadow-[0_0_8px_rgba(252,211,77,0.4)]'
                     : 'border-slate-700'
                 )}
               />
               <span
                 className={cx(
-                  'text-[0.5rem] uppercase tracking-[0.12em]',
+                  'text-[0.65rem] uppercase tracking-[0.10em]',
                   isDone ? 'text-amber-300' : 'text-slate-500'
                 )}
               >

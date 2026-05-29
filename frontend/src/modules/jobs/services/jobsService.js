@@ -41,6 +41,18 @@ export const getJobHistory = async (id) => {
   return res.json()
 }
 
+export const downloadJobPdf = async (id) => {
+  const res = await fetch(`${API_BASE_URL}/trabajos/${id}/pdf`, { headers: authHeaders() })
+  if (!res.ok) throw new Error('No se pudo generar el PDF')
+  const blob = await res.blob()
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `parte-trabajo-${id}.pdf`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
 export const searchJobs = async (q) => {
   const res = await fetch(`${API_BASE_URL}/trabajos/buscar-rapido?q=${encodeURIComponent(q)}`, {
     headers: authHeaders(),

@@ -5,6 +5,8 @@ import { useAuthSession } from '../../auth/hooks/useAuthSession'
 import { useRrhh } from '../hooks/useRrhh'
 import { cx } from '../../core/lib/cx'
 import { useIaContext } from '../../ia/lib/IaContext'
+import NominasAdminSection from './NominasAdminSection'
+import MisNominasSection from './MisNominasSection'
 
 // ── Estrategia de colores por estado ─────────────────────────────────────────
 const ESTADO_CONFIG = {
@@ -21,8 +23,7 @@ const getEstadoConfig = (estado) => ESTADO_CONFIG[estado] ?? ESTADO_CONFIG.pendi
 const cardBase = 'rounded-xl border border-cyan-900/50 bg-slate-900/65 p-4'
 const inputBase =
   'w-full rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 outline-none focus:border-sky-500 placeholder:text-slate-600'
-const labelBase =
-  'block text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-slate-500 mb-1'
+const labelBase = 'block text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 mb-1'
 
 // ── Utilidad: contar días laborables (L-V) entre dos fechas ───────────────────
 const contarDiasLaborables = (inicio, fin) => {
@@ -194,7 +195,7 @@ const RangeCalendar = ({ inicio, fin, onRangeChange }) => {
         {DIAS_SEMANA.map((d) => (
           <div
             key={d}
-            className="text-center text-[0.6rem] font-bold uppercase tracking-wider text-slate-600"
+            className="text-center text-xs font-bold uppercase tracking-wider text-slate-600"
           >
             {d}
           </div>
@@ -257,7 +258,7 @@ const ContadorDias = ({ inicio, fin, saldo }) => {
             >
               {diasSel}
             </p>
-            <p className="text-[0.6rem] uppercase tracking-wider text-slate-500">Días laborables</p>
+            <p className="text-xs uppercase tracking-wider text-slate-500">Días laborables</p>
           </div>
           {saldo && (
             <>
@@ -271,9 +272,7 @@ const ContadorDias = ({ inicio, fin, saldo }) => {
                 >
                   {restantes}
                 </p>
-                <p className="text-[0.6rem] uppercase tracking-wider text-slate-500">
-                  Días restantes
-                </p>
+                <p className="text-xs uppercase tracking-wider text-slate-500">Días restantes</p>
               </div>
             </>
           )}
@@ -288,25 +287,25 @@ const SaldoCard = ({ saldo }) => {
   if (!saldo) return null
   return (
     <div className="rounded-xl border border-sky-900/50 bg-sky-500/5 p-4">
-      <p className="text-[0.65rem] font-bold uppercase tracking-[0.2em] text-sky-400 mb-3">
+      <p className="text-xs font-bold uppercase tracking-[0.2em] text-sky-400 mb-3">
         Vacaciones {saldo.year}
       </p>
       <div className="grid grid-cols-4 gap-2 text-center">
         <div>
           <p className="text-2xl font-bold text-slate-100">{saldo.dias_disponibles}</p>
-          <p className="text-[0.6rem] text-slate-500 uppercase tracking-wider">Disponibles</p>
+          <p className="text-xs text-slate-500 uppercase tracking-wider">Disponibles</p>
         </div>
         <div>
           <p className="text-2xl font-bold text-slate-100">{saldo.dias_totales}</p>
-          <p className="text-[0.6rem] text-slate-500 uppercase tracking-wider">Totales</p>
+          <p className="text-xs text-slate-500 uppercase tracking-wider">Totales</p>
         </div>
         <div>
           <p className="text-2xl font-bold text-emerald-400">{saldo.dias_aprobados}</p>
-          <p className="text-[0.6rem] text-slate-500 uppercase tracking-wider">Aprobados</p>
+          <p className="text-xs text-slate-500 uppercase tracking-wider">Aprobados</p>
         </div>
         <div>
           <p className="text-2xl font-bold text-amber-400">{saldo.dias_pendientes}</p>
-          <p className="text-[0.6rem] text-slate-500 uppercase tracking-wider">Pendientes</p>
+          <p className="text-xs text-slate-500 uppercase tracking-wider">Pendientes</p>
         </div>
       </div>
     </div>
@@ -324,9 +323,9 @@ const SolicitudCard = ({ solicitud, onCancelar, onRevisar, isAdmin }) => {
         <div className="min-w-0">
           <p className="truncate text-sm font-bold text-slate-100">{solicitud.tipo_label}</p>
           {isAdmin && solicitud.operario_nombre && (
-            <p className="text-[0.68rem] text-slate-500">{solicitud.operario_nombre}</p>
+            <p className="text-xs text-slate-500">{solicitud.operario_nombre}</p>
           )}
-          <p className="text-[0.68rem] text-slate-400 mt-0.5">
+          <p className="text-xs text-slate-400 mt-0.5">
             {solicitud.fecha_inicio} → {solicitud.fecha_fin}
             <span className="ml-2 text-slate-500">
               ({dias} día{dias !== 1 ? 's' : ''})
@@ -335,7 +334,7 @@ const SolicitudCard = ({ solicitud, onCancelar, onRevisar, isAdmin }) => {
         </div>
         <span
           className={cx(
-            'shrink-0 rounded-md border px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-widest',
+            'shrink-0 rounded-md border px-2 py-0.5 text-xs font-bold uppercase tracking-widest',
             cfg.badge
           )}
         >
@@ -420,7 +419,7 @@ const NuevaSolicitudModal = ({ tipos, saldo, onClose, onSubmit, isSubmitting, er
               ))}
             </select>
             {tipoSeleccionado?.requiere_justificante && (
-              <p className="mt-1 text-[0.62rem] text-amber-400">
+              <p className="mt-1 text-xs text-amber-400">
                 Este tipo requiere justificante (podrás adjuntarlo después)
               </p>
             )}
@@ -601,7 +600,7 @@ const FiltroEstado = ({ filtro, onChange }) => (
         type="button"
         onClick={() => onChange(f)}
         className={cx(
-          'shrink-0 rounded-full border px-3 py-1 text-[0.62rem] font-bold uppercase tracking-widest transition',
+          'shrink-0 rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-widest transition',
           filtro === f
             ? 'border-sky-500 bg-sky-500/20 text-sky-300'
             : 'border-slate-700 bg-slate-800/40 text-slate-500 hover:border-slate-600 hover:text-slate-400'
@@ -678,10 +677,11 @@ const RrhhPage = () => {
       <div className="mx-auto w-full max-w-[720px] space-y-4 pb-5">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-slate-100">
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-300">RRHH</p>
+            <h1 className="text-3xl font-extrabold tracking-tight text-slate-100">
               {isAdmin ? 'Recursos Humanos' : 'Mis ausencias'}
             </h1>
-            <p className="text-xs text-slate-500">
+            <p className="mt-1 text-xs text-slate-500">
               {isAdmin
                 ? `${pendientes.length} pendiente${pendientes.length !== 1 ? 's' : ''} de revisión`
                 : 'Vacaciones y permisos'}
@@ -724,6 +724,15 @@ const RrhhPage = () => {
               onRevisar={setRevisandoId}
             />
           ))}
+
+        {/* ── Nóminas ────────────────────────────────────────────────────── */}
+        <div className="pt-4 border-t border-slate-700/50">
+          <h2 className="text-base font-bold tracking-tight text-slate-100 mb-4 flex items-center gap-2">
+            <i className="bx bxs-file-pdf text-rose-400" aria-hidden="true" />
+            Nóminas
+          </h2>
+          {isAdmin ? <NominasAdminSection /> : <MisNominasSection />}
+        </div>
       </div>
 
       {modalCrear && (
