@@ -83,4 +83,11 @@ export default defineConfig({
   optimizeDeps: {
     entries: ['src/**/*.{js,jsx}'],
   },
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: ['./src/tests/setup.js'],
+    include: ['src/**/*.test.{js,jsx}'],
+    exclude: ['node_modules'],
+  },
 });
