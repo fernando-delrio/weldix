@@ -18,86 +18,43 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
 gsap.registerPlugin(ScrollTrigger)
 
-// ---- Hero: stagger reveal al montar ----------------------------------------
+// ---- Hero: badge y hero-line gestionados por Framer Motion (WordReveal) ----
+// Solo animamos los elementos que NO tienen Framer Motion:
+//   hero-bar, hero-sub, hero-cta, hero-stats, hero-mockup.
+// Delay de 0.85s → el WordReveal (3 líneas, ~1.3s) ya tiene 2/3 completados
+// cuando la barra decorativa aparece, encadenando ambas librerías sin conflicto.
 
 const animateHero = () => {
   const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })
 
-  // Badge "Para talleres" - baja desde arriba
-  tl.from('[data-gsap="hero-badge"]', { y: -20, opacity: 0, duration: 0.6 })
-
-  // Headline - cada linea sube con stagger (como Apple splash)
-  tl.from(
-    '[data-gsap="hero-line"]',
-    {
-      y: 60,
-      opacity: 0,
-      duration: 0.7,
-      stagger: 0.12,
-      ease: 'power4.out',
-    },
-    '-=0.3'
-  )
-
-  // Linea decorativa amber crece de izquierda a derecha
+  // Linea decorativa amber — espera al word reveal parcial
   tl.from(
     '[data-gsap="hero-bar"]',
-    {
-      scaleX: 0,
-      transformOrigin: 'left center',
-      duration: 0.5,
-      ease: 'power2.out',
-    },
-    '-=0.4'
+    { scaleX: 0, transformOrigin: 'left center', duration: 0.5, ease: 'power2.out' },
+    0.85
   )
 
   // Subtitulo
-  tl.from('[data-gsap="hero-sub"]', { y: 20, opacity: 0, duration: 0.5 }, '-=0.3')
+  tl.from('[data-gsap="hero-sub"]', { y: 20, opacity: 0, duration: 0.5 }, '-=0.2')
 
   // Botones CTA
-  tl.from(
-    '[data-gsap="hero-cta"]',
-    {
-      y: 15,
-      opacity: 0,
-      duration: 0.5,
-      stagger: 0.1,
-    },
-    '-=0.25'
-  )
+  tl.from('[data-gsap="hero-cta"]', { y: 15, opacity: 0, duration: 0.5, stagger: 0.1 }, '-=0.25')
 
   // Stats grid
   tl.from('[data-gsap="hero-stats"]', { opacity: 0, duration: 0.4 }, '-=0.2')
 
-  // Mockup entra desde la derecha - empieza en paralelo con el headline
+  // Mockup entra desde la derecha en paralelo al word reveal
   tl.from(
     '[data-gsap="hero-mockup"]',
-    {
-      x: 60,
-      opacity: 0,
-      duration: 0.9,
-      ease: 'power3.out',
-    },
-    0.3
+    { x: 60, opacity: 0, duration: 0.9, ease: 'power3.out' },
+    0.4
   )
 
   return tl
 }
 
-// ---- Parallax del fondo grid (Apple-style profundidad) ---------------------
-
-const animateHeroParallax = () => {
-  gsap.to('[data-gsap="hero-grid"]', {
-    yPercent: -20,
-    ease: 'none',
-    scrollTrigger: {
-      trigger: '[data-gsap="hero-section"]',
-      start: 'top top',
-      end: 'bottom top',
-      scrub: true,
-    },
-  })
-}
+// Parallax eliminado — scrub:true aplicaba transforms que rompían
+// el position:fixed del navbar en todos los navegadores.
 
 // ---- Pain points: stagger de tarjetas --------------------------------------
 
@@ -135,21 +92,25 @@ const animateTrustMetrics = () => {
   })
 }
 
-// ---- Features: stagger up con delay escalonado -----------------------------
+// ---- Features: anima todas las tarjetas juntas cuando la sección entra -----
+// Usamos gsap.from sobre el selector completo (no batch) para garantizar que
+// todas las tarjetas —incluso las de la columna derecha— parten de opacity:0
+// y llegan a su estado natural. clearProps elimina los estilos inline de GSAP
+// tras la animación para que el hover funcione correctamente.
 
 const animateFeatures = () => {
-  ScrollTrigger.batch('[data-gsap="feature-card"]', {
-    onEnter: (els) => {
-      gsap.from(els, {
-        y: 50,
-        opacity: 0,
-        duration: 0.65,
-        stagger: 0.08,
-        ease: 'power3.out',
-      })
+  gsap.from('[data-gsap="feature-card"]', {
+    y: 40,
+    opacity: 0,
+    duration: 0.6,
+    stagger: 0.05,
+    ease: 'power3.out',
+    clearProps: 'all',
+    scrollTrigger: {
+      trigger: '#modulos',
+      start: 'top 78%',
+      once: true,
     },
-    once: true,
-    start: 'top 82%',
   })
 }
 
@@ -159,20 +120,18 @@ const animateFeatures = () => {
 // mientras baja por la pagina.
 
 const animateTimeline = () => {
-  gsap.fromTo(
-    '[data-gsap="timeline-progress"]',
-    { scaleX: 0, transformOrigin: 'left center' },
-    {
-      scaleX: 1,
-      ease: 'none',
-      scrollTrigger: {
-        trigger: '[data-gsap="timeline-section"]',
-        start: 'top 60%',
-        end: 'bottom 70%',
-        scrub: 1.2,
-      },
-    }
-  )
+  // La línea de progreso entra de golpe al scroll (sin scrub para no romper fixed)
+  gsap.from('[data-gsap="timeline-progress"]', {
+    scaleX: 0,
+    transformOrigin: 'left center',
+    duration: 1.2,
+    ease: 'power2.out',
+    scrollTrigger: {
+      trigger: '[data-gsap="timeline-section"]',
+      start: 'top 60%',
+      once: true,
+    },
+  })
 
   ScrollTrigger.batch('[data-gsap="timeline-step"]', {
     onEnter: (els) => {
@@ -304,7 +263,6 @@ export const useLandingAnimations = () => {
   useEffect(() => {
     ctx.current = gsap.context(() => {
       animateHero()
-      animateHeroParallax()
       animatePainCards()
       animateTrustMetrics()
       animateFeatures()
