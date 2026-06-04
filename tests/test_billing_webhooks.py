@@ -313,43 +313,43 @@ def test_billing_checkout_without_stripe_key_returns_503(workspace_client):
     """
     STRIPE_SECRET_KEY no configurado → 503 antes de llamar a Stripe.
 
-    _PLAN_TO_PRICE se construye al importar el módulo con los valores reales del .env
-    (vacíos en CI). Si "starter" mapea a None/vacío, el router devuelve 400 por plan
-    inválido antes de llegar al check de stripe_secret_key. Por eso también patcheamos
-    _PLAN_TO_PRICE para que el plan pase la validación y lleguemos al check de la key.
+    El modelo de precios es seat-based (base + por operario), sin planes fijos.
+    Solo es necesario parchear stripe_secret_key = None en los settings del router.
     """
     client, token, _, _ = workspace_client
 
     broken_settings = _mock_settings()
     broken_settings.stripe_secret_key = None
 
-    with patch(
-        "backend.features.billing.router._PLAN_TO_PRICE",
-        {"starter": "price_test", "pro": "price_pro_test"},
-    ), patch(_MOCK_ROUTER_SETTINGS, broken_settings):
+    with patch(_MOCK_ROUTER_SETTINGS, broken_settings):
         res = client.post(
             "/billing/checkout",
-            json={"plan": "starter"},
             headers=_auth_header(token),
         )
 
     assert res.status_code == 503
 
 
-def test_billing_checkout_with_invalid_plan_returns_400(workspace_client):
-    """Plan no válido ('enterprise' no existe) → 400 antes de llamar a Stripe."""
+def test_billing_checkout_without_price_ids_returns_503(workspace_client):
+    """
+    STRIPE_PRICE_BASE o STRIPE_PRICE_PER_SEAT no configurados → 503.
+
+    El modelo seat-based requiere dos price IDs en lugar de planes fijos.
+    Sin ellos el service lanza RuntimeError → 503 antes de llamar a Stripe.
+    """
     client, token, _, _ = workspace_client
 
     mock_s = _mock_settings()
+    mock_s.stripe_price_base = ""
+    mock_s.stripe_price_per_seat = ""
 
     with patch(_MOCK_ROUTER_SETTINGS, mock_s), patch(_MOCK_SETTINGS, mock_s):
         res = client.post(
             "/billing/checkout",
-            json={"plan": "enterprise"},
             headers=_auth_header(token),
         )
 
-    assert res.status_code == 400
+    assert res.status_code == 503
 
 
 def test_billing_portal_without_stripe_customer_returns_400(workspace_client):
