@@ -26,11 +26,12 @@ const authGet = async (path) => {
 }
 
 export const billingService = {
-  // Genera URL de Stripe Checkout para el plan elegido.
+  // Genera URL de Stripe Checkout.
+  // El backend calcula el precio según los operarios actuales del taller.
   // El llamador debe redirigir window.location.href a checkout_url.
-  getCheckoutUrl: async (plan) => {
-    const data = await authPost('/billing/checkout', { plan })
-    return data.checkout_url
+  getCheckoutUrl: async () => {
+    const data = await authPost('/billing/checkout', {})
+    return data // { checkout_url, num_seats, precio_total }
   },
 
   // Genera URL del Customer Portal de Stripe (ver facturas, cancelar, cambiar tarjeta).

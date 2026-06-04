@@ -1,20 +1,14 @@
 import AppShell from '../../core/components/AppShell'
 import PanelCard from '../../core/components/PanelCard'
 import WeldixButton from '../../core/components/WeldixButton'
+import PageHeader from '../../core/components/PageHeader'
+import EmptyState from '../../core/components/EmptyState'
+import { SkeletonList } from '../../core/components/Skeleton'
 import { useJobs } from '../hooks/useJobs'
 import JobCard from './JobCard'
 import JobStatusFilter from './JobStatusFilter'
 
-const loadingState = ({ isLoading }) =>
-  isLoading && (
-    <PanelCard>
-      <p className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-400">
-        Cargando trabajos...
-      </p>
-      <div className="mt-3 h-2 w-full animate-pulse rounded bg-slate-800" />
-      <div className="mt-2 h-2 w-2/3 animate-pulse rounded bg-slate-800" />
-    </PanelCard>
-  )
+const loadingState = ({ isLoading }) => isLoading && <SkeletonList rows={5} />
 
 const errorState = ({ isLoading, error, refresh }) =>
   !isLoading &&
@@ -31,9 +25,17 @@ const emptyState = ({ isLoading, error, filteredJobs, activeFilter }) =>
   !isLoading &&
   !error &&
   filteredJobs.length === 0 && (
-    <PanelCard>
-      <p className="text-sm text-slate-400">No hay trabajos con estado "{activeFilter}".</p>
-    </PanelCard>
+    <EmptyState
+      icon="bx-list-check"
+      title={
+        activeFilter === 'Todos' ? 'Sin órdenes de trabajo' : `Sin trabajos en "${activeFilter}"`
+      }
+      description={
+        activeFilter === 'Todos'
+          ? 'Crea la primera OT desde el panel de administración.'
+          : 'Cambia el filtro para ver trabajos en otros estados.'
+      }
+    />
   )
 
 const jobsList = ({ isLoading, error, filteredJobs }) =>
@@ -54,12 +56,7 @@ const JobsPage = () => {
   return (
     <AppShell>
       <div className="mx-auto w-full max-w-[680px] space-y-4 pb-5">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-300">Trabajos</p>
-          <h1 className="text-3xl font-extrabold tracking-tight text-slate-100">
-            Órdenes de trabajo
-          </h1>
-        </div>
+        <PageHeader label="Trabajos" title="Órdenes de trabajo" />
 
         <JobStatusFilter activeFilter={activeFilter} onFilterChange={setActiveFilter} />
 

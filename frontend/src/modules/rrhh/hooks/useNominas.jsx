@@ -51,7 +51,7 @@ export const useNominasAdmin = ({ operarioId, year } = {}) => {
   const handleDelete = async (nominaId) => {
     try {
       await deleteNomina(nominaId)
-      setNominas((prev) => prev.filter((n) => n.id !== nominaId))
+      setNominas((prev) => prev.filter((nomina) => nomina.id !== nominaId))
     } catch (err) {
       setError(err.message)
     }

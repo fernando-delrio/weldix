@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import AppShell from '../../core/components/AppShell'
 import OnboardingWizard from '../../core/components/OnboardingWizard'
 import PanelCard from '../../core/components/PanelCard'
+import WeldixButton from '../../core/components/WeldixButton'
 import useOnboarding from '../../core/hooks/useOnboarding'
 import { useAuthSession } from '../../auth/hooks/useAuthSession'
 import { useWorkerDashboard } from '../hooks/useWorkerDashboard'
@@ -53,25 +54,17 @@ const createdFeedbackBanner = ({ createdFeedback }) =>
 
 const adminNewJobButton = ({ isAdmin, onOpen }) =>
   isAdmin && (
-    <button
-      type="button"
-      onClick={onOpen}
-      className="shrink-0 rounded-xl border border-amber-500/50 bg-amber-500/15 px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-amber-400 transition hover:border-amber-400/70 hover:bg-amber-500/25"
-    >
+    <WeldixButton variant="warning" size="sm" onClick={onOpen}>
       + Nuevo trabajo
-    </button>
+    </WeldixButton>
   )
 
 const startByOrtButton = ({ isAdmin, hasActiveJob, onOpen }) =>
   !isAdmin &&
   !hasActiveJob && (
-    <button
-      type="button"
-      onClick={onOpen}
-      className="w-full rounded-xl border border-amber-500/50 bg-amber-500/10 py-3 text-xs font-bold uppercase tracking-[0.12em] text-amber-300 transition hover:bg-amber-500/20"
-    >
+    <WeldixButton variant="warning" size="lg" onClick={onOpen} className="w-full">
       + Iniciar trabajo por OT
-    </button>
+    </WeldixButton>
   )
 
 const activeJobSection = ({ activeJob, onComplete, onOpenMaterialModal }) =>
@@ -188,7 +181,7 @@ const WorkerDashboardPage = () => {
                     {dashboard.greeting.operatorName
                       .split(' ')
                       .slice(0, 2)
-                      .map((n) => n[0])
+                      .map((palabra) => palabra[0])
                       .join('')
                       .toUpperCase()}
                   </div>
@@ -196,7 +189,7 @@ const WorkerDashboardPage = () => {
                     <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-300">
                       {dashboard.greeting.greetingLabel}
                     </p>
-                    <h1 className="mt-0.5 text-3xl font-extrabold tracking-tight text-slate-100">
+                    <h1 className="mt-0.5 text-2xl font-extrabold tracking-tight">
                       {dashboard.greeting.operatorName}
                     </h1>
                     <p className="mt-1 text-sm text-slate-400">

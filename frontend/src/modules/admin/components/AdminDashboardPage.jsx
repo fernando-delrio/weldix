@@ -9,17 +9,21 @@ import { useAdminDashboard } from '../hooks/useAdminDashboard'
 import AdminUserRow from './AdminUserRow'
 import AdminChartsSection from './AdminChartsSection'
 import CreateUserModal from './CreateUserModal'
+import PageHeader from '../../core/components/PageHeader'
+import SectionHeader from '../../dashboard/components/SectionHeader'
+import { SkeletonCard, SkeletonMetricStrip } from '../../core/components/Skeleton'
 
 // ── Guards de estado ─────────────────────────────────────────────────────────
 const loadingState = ({ isLoading }) =>
   isLoading && (
-    <PanelCard>
-      <p className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-400">
-        Cargando panel...
-      </p>
-      <div className="mt-3 h-2 w-full animate-pulse rounded bg-slate-800" />
-      <div className="mt-2 h-2 w-2/3 animate-pulse rounded bg-slate-800" />
-    </PanelCard>
+    <div className="space-y-4">
+      <SkeletonMetricStrip />
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <SkeletonCard rows={4} />
+        <SkeletonCard rows={4} />
+      </div>
+      <SkeletonCard rows={4} />
+    </div>
   )
 
 const errorState = ({ isLoading, error, refresh }) =>
@@ -39,20 +43,6 @@ const feedbackBanner = ({ feedback }) =>
       <p className="text-sm font-semibold text-emerald-300">{feedback}</p>
     </div>
   )
-
-// ── Sección usuarios ─────────────────────────────────────────────────────────
-const sectionHeader = ({ title, action }) => (
-  <div className="flex items-center justify-between">
-    <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-300">{title}</p>
-    {action}
-  </div>
-)
-
-const newUserButton = ({ onClick }) => (
-  <WeldixButton variant="success" size="sm" onClick={onClick}>
-    + Crear usuario
-  </WeldixButton>
-)
 
 // ── Componente principal ─────────────────────────────────────────────────────
 const AdminDashboardPage = () => {
@@ -81,18 +71,15 @@ const AdminDashboardPage = () => {
   return (
     <AppShell>
       <div className="mx-auto w-full max-w-[1100px] space-y-5 pb-5">
-        {/* Cabecera */}
-        <div className="flex items-end justify-between">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-300">Admin</p>
-            <h1 className="text-3xl font-extrabold tracking-tight text-slate-100">
-              Administración
-            </h1>
-          </div>
-          <WeldixButton variant="warning" size="sm" onClick={() => setShowNewJobModal(true)}>
-            + Nuevo trabajo
-          </WeldixButton>
-        </div>
+        <PageHeader
+          label="Admin"
+          title="Administración"
+          action={
+            <WeldixButton variant="warning" size="sm" onClick={() => setShowNewJobModal(true)}>
+              + Nuevo trabajo
+            </WeldixButton>
+          }
+        />
 
         {loadingState({ isLoading })}
         {errorState({ isLoading, error, refresh })}
@@ -105,10 +92,14 @@ const AdminDashboardPage = () => {
             <FichajesAdminSection operarios={dashboard.operarios} onRefresh={refresh} />
 
             <section className="space-y-3">
-              {sectionHeader({
-                title: 'Usuarios',
-                action: newUserButton({ onClick: () => setShowUserModal(true) }),
-              })}
+              <SectionHeader
+                title="Usuarios"
+                action={
+                  <WeldixButton variant="success" size="sm" onClick={() => setShowUserModal(true)}>
+                    + Crear usuario
+                  </WeldixButton>
+                }
+              />
               {dashboard.users.map((user) => (
                 <AdminUserRow key={user.id} user={user} />
               ))}

@@ -27,7 +27,7 @@ const axisStyle = { fill: '#64748b', fontSize: 11 }
 const gridStyle = { stroke: 'rgba(148, 163, 184, 0.2)' }
 
 const chartLabel = (title) => (
-  <p className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-amber-300">{title}</p>
+  <p className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-slate-400">{title}</p>
 )
 
 // ── Donut: trabajos por estado ────────────────────────────────────────────────
@@ -148,7 +148,7 @@ const AdminChartsSection = ({ dashboard }) => {
 
   return (
     <section className="space-y-3">
-      <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-300">Análisis</p>
+      <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">Análisis</p>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <DonutEstado data={estadoData} />
         <BarCargaOperario data={cargaData} />

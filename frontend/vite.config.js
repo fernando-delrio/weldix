@@ -79,9 +79,11 @@ export default defineConfig({
   server: {
     port: 5173,
     strictPort: false,
+    open: true,
   },
   optimizeDeps: {
     entries: ['src/**/*.{js,jsx}'],
+    exclude: ['msw'],
   },
   test: {
     environment: 'jsdom',

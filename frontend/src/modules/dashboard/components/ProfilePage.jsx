@@ -1,4 +1,7 @@
 import AppShell from '../../core/components/AppShell'
+import PageHeader from '../../core/components/PageHeader'
+import PanelCard from '../../core/components/PanelCard'
+import WeldixButton from '../../core/components/WeldixButton'
 import { useAuthSession } from '../../auth/hooks/useAuthSession'
 import FichajeCalendar from '../../fichaje/components/FichajeCalendar'
 import { useProfile } from '../hooks/useProfile'
@@ -10,18 +13,20 @@ const fieldShell =
 const inputBase =
   'w-full bg-transparent px-3.5 text-[0.95rem] text-slate-100 outline-none placeholder:text-slate-500'
 const labelBase = 'mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-400'
-const cardBase = 'rounded-xl border border-slate-900/50 bg-slate-900/65 p-4'
 
 const feedbackOk = ({ msg }) => msg && <p className="mt-2 text-sm text-emerald-400">{msg}</p>
 const feedbackErr = ({ msg }) => msg && <p className="mt-2 text-sm text-rose-400">{msg}</p>
 const submitBtn = ({ label, loading }) => (
-  <button
+  <WeldixButton
     type="submit"
-    disabled={loading}
-    className="mt-3 h-10 w-full rounded-xl bg-gradient-to-r from-amber-500 to-blue-600 text-sm font-bold tracking-[0.08em] text-white transition hover:from-amber-400 hover:to-blue-500 disabled:opacity-60"
+    variant="warning"
+    size="md"
+    isLoading={loading}
+    loadingLabel="Guardando…"
+    className="mt-3 w-full"
   >
-    {loading ? 'Guardando...' : label}
-  </button>
+    {label}
+  </WeldixButton>
 )
 
 const ProfilePage = () => {
@@ -32,14 +37,13 @@ const ProfilePage = () => {
   return (
     <AppShell>
       <div className="mx-auto w-full max-w-[520px] space-y-3">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-300">Cuenta</p>
-          <h1 className="text-2xl font-extrabold tracking-tight text-slate-100">Perfil</h1>
-        </div>
+        <PageHeader label="Cuenta" title="Perfil" />
 
         {/* Info de cuenta — solo lectura */}
-        <section className={cardBase}>
-          <h2 className="text-lg font-bold tracking-tight text-slate-100">Mi cuenta</h2>
+        <PanelCard>
+          <h2 className="mb-3 text-xs font-bold uppercase tracking-[0.16em] text-slate-400">
+            Mi cuenta
+          </h2>
           <div className="mt-2 grid gap-2">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
@@ -54,11 +58,13 @@ const ProfilePage = () => {
               <p className="mt-0.5 text-sm text-slate-300">{roleLabel(state.profile?.role)}</p>
             </div>
           </div>
-        </section>
+        </PanelCard>
 
         {/* Editar nombre */}
-        <section className={cardBase}>
-          <h2 className="text-lg font-bold tracking-tight text-slate-100">Datos personales</h2>
+        <PanelCard>
+          <h2 className="mb-3 text-xs font-bold uppercase tracking-[0.16em] text-slate-400">
+            Datos personales
+          </h2>
           <form onSubmit={state.submitProfile} className="mt-1">
             <label className={labelBase}>Nombre completo</label>
             <div className={fieldShell}>
@@ -75,21 +81,23 @@ const ProfilePage = () => {
             {feedbackErr({ msg: state.profileError })}
             {submitBtn({ label: 'Guardar nombre', loading: state.isSavingProfile })}
           </form>
-        </section>
+        </PanelCard>
 
         {/* Calendario de fichajes — solo operarios */}
         {isOperario && (
-          <section>
-            <h2 className="mb-3 text-xs font-bold uppercase tracking-[0.16em] text-slate-400">
+          <div>
+            <h2 className="mb-2.5 text-xs font-bold uppercase tracking-[0.16em] text-slate-400">
               Mis jornadas
             </h2>
             <FichajeCalendar />
-          </section>
+          </div>
         )}
 
         {/* Cambiar contraseña */}
-        <section className={cardBase}>
-          <h2 className="text-lg font-bold tracking-tight text-slate-100">Cambiar contraseña</h2>
+        <PanelCard>
+          <h2 className="mb-3 text-xs font-bold uppercase tracking-[0.16em] text-slate-400">
+            Cambiar contraseña
+          </h2>
           <form onSubmit={state.submitPassword} className="mt-1">
             <label className={labelBase}>Contraseña actual</label>
             <div className={fieldShell}>
@@ -131,7 +139,7 @@ const ProfilePage = () => {
             {feedbackErr({ msg: state.passwordError })}
             {submitBtn({ label: 'Cambiar contraseña', loading: state.isSavingPassword })}
           </form>
-        </section>
+        </PanelCard>
       </div>
     </AppShell>
   )

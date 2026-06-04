@@ -49,7 +49,7 @@ export const useEquipos = () => {
     setError(null)
     try {
       const actualizado = await updateEquipoEstado(equipoId, estado)
-      setEquipos((prev) => prev.map((e) => (e.id === equipoId ? actualizado : e)))
+      setEquipos((prev) => prev.map((equipo) => (equipo.id === equipoId ? actualizado : equipo)))
     } catch (err) {
       setError(err.message)
     }
@@ -60,7 +60,7 @@ export const useEquipos = () => {
     setError(null)
     try {
       const actualizado = await updateEquipo(equipoId, { ultimo_mantenimiento: hoy })
-      setEquipos((prev) => prev.map((e) => (e.id === equipoId ? actualizado : e)))
+      setEquipos((prev) => prev.map((equipo) => (equipo.id === equipoId ? actualizado : equipo)))
     } catch (err) {
       setError(err.message)
     }
@@ -70,13 +70,13 @@ export const useEquipos = () => {
     setError(null)
     try {
       await deleteEquipo(equipoId)
-      setEquipos((prev) => prev.filter((e) => e.id !== equipoId))
+      setEquipos((prev) => prev.filter((equipo) => equipo.id !== equipoId))
     } catch (err) {
       setError(err.message)
     }
   }, [])
 
-  const equiposConAlerta = equipos.filter((e) => e.alerta_mantenimiento)
+  const equiposConAlerta = equipos.filter((equipo) => equipo.alerta_mantenimiento)
 
   return {
     equipos,

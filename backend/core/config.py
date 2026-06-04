@@ -44,9 +44,10 @@ class Settings(BaseSettings):
     stripe_secret_key: str | None = None
     # Webhook secret — obtener en https://dashboard.stripe.com/webhooks tras crear el endpoint
     stripe_webhook_secret: str | None = None
-    # IDs de precios en Stripe (crear en Products → Add product)
-    stripe_price_starter: str | None = None  # ej: price_1ABC...
-    stripe_price_pro: str | None = None  # ej: price_1DEF...
+    # Modelo de precios: base fija + por operario
+    # Crear dos productos en Stripe → Products → Add product
+    stripe_price_base: str | None = None      # precio base fijo mensual (19€/mes)
+    stripe_price_per_seat: str | None = None  # precio por operario/mes (5€/operario/mes)
     # URL del frontend para redirigir tras checkout
     frontend_url: str = "http://localhost:5174"
 

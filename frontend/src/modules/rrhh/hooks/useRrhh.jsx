@@ -69,7 +69,9 @@ export const useRrhh = ({ isAdmin = false } = {}) => {
       try {
         await cancelarSolicitud(solicitudId)
         setSolicitudes((prev) =>
-          prev.map((s) => (s.id === solicitudId ? { ...s, estado: 'cancelada' } : s))
+          prev.map((solicitud) =>
+            solicitud.id === solicitudId ? { ...solicitud, estado: 'cancelada' } : solicitud
+          )
         )
         if (!isAdmin) {
           const saldoActualizado = await getMiSaldo()
@@ -87,7 +89,9 @@ export const useRrhh = ({ isAdmin = false } = {}) => {
     setError(null)
     try {
       const actualizada = await revisarSolicitud(solicitudId, { estado, comentario_admin })
-      setSolicitudes((prev) => prev.map((s) => (s.id === solicitudId ? actualizada : s)))
+      setSolicitudes((prev) =>
+        prev.map((solicitud) => (solicitud.id === solicitudId ? actualizada : solicitud))
+      )
       setRevisandoId(null)
     } catch (err) {
       setError(err.message)
@@ -96,7 +100,7 @@ export const useRrhh = ({ isAdmin = false } = {}) => {
     }
   }, [])
 
-  const pendientes = solicitudes.filter((s) => s.estado === 'pendiente')
+  const pendientes = solicitudes.filter((solicitud) => solicitud.estado === 'pendiente')
 
   return {
     saldo,

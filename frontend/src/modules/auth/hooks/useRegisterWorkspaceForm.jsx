@@ -5,7 +5,7 @@ import { useAuthSession } from './useAuthSession'
 
 const TOKEN_KEY = 'weldix_access_token'
 
-const isEmptyField = (v) => !v || v.trim().length === 0
+const isEmptyField = (valor) => !valor || valor.trim().length === 0
 
 const validationError = (form) => {
   if (isEmptyField(form.nombre_taller)) return 'El nombre del taller es obligatorio'
