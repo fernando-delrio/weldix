@@ -51,6 +51,19 @@ export const deleteMaterial = async (id) => {
   if (!res.ok) throw new Error('Error al eliminar el material')
 }
 
+export const consumeMaterial = async (id, cantidad) => {
+  const res = await fetch(`${API_BASE_URL}/stock/${id}/consume`, {
+    method: 'POST',
+    headers: jsonHeaders(),
+    body: JSON.stringify({ consumed: cantidad }),
+  })
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}))
+    throw new Error(body.detail ?? 'Stock insuficiente')
+  }
+  return res.json()
+}
+
 export const restockMaterial = async (id, cantidad) => {
   const res = await fetch(`${API_BASE_URL}/stock/${id}/restock`, {
     method: 'POST',

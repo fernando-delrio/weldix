@@ -19,10 +19,17 @@ from backend.features.auth.model import User
 from backend.features.fichaje.model import Fichaje
 
 from .model import (
+    AccidenteLaboral,
+    Certificado,
     ConfiguracionLaboral,
     DocumentoJustificante,
+    EpiEntrega,
     Festivo,
+    PermisoTrabajoEspecial,
+    ReconocimientoMedico,
     SolicitudAusencia,
+    SolicitudCambioTurno,
+    TurnoAsignado,
 )
 from .schemas import (
     TIPOS_REQUIEREN_JUSTIFICANTE,
@@ -539,3 +546,553 @@ def get_informe_mensual(db: Session, year: int, month: int) -> InformeMensualRes
         total_operarios=len(operarios),
         operarios=informe_operarios,
     )
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# RRHH-1 — EPIs
+# ══════════════════════════════════════════════════════════════════════════════
+
+
+def get_epis(db: Session, tenant_id: int | None, operario_id: int | None = None) -> list:
+    query = db.query(EpiEntrega).filter(EpiEntrega.tenant_id == tenant_id)
+    if operario_id:
+        query = query.filter(EpiEntrega.operario_id == operario_id)
+    return query.order_by(EpiEntrega.fecha_entrega.desc()).all()
+
+
+def get_epis_proximos_caducar(db: Session, tenant_id: int | None, dias: int = 30) -> list:
+    from datetime import timedelta
+    limite = date.today() + timedelta(days=dias)
+    return (
+        db.query(EpiEntrega)
+        .filter(
+            EpiEntrega.tenant_id == tenant_id,
+            EpiEntrega.estado == "activo",
+            EpiEntrega.fecha_caducidad.isnot(None),
+            EpiEntrega.fecha_caducidad <= limite,
+        )
+        .order_by(EpiEntrega.fecha_caducidad.asc())
+        .all()
+    )
+
+
+def crear_epi(db: Session, tenant_id: int | None, registrado_por_id: int, data) -> EpiEntrega:
+    epi = EpiEntrega(
+        tenant_id=tenant_id,
+        operario_id=data.operario_id,
+        registrado_por_id=registrado_por_id,
+        tipo_epi=data.tipo_epi,
+        descripcion=data.descripcion,
+        talla=data.talla,
+        cantidad=data.cantidad,
+        fecha_entrega=data.fecha_entrega,
+        fecha_caducidad=data.fecha_caducidad,
+        estado="activo",
+    )
+    db.add(epi)
+    db.commit()
+    db.refresh(epi)
+    return epi
+
+
+def eliminar_epi(db: Session, epi_id: int) -> None:
+    epi = db.query(EpiEntrega).filter(EpiEntrega.id == epi_id).first()
+    if not epi:
+        raise ValueError("EPI no encontrado")
+    db.delete(epi)
+    db.commit()
+
+
+def actualizar_estado_epi(db: Session, epi_id: int, nuevo_estado: str) -> EpiEntrega:
+    epi = db.query(EpiEntrega).filter(EpiEntrega.id == epi_id).first()
+    if not epi:
+        raise ValueError("EPI no encontrado")
+    if nuevo_estado not in {"activo", "repuesto", "baja"}:
+        raise ValueError("Estado no válido")
+    epi.estado = nuevo_estado
+    db.commit()
+    db.refresh(epi)
+    return epi
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# RRHH-1 — Certificados
+# ══════════════════════════════════════════════════════════════════════════════
+
+
+def get_certificados(db: Session, tenant_id: int | None, operario_id: int | None = None) -> list:
+    query = db.query(Certificado).filter(Certificado.tenant_id == tenant_id)
+    if operario_id:
+        query = query.filter(Certificado.operario_id == operario_id)
+    return query.order_by(Certificado.fecha_caducidad.asc().nullslast()).all()
+
+
+def get_certificados_proximos_caducar(db: Session, tenant_id: int | None, dias: int = 60) -> list:
+    from datetime import timedelta
+    limite = date.today() + timedelta(days=dias)
+    return (
+        db.query(Certificado)
+        .filter(
+            Certificado.tenant_id == tenant_id,
+            Certificado.estado == "vigente",
+            Certificado.fecha_caducidad.isnot(None),
+            Certificado.fecha_caducidad <= limite,
+        )
+        .order_by(Certificado.fecha_caducidad.asc())
+        .all()
+    )
+
+
+def crear_certificado(
+    db: Session, tenant_id: int | None, registrado_por_id: int,
+    data, archivo_ruta: str | None = None, archivo_nombre: str | None = None,
+) -> Certificado:
+    cert = Certificado(
+        tenant_id=tenant_id,
+        operario_id=data.operario_id,
+        registrado_por_id=registrado_por_id,
+        tipo=data.tipo,
+        descripcion=data.descripcion,
+        entidad_certificadora=data.entidad_certificadora,
+        fecha_emision=data.fecha_emision,
+        fecha_caducidad=data.fecha_caducidad,
+        estado="vigente",
+        archivo_ruta=archivo_ruta,
+        archivo_nombre=archivo_nombre,
+    )
+    db.add(cert)
+    db.commit()
+    db.refresh(cert)
+    return cert
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# RRHH-1 — Reconocimientos médicos
+# ══════════════════════════════════════════════════════════════════════════════
+
+
+def get_reconocimientos(db: Session, tenant_id: int | None, operario_id: int | None = None) -> list:
+    query = db.query(ReconocimientoMedico).filter(ReconocimientoMedico.tenant_id == tenant_id)
+    if operario_id:
+        query = query.filter(ReconocimientoMedico.operario_id == operario_id)
+    return query.order_by(ReconocimientoMedico.fecha_realizado.desc()).all()
+
+
+def crear_reconocimiento(
+    db: Session, tenant_id: int | None, registrado_por_id: int,
+    data, archivo_ruta: str | None = None, archivo_nombre: str | None = None,
+) -> ReconocimientoMedico:
+    rec = ReconocimientoMedico(
+        tenant_id=tenant_id,
+        operario_id=data.operario_id,
+        registrado_por_id=registrado_por_id,
+        fecha_realizado=data.fecha_realizado,
+        fecha_proximo=data.fecha_proximo,
+        resultado=data.resultado,
+        restricciones=data.restricciones,
+        observaciones=data.observaciones,
+        archivo_ruta=archivo_ruta,
+        archivo_nombre=archivo_nombre,
+    )
+    db.add(rec)
+    db.commit()
+    db.refresh(rec)
+    return rec
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# RRHH-1 — Cálculo de horas extra, nocturnas y festivas
+# ══════════════════════════════════════════════════════════════════════════════
+
+
+def get_resumen_horas(db: Session, tenant_id: int | None, operario_id: int, mes: str):
+    """
+    Calcula horas ordinarias, extra, nocturnas y festivas de un operario
+    en el mes indicado (formato 'YYYY-MM').
+
+    Horas extra   = horas trabajadas - horas_jornada configuradas
+    Horas nocturnas = tramos trabajados entre 22:00 y 06:00
+    Horas festivas  = jornadas que caen en día festivo nacional
+    """
+    year_str, month_str = mes.split("-")
+    anio = int(year_str)
+    mes_num = int(month_str)
+
+    fichajes = (
+        db.query(Fichaje)
+        .filter(
+            Fichaje.tenant_id == tenant_id,
+            Fichaje.operario_id == operario_id,
+            Fichaje.fin.isnot(None),
+            extract("year", Fichaje.inicio) == anio,
+            extract("month", Fichaje.inicio) == mes_num,
+        )
+        .all()
+    )
+
+    config = (
+        db.query(ConfiguracionLaboral)
+        .filter(ConfiguracionLaboral.operario_id == operario_id)
+        .first()
+    )
+    horas_jornada = config.horas_jornada if config else 8.0
+
+    festivos_del_mes = {
+        f.fecha
+        for f in db.query(Festivo)
+        .filter(Festivo.year == anio)
+        .all()
+    }
+
+    operario = db.query(User).filter(User.id == operario_id).first()
+
+    horas_total = 0.0
+    horas_nocturnas = 0.0
+    horas_festivas = 0.0
+    horas_por_dia: dict[date, float] = {}
+
+    for fichaje in fichajes:
+        if not fichaje.horas:
+            continue
+        horas_total += fichaje.horas
+
+        dia = fichaje.inicio.date()
+        horas_por_dia[dia] = horas_por_dia.get(dia, 0.0) + fichaje.horas
+
+        # Calcular tramos nocturnos (22:00–06:00)
+        inicio_dt = fichaje.inicio
+        fin_dt = fichaje.fin
+        if inicio_dt.tzinfo is None:
+            inicio_dt = inicio_dt.replace(tzinfo=timezone.utc)
+            fin_dt = fin_dt.replace(tzinfo=timezone.utc)
+
+        horas_nocturnas += _calcular_horas_nocturnas(inicio_dt, fin_dt)
+
+        if dia in festivos_del_mes:
+            horas_festivas += fichaje.horas
+
+    # Horas ordinarias por día = min(horas_trabajadas_ese_dia, horas_jornada)
+    horas_ordinarias = sum(min(horas, horas_jornada) for horas in horas_por_dia.values())
+    horas_extra = max(0.0, horas_total - horas_ordinarias)
+
+    return {
+        "operario_id": operario_id,
+        "operario_nombre": operario.full_name if operario else "—",
+        "mes": mes,
+        "horas_ordinarias": round(horas_ordinarias, 2),
+        "horas_extra": round(horas_extra, 2),
+        "horas_nocturnas": round(horas_nocturnas, 2),
+        "horas_festivas": round(horas_festivas, 2),
+        "horas_total": round(horas_total, 2),
+        "fichajes_count": len(fichajes),
+    }
+
+
+def _calcular_horas_nocturnas(inicio, fin) -> float:
+    """Suma los minutos trabajados en tramo nocturno (22:00–06:00) y devuelve horas."""
+    from datetime import timedelta
+    NOCTURNO_INICIO = 22
+    NOCTURNO_FIN = 6
+
+    total_minutos = 0
+    cursor = inicio
+    while cursor < fin:
+        hora = cursor.hour
+        es_nocturno = hora >= NOCTURNO_INICIO or hora < NOCTURNO_FIN
+        siguiente = cursor + timedelta(minutes=1)
+        if siguiente > fin:
+            siguiente = fin
+        if es_nocturno:
+            total_minutos += (siguiente - cursor).seconds // 60
+        cursor = siguiente
+        if cursor >= fin:
+            break
+
+    return total_minutos / 60.0
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# RRHH-2 — Turnos
+# ══════════════════════════════════════════════════════════════════════════════
+
+
+def get_turnos_semana(
+    db: Session,
+    tenant_id: int | None,
+    fecha_inicio: date,
+    fecha_fin: date,
+    operario_id: int | None = None,
+) -> list:
+    q = db.query(TurnoAsignado).filter(
+        TurnoAsignado.tenant_id == tenant_id,
+        TurnoAsignado.fecha >= fecha_inicio,
+        TurnoAsignado.fecha <= fecha_fin,
+    )
+    if operario_id:
+        q = q.filter(TurnoAsignado.operario_id == operario_id)
+    return q.order_by(TurnoAsignado.fecha.asc(), TurnoAsignado.operario_id.asc()).all()
+
+
+def crear_turno_bulk(db: Session, tenant_id: int | None, creado_por_id: int, turnos_data: list) -> list:
+    creados = []
+    for turno_data in turnos_data:
+        # Si ya existe un turno para ese operario y fecha, lo actualiza
+        existente = (
+            db.query(TurnoAsignado)
+            .filter(
+                TurnoAsignado.tenant_id == tenant_id,
+                TurnoAsignado.operario_id == turno_data.operario_id,
+                TurnoAsignado.fecha == turno_data.fecha,
+            )
+            .first()
+        )
+        if existente:
+            existente.turno = turno_data.turno
+            existente.nota = turno_data.nota
+            creados.append(existente)
+        else:
+            nuevo = TurnoAsignado(
+                tenant_id=tenant_id,
+                operario_id=turno_data.operario_id,
+                creado_por_id=creado_por_id,
+                fecha=turno_data.fecha,
+                turno=turno_data.turno,
+                nota=turno_data.nota,
+            )
+            db.add(nuevo)
+            creados.append(nuevo)
+    db.commit()
+    for turno in creados:
+        db.refresh(turno)
+    return creados
+
+
+def eliminar_turno(db: Session, turno_id: int, tenant_id: int | None) -> None:
+    turno = (
+        db.query(TurnoAsignado)
+        .filter(TurnoAsignado.id == turno_id, TurnoAsignado.tenant_id == tenant_id)
+        .first()
+    )
+    if not turno:
+        raise ValueError("Turno no encontrado")
+    db.delete(turno)
+    db.commit()
+
+
+def solicitar_cambio_turno(db: Session, tenant_id: int | None, solicitante_id: int, data) -> SolicitudCambioTurno:
+    solicitud = SolicitudCambioTurno(
+        tenant_id=tenant_id,
+        solicitante_id=solicitante_id,
+        receptor_id=data.receptor_id,
+        turno_cedido_id=data.turno_cedido_id,
+        turno_recibido_id=data.turno_recibido_id,
+        motivo=data.motivo,
+        estado="pendiente",
+    )
+    db.add(solicitud)
+    db.commit()
+    db.refresh(solicitud)
+    return solicitud
+
+
+def get_solicitudes_cambio_turno(db: Session, tenant_id: int | None) -> list:
+    return (
+        db.query(SolicitudCambioTurno)
+        .filter(SolicitudCambioTurno.tenant_id == tenant_id)
+        .order_by(SolicitudCambioTurno.created_at.desc())
+        .all()
+    )
+
+
+def revisar_cambio_turno(
+    db: Session, solicitud_id: int, aprobado_por_id: int, data
+) -> SolicitudCambioTurno:
+    solicitud = db.query(SolicitudCambioTurno).filter(SolicitudCambioTurno.id == solicitud_id).first()
+    if not solicitud:
+        raise ValueError("Solicitud no encontrada")
+    if solicitud.estado != "pendiente":
+        raise ValueError("Esta solicitud ya ha sido revisada")
+
+    solicitud.estado = data.estado
+    solicitud.aprobado_por_id = aprobado_por_id
+    solicitud.aprobado_en = datetime.now(timezone.utc)
+    solicitud.comentario_admin = data.comentario_admin
+
+    # Si se aprueba, intercambiar los turnos reales
+    if data.estado == "aprobada":
+        turno_a = solicitud.turno_cedido
+        turno_b = solicitud.turno_recibido
+        if turno_a and turno_b:
+            turno_a.operario_id, turno_b.operario_id = turno_b.operario_id, turno_a.operario_id
+
+    db.commit()
+    db.refresh(solicitud)
+    return solicitud
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# RRHH-3 — Accidentes laborales
+# ══════════════════════════════════════════════════════════════════════════════
+
+
+def get_accidentes(db: Session, tenant_id: int | None) -> list:
+    return (
+        db.query(AccidenteLaboral)
+        .filter(AccidenteLaboral.tenant_id == tenant_id)
+        .order_by(AccidenteLaboral.fecha_hora.desc())
+        .all()
+    )
+
+
+def crear_accidente(db: Session, tenant_id: int | None, reportado_por_id: int, data) -> AccidenteLaboral:
+    accidente = AccidenteLaboral(
+        tenant_id=tenant_id,
+        afectado_id=data.afectado_id,
+        reportado_por_id=reportado_por_id,
+        fecha_hora=data.fecha_hora,
+        tipo=data.tipo,
+        lugar=data.lugar,
+        descripcion=data.descripcion,
+        causa_raiz=data.causa_raiz,
+        dias_baja=data.dias_baja,
+        requiere_hospitalizacion=data.requiere_hospitalizacion,
+        estado="abierto",
+    )
+    db.add(accidente)
+    db.commit()
+    db.refresh(accidente)
+    return accidente
+
+
+def actualizar_accidente(db: Session, accidente_id: int, tenant_id: int | None, data) -> AccidenteLaboral:
+    accidente = (
+        db.query(AccidenteLaboral)
+        .filter(AccidenteLaboral.id == accidente_id, AccidenteLaboral.tenant_id == tenant_id)
+        .first()
+    )
+    if not accidente:
+        raise ValueError("Accidente no encontrado")
+
+    if data.estado is not None:
+        estados_validos = {"abierto", "en_investigacion", "cerrado"}
+        if data.estado not in estados_validos:
+            raise ValueError(f"Estado debe ser uno de: {estados_validos}")
+        accidente.estado = data.estado
+    if data.causa_raiz is not None:
+        accidente.causa_raiz = data.causa_raiz
+    if data.medidas_correctoras is not None:
+        accidente.medidas_correctoras = data.medidas_correctoras
+    if data.dias_baja is not None:
+        accidente.dias_baja = data.dias_baja
+    if data.fecha_cierre is not None:
+        accidente.fecha_cierre = data.fecha_cierre
+
+    db.commit()
+    db.refresh(accidente)
+    return accidente
+
+
+def calcular_indices_siniestralidad(db: Session, tenant_id: int | None, year: int) -> dict:
+    """
+    Calcula los índices de siniestralidad estándar del año indicado.
+    IF = (accidentes × 10^6) / horas trabajadas
+    IG = (días baja × 10^3) / horas trabajadas
+    II = (accidentes × 10^3) / trabajadores
+    """
+    accidentes = (
+        db.query(AccidenteLaboral)
+        .filter(
+            AccidenteLaboral.tenant_id == tenant_id,
+            AccidenteLaboral.tipo == "accidente",
+            extract("year", AccidenteLaboral.fecha_hora) == year,
+        )
+        .all()
+    )
+    incidentes = (
+        db.query(AccidenteLaboral)
+        .filter(
+            AccidenteLaboral.tenant_id == tenant_id,
+            AccidenteLaboral.tipo == "incidente",
+            extract("year", AccidenteLaboral.fecha_hora) == year,
+        )
+        .count()
+    )
+    casi_accidentes = (
+        db.query(AccidenteLaboral)
+        .filter(
+            AccidenteLaboral.tenant_id == tenant_id,
+            AccidenteLaboral.tipo == "casi_accidente",
+            extract("year", AccidenteLaboral.fecha_hora) == year,
+        )
+        .count()
+    )
+
+    total_accidentes = len(accidentes)
+    total_dias_baja = sum(acc.dias_baja or 0 for acc in accidentes)
+
+    horas_result = (
+        db.query(func.sum(Fichaje.horas))
+        .filter(
+            Fichaje.tenant_id == tenant_id,
+            Fichaje.horas.isnot(None),
+            extract("year", Fichaje.inicio) == year,
+        )
+        .scalar()
+    )
+    horas_trabajadas = float(horas_result or 0)
+
+    num_trabajadores = (
+        db.query(User)
+        .filter(User.tenant_id == tenant_id, User.role == "operario")
+        .count()
+    )
+
+    indice_frecuencia = round((total_accidentes * 1_000_000) / horas_trabajadas, 2) if horas_trabajadas else 0.0
+    indice_gravedad = round((total_dias_baja * 1_000) / horas_trabajadas, 2) if horas_trabajadas else 0.0
+    indice_incidencia = round((total_accidentes * 1_000) / num_trabajadores, 2) if num_trabajadores else 0.0
+
+    return {
+        "year": year,
+        "horas_trabajadas": round(horas_trabajadas, 2),
+        "total_accidentes": total_accidentes,
+        "total_incidentes": incidentes,
+        "total_casi_accidentes": casi_accidentes,
+        "total_dias_baja": total_dias_baja,
+        "indice_frecuencia": indice_frecuencia,
+        "indice_gravedad": indice_gravedad,
+        "indice_incidencia": indice_incidencia,
+    }
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# RRHH-3 — Permisos de trabajo especiales
+# ══════════════════════════════════════════════════════════════════════════════
+
+
+def get_permisos_trabajo(db: Session, tenant_id: int | None, operario_id: int | None = None) -> list:
+    query = db.query(PermisoTrabajoEspecial).filter(PermisoTrabajoEspecial.tenant_id == tenant_id)
+    if operario_id:
+        query = query.filter(PermisoTrabajoEspecial.operario_id == operario_id)
+    return query.order_by(PermisoTrabajoEspecial.fecha_caducidad.asc().nullslast()).all()
+
+
+def crear_permiso_trabajo(
+    db: Session, tenant_id: int | None, autorizado_por_id: int,
+    data, archivo_ruta: str | None = None, archivo_nombre: str | None = None,
+) -> PermisoTrabajoEspecial:
+    permiso = PermisoTrabajoEspecial(
+        tenant_id=tenant_id,
+        operario_id=data.operario_id,
+        autorizado_por_id=autorizado_por_id,
+        tipo=data.tipo,
+        descripcion_trabajo=data.descripcion_trabajo,
+        fecha_emision=data.fecha_emision,
+        fecha_caducidad=data.fecha_caducidad,
+        estado="activo",
+        archivo_ruta=archivo_ruta,
+        archivo_nombre=archivo_nombre,
+    )
+    db.add(permiso)
+    db.commit()
+    db.refresh(permiso)
+    return permiso

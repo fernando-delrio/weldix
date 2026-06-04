@@ -7,6 +7,108 @@ import { cx } from '../../core/lib/cx'
 import { useIaContext } from '../../ia/lib/IaContext'
 import NominasAdminSection from './NominasAdminSection'
 import MisNominasSection from './MisNominasSection'
+import LegalPrevencionSection from './LegalPrevencionSection'
+import TurnosSection from './TurnosSection'
+import SiniestridadSection from './SiniestridadSection'
+import { getOperarios } from '../services/nominasService'
+import { getMisAccidentes } from '../services/rrhhService'
+
+// ── Desplegable reutilizable ──────────────────────────────────────────────────
+const Desplegable = ({ titulo, icono, badge, defaultOpen = false, children }) => (
+  <details
+    open={defaultOpen}
+    className="group rounded-xl border border-slate-700/60 bg-slate-900/40 transition-all"
+  >
+    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 marker:hidden select-none">
+      <span className="flex items-center gap-2 text-sm font-bold text-slate-100">
+        {icono && <i className={cx(icono, 'text-base')} aria-hidden="true" />}
+        {titulo}
+        {badge}
+      </span>
+      <i className="bx bx-chevron-down text-lg text-slate-500 transition-transform duration-200 group-open:rotate-180" />
+    </summary>
+    <div className="border-t border-slate-700/40 p-4">{children}</div>
+  </details>
+)
+
+// ── Mis incidentes (vista operario) ──────────────────────────────────────────
+const TIPO_ACCIDENTE_COLOR = {
+  accidente: 'text-rose-400',
+  incidente: 'text-amber-400',
+  casi_accidente: 'text-sky-400',
+}
+const TIPO_ACCIDENTE_LABEL = {
+  accidente: 'Accidente',
+  incidente: 'Incidente',
+  casi_accidente: 'Near miss',
+}
+
+const MisIncidentesSection = () => {
+  const [accidentes, setAccidentes] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
+  const cardBase = 'rounded-xl border border-slate-700/60 bg-slate-900/65 p-4'
+
+  useEffect(() => {
+    getMisAccidentes()
+      .then(setAccidentes)
+      .catch(() => {})
+      .finally(() => setIsLoading(false))
+  }, [])
+
+  return (
+    <div className="space-y-3">
+      <h2 className="flex items-center gap-2 text-base font-bold text-slate-100">
+        <i className="bx bx-error-circle text-rose-400" aria-hidden="true" />
+        Mis accidentes / incidentes
+      </h2>
+      {isLoading && <div className={cx(cardBase, 'h-16 animate-pulse')} />}
+      {!isLoading && accidentes.length === 0 && (
+        <div className={cx(cardBase, 'py-6 text-center text-sm text-slate-500')}>
+          No tienes accidentes ni incidentes registrados.
+        </div>
+      )}
+      {!isLoading &&
+        accidentes.map((acc) => (
+          <div key={acc.id} className={cx(cardBase, 'space-y-1')}>
+            <div className="flex items-center justify-between gap-2">
+              <span
+                className={cx(
+                  'text-xs font-bold',
+                  TIPO_ACCIDENTE_COLOR[acc.tipo] ?? 'text-slate-400'
+                )}
+              >
+                {TIPO_ACCIDENTE_LABEL[acc.tipo] ?? acc.tipo}
+              </span>
+              <span className="text-xs text-slate-500">
+                {acc.fecha_hora?.slice(0, 16).replace('T', ' ')}
+              </span>
+            </div>
+            {acc.lugar && <p className="text-xs text-slate-400">{acc.lugar}</p>}
+            <p className="text-sm text-slate-300 leading-snug">{acc.descripcion}</p>
+            {acc.dias_baja > 0 && (
+              <p className="text-xs text-rose-400 font-semibold">
+                {acc.dias_baja} día{acc.dias_baja !== 1 ? 's' : ''} de baja
+              </p>
+            )}
+            <div className="pt-1">
+              <span
+                className={cx(
+                  'rounded border px-2 py-0.5 text-xs font-bold uppercase',
+                  acc.estado === 'cerrado'
+                    ? 'border-slate-700/50 bg-slate-700/20 text-slate-500'
+                    : acc.estado === 'en_investigacion'
+                      ? 'border-amber-700/50 bg-amber-500/10 text-amber-300'
+                      : 'border-rose-700/50 bg-rose-500/10 text-rose-300'
+                )}
+              >
+                {acc.estado.replace('_', ' ')}
+              </span>
+            </div>
+          </div>
+        ))}
+    </div>
+  )
+}
 
 // ── Estrategia de colores por estado ─────────────────────────────────────────
 const ESTADO_CONFIG = {
@@ -376,7 +478,7 @@ const NuevaSolicitudModal = ({ tipos, saldo, onClose, onSubmit, isSubmitting, er
   }
 
   // Solo mostrar contador de días restantes si el tipo es vacaciones
-  const tipoSeleccionado = tipos.find((t) => t.valor === tipo)
+  const tipoSeleccionado = tipos.find((tipoOpcion) => tipoOpcion.valor === tipo)
   const esVacaciones = tipo === 'vacaciones'
   const saldoParaMostrar = esVacaciones ? saldo : null
 
@@ -412,9 +514,9 @@ const NuevaSolicitudModal = ({ tipos, saldo, onClose, onSubmit, isSubmitting, er
           <div>
             <label className={labelBase}>Tipo de ausencia *</label>
             <select value={tipo} onChange={(e) => setTipo(e.target.value)} className={inputBase}>
-              {tipos.map((t) => (
-                <option key={t.valor} value={t.valor}>
-                  {t.label}
+              {tipos.map((tipoOpcion) => (
+                <option key={tipoOpcion.valor} value={tipoOpcion.valor}>
+                  {tipoOpcion.label}
                 </option>
               ))}
             </select>
@@ -594,19 +696,19 @@ const FILTROS = ['todos', 'pendiente', 'aprobada', 'rechazada', 'cancelada']
 
 const FiltroEstado = ({ filtro, onChange }) => (
   <div className="flex gap-2 overflow-x-auto pb-1">
-    {FILTROS.map((f) => (
+    {FILTROS.map((opcionFiltro) => (
       <button
-        key={f}
+        key={opcionFiltro}
         type="button"
-        onClick={() => onChange(f)}
+        onClick={() => onChange(opcionFiltro)}
         className={cx(
           'shrink-0 rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-widest transition',
-          filtro === f
+          filtro === opcionFiltro
             ? 'border-sky-500 bg-sky-500/20 text-sky-300'
             : 'border-slate-700 bg-slate-800/40 text-slate-500 hover:border-slate-600 hover:text-slate-400'
         )}
       >
-        {f === 'todos' ? 'Todos' : getEstadoConfig(f).label}
+        {opcionFiltro === 'todos' ? 'Todos' : getEstadoConfig(opcionFiltro).label}
       </button>
     ))}
   </div>
@@ -617,7 +719,16 @@ const RrhhPage = () => {
   const { profile } = useAuthSession()
   const isAdmin = profile?.role === 'admin'
   const [filtro, setFiltro] = useState('todos')
+  const [operarios, setOperarios] = useState([])
   const { setPageContext } = useIaContext()
+
+  useEffect(() => {
+    if (isAdmin) {
+      getOperarios()
+        .then(setOperarios)
+        .catch(() => {})
+    }
+  }, [isAdmin])
 
   const {
     saldo,
@@ -668,71 +779,128 @@ const RrhhPage = () => {
   }, [isAdmin, saldo, solicitudes.length, pendientes.length, setPageContext])
 
   const solicitudesFiltradas =
-    filtro === 'todos' ? solicitudes : solicitudes.filter((s) => s.estado === filtro)
+    filtro === 'todos'
+      ? solicitudes
+      : solicitudes.filter((solicitud) => solicitud.estado === filtro)
 
-  const solicitudRevisando = solicitudes.find((s) => s.id === revisandoId) ?? null
+  const solicitudRevisando = solicitudes.find((solicitud) => solicitud.id === revisandoId) ?? null
 
   return (
     <AppShell>
       <div className="mx-auto w-full max-w-[720px] space-y-4 pb-5">
-        <div className="flex items-center justify-between">
+        <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-300">RRHH</p>
-            <h1 className="text-3xl font-extrabold tracking-tight text-slate-100">
-              {isAdmin ? 'Recursos Humanos' : 'Mis ausencias'}
+            <p className="mb-0.5 text-[0.65rem] font-bold uppercase tracking-[0.18em] text-amber-400">
+              RRHH
+            </p>
+            <h1 className="text-2xl font-extrabold tracking-tight">
+              {isAdmin ? 'Recursos Humanos' : 'Mi área personal'}
             </h1>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-sm text-slate-500">
               {isAdmin
-                ? `${pendientes.length} pendiente${pendientes.length !== 1 ? 's' : ''} de revisión`
-                : 'Vacaciones y permisos'}
+                ? `${pendientes.length} solicitud${pendientes.length !== 1 ? 'es' : ''} pendiente${pendientes.length !== 1 ? 's' : ''} de revisión`
+                : 'Ausencias · Nóminas · Turnos · EPIs'}
             </p>
           </div>
           {!isAdmin && (
-            <button
-              type="button"
-              onClick={() => setModalCrear(true)}
-              className="rounded-xl border border-sky-700/50 bg-sky-500/10 px-4 py-2 text-xs font-bold uppercase tracking-widest text-sky-300 transition hover:bg-sky-500/20"
-            >
+            <WeldixButton variant="primary" size="sm" onClick={() => setModalCrear(true)}>
               + Nueva solicitud
-            </button>
+            </WeldixButton>
           )}
         </div>
 
         {!isAdmin && <SaldoCard saldo={saldo} />}
 
-        {isAdmin && pendientes.length > 0 && (
-          <div className="rounded-xl border border-amber-700/50 bg-amber-400/5 p-4">
-            <p className="text-xs font-bold uppercase tracking-widest text-amber-300">
-              {pendientes.length} solicitud{pendientes.length !== 1 ? 'es' : ''} esperando revisión
-            </p>
+        {/* ── Ausencias ─────────────────────────────────────────────────── */}
+        <Desplegable
+          titulo={isAdmin ? 'Solicitudes de ausencia' : 'Mis ausencias'}
+          icono="bx bx-calendar-x text-amber-400"
+          defaultOpen
+          badge={
+            isAdmin && pendientes.length > 0 ? (
+              <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-xs font-bold text-amber-300">
+                {pendientes.length} pendiente{pendientes.length !== 1 ? 's' : ''}
+              </span>
+            ) : null
+          }
+        >
+          <FiltroEstado filtro={filtro} onChange={setFiltro} />
+          <div className="mt-3 space-y-3">
+            {errorState({ error })}
+            {loadingState({ isLoading })}
+            {emptyState({ solicitudes: solicitudesFiltradas, isLoading })}
+            {!isLoading &&
+              solicitudesFiltradas.map((solicitud) => (
+                <SolicitudCard
+                  key={solicitud.id}
+                  solicitud={solicitud}
+                  isAdmin={isAdmin}
+                  onCancelar={cancelar}
+                  onRevisar={setRevisandoId}
+                />
+              ))}
           </div>
-        )}
-
-        <FiltroEstado filtro={filtro} onChange={setFiltro} />
-
-        {errorState({ error })}
-        {loadingState({ isLoading })}
-        {emptyState({ solicitudes: solicitudesFiltradas, isLoading })}
-
-        {!isLoading &&
-          solicitudesFiltradas.map((s) => (
-            <SolicitudCard
-              key={s.id}
-              solicitud={s}
-              isAdmin={isAdmin}
-              onCancelar={cancelar}
-              onRevisar={setRevisandoId}
-            />
-          ))}
+        </Desplegable>
 
         {/* ── Nóminas ────────────────────────────────────────────────────── */}
-        <div className="pt-4 border-t border-slate-700/50">
-          <h2 className="text-base font-bold tracking-tight text-slate-100 mb-4 flex items-center gap-2">
-            <i className="bx bxs-file-pdf text-rose-400" aria-hidden="true" />
-            Nóminas
-          </h2>
+        <Desplegable
+          titulo={isAdmin ? 'Nóminas del equipo' : 'Mis nóminas'}
+          icono="bx bxs-file-pdf text-rose-400"
+        >
           {isAdmin ? <NominasAdminSection /> : <MisNominasSection />}
-        </div>
+        </Desplegable>
+
+        {/* ── Legal y Prevención (RRHH-1) ────────────────────────────────── */}
+        <Desplegable
+          titulo="Legal y Prevención"
+          icono="bx bx-shield-quarter text-sky-400"
+          badge={
+            <span className="text-xs font-normal text-slate-500 normal-case">
+              EPIs · Certificados · Médicos
+            </span>
+          }
+        >
+          <LegalPrevencionSection
+            isAdmin={isAdmin}
+            operarios={
+              isAdmin
+                ? operarios
+                : profile
+                  ? [{ id: profile.id, full_name: profile.full_name }]
+                  : []
+            }
+            currentUser={profile}
+          />
+        </Desplegable>
+
+        {/* ── Turnos (RRHH-2) ─────────────────────────────────────────────── */}
+        <Desplegable
+          titulo={isAdmin ? 'Cuadrante de turnos' : 'Mi horario'}
+          icono="bx bx-calendar-week text-violet-400"
+        >
+          <TurnosSection
+            isAdmin={isAdmin}
+            operarios={
+              isAdmin
+                ? operarios
+                : profile
+                  ? [{ id: profile.id, full_name: profile.full_name }]
+                  : []
+            }
+          />
+        </Desplegable>
+
+        {/* ── Siniestralidad (RRHH-3) ─────────────────────────────────────── */}
+        <Desplegable
+          titulo={isAdmin ? 'Siniestralidad y seguridad' : 'Mis incidentes'}
+          icono={isAdmin ? 'bx bx-error text-rose-400' : 'bx bx-error-circle text-rose-400'}
+        >
+          {isAdmin ? (
+            <SiniestridadSection isAdmin={isAdmin} operarios={operarios} />
+          ) : (
+            <MisIncidentesSection />
+          )}
+        </Desplegable>
       </div>
 
       {modalCrear && (

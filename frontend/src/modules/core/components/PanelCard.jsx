@@ -1,7 +1,7 @@
 const PanelCard = ({ children, className = '' }) => {
   return (
     <article
-      className={`rounded-2xl border bg-[var(--card-bg)] p-4 ${className}`}
+      className={`rounded-xl border bg-[var(--card-bg)] p-4 ${className}`}
       style={{ borderColor: 'var(--card-border)', boxShadow: 'var(--card-shadow)' }}
     >
       {children}

@@ -31,7 +31,7 @@ const SIZE = {
 // Base común a todos los botones
 const BASE = [
   'inline-flex items-center justify-center gap-2',
-  'rounded-xl font-bold uppercase tracking-[0.14em]',
+  'rounded-lg font-bold uppercase tracking-[0.14em]',
   'transition',
   // Focus ring siempre visible (no outline:none sin alternativa — CLAUDE.md §10.3)
   'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',

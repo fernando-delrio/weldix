@@ -5,13 +5,13 @@ export const useBilling = () => {
   const [isRedirecting, setIsRedirecting] = useState(false)
   const [error, setError] = useState(null)
 
-  const startCheckout = async (plan = 'starter') => {
+  // Inicia el checkout — el backend calcula el precio por operarios automáticamente
+  const startCheckout = async () => {
     setIsRedirecting(true)
     setError(null)
     try {
-      const url = await billingService.getCheckoutUrl(plan)
-      // Redirigir a Stripe Checkout — salimos de la SPA
-      window.location.href = url
+      const { checkout_url } = await billingService.getCheckoutUrl()
+      window.location.href = checkout_url
     } catch (err) {
       setError(err.message)
       setIsRedirecting(false)

@@ -1,5 +1,7 @@
 import { useState, useMemo } from 'react'
 import AppShell from '../../core/components/AppShell'
+import PageHeader from '../../core/components/PageHeader'
+import EmptyState from '../../core/components/EmptyState'
 import { useStockPage } from '../hooks/useStockPage'
 import { useAuthSession } from '../../auth/hooks/useAuthSession'
 import { cx } from '../../core/lib/cx'
@@ -1270,48 +1272,47 @@ const StockPage = () => {
   return (
     <AppShell>
       <div className="space-y-4 pb-6">
-        {/* Header */}
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-300">Stock</p>
-            <h1 className="text-3xl font-extrabold tracking-tight text-slate-100">Materiales</h1>
-          </div>
-          {isAdmin && (
-            <div className="flex flex-wrap justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setShowAlbaran(true)}
-                className="rounded-xl border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-amber-300 transition hover:bg-amber-500/20"
-              >
-                <i className="bx bx-bot mr-1" aria-hidden="true" />
-                Albarán IA
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowBulkRestock(true)}
-                className="rounded-xl border border-emerald-500/50 bg-emerald-500/10 px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-emerald-300 transition hover:bg-emerald-500/20"
-              >
-                <i className="bx bx-package mr-1" aria-hidden="true" />
-                Recibir pedido
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowGenerator(true)}
-                className="rounded-xl border border-slate-700 bg-slate-800/60 px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-slate-300 transition hover:border-amber-500/40 hover:text-amber-300"
-              >
-                <i className="bx bx-grid-alt mr-1" aria-hidden="true" />
-                Variantes
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowCreate(true)}
-                className="rounded-xl border border-slate-700 bg-slate-800/60 px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-slate-300 transition hover:border-slate-600"
-              >
-                + Material
-              </button>
-            </div>
-          )}
-        </div>
+        <PageHeader
+          label="Stock"
+          title="Materiales"
+          action={
+            isAdmin && (
+              <div className="flex flex-wrap justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAlbaran(true)}
+                  className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-amber-300 transition hover:bg-amber-500/20"
+                >
+                  <i className="bx bx-bot mr-1" aria-hidden="true" />
+                  Albarán IA
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowBulkRestock(true)}
+                  className="rounded-lg border border-emerald-500/50 bg-emerald-500/10 px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-emerald-300 transition hover:bg-emerald-500/20"
+                >
+                  <i className="bx bx-package mr-1" aria-hidden="true" />
+                  Recibir pedido
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowGenerator(true)}
+                  className="rounded-lg border border-slate-700 bg-slate-800/60 px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-slate-300 transition hover:border-amber-500/40 hover:text-amber-300"
+                >
+                  <i className="bx bx-grid-alt mr-1" aria-hidden="true" />
+                  Variantes
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowCreate(true)}
+                  className="rounded-lg border border-slate-700 bg-slate-800/60 px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-slate-300 transition hover:border-slate-600"
+                >
+                  + Material
+                </button>
+              </div>
+            )
+          }
+        />
 
         {/* Feedback */}
         {feedback && (
@@ -1356,9 +1357,15 @@ const StockPage = () => {
         {!isLoading &&
           !error &&
           (filtered.length === 0 ? (
-            <p className="py-10 text-center text-sm text-slate-500">
-              No hay materiales que mostrar.
-            </p>
+            <EmptyState
+              icon="bx-package"
+              title={search ? 'Sin resultados' : 'Sin materiales'}
+              description={
+                search
+                  ? `No hay materiales que coincidan con "${search}".`
+                  : 'Añade el primer material desde el botón "+ Material".'
+              }
+            />
           ) : (
             <div className="space-y-5">
               {categoriesPresent.map((cat) => (

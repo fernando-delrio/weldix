@@ -1,5 +1,6 @@
 import { createPortal } from 'react-dom'
 import { Link, useLocation } from 'react-router-dom'
+import { AnimatePresence, motion } from 'framer-motion'
 import { useAuthSession } from '../../auth/hooks/useAuthSession'
 import { useClock } from '../hooks/useClock'
 import { useSearch } from '../hooks/useSearch'
@@ -73,7 +74,7 @@ const ThemeToggleBtn = ({ compact = false }) => {
       onClick={toggleTheme}
       aria-label={label}
       title={label}
-      className="flex w-full items-center gap-3 rounded-sm px-3 py-2.5 text-slate-500 transition hover:bg-slate-800/70 hover:text-slate-300"
+      className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 transition hover:bg-slate-800/70 hover:text-slate-300"
     >
       {isDark ? <SunIcon /> : <MoonIcon />}
       <span className="hidden text-sm font-semibold tracking-wide lg:block">
@@ -119,9 +120,9 @@ const Sidebar = ({
               to={item.to}
               title={item.label}
               className={cx(
-                'relative flex items-center gap-3 rounded-xl px-3 py-2.5 transition overflow-hidden',
+                'relative flex items-center gap-3 rounded-lg px-3 py-2.5 transition overflow-hidden',
                 isActive
-                  ? 'bg-amber-500/15 text-amber-400 shadow-[inset_0_0_0_1px_rgba(245,158,11,0.25)]'
+                  ? 'bg-amber-500/15 text-amber-400 shadow-[inset_0_0_0_1px_rgba(245,158,11,0.20)]'
                   : 'text-slate-500 hover:bg-slate-800/70 hover:text-slate-300'
               )}
             >
@@ -149,7 +150,7 @@ const Sidebar = ({
           onClick={onSearchOpen}
           title="Buscar (Ctrl+K)"
           aria-label="Buscar (Ctrl+K)"
-          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-slate-500 transition hover:bg-slate-800/70 hover:text-slate-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400"
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 transition hover:bg-slate-800/70 hover:text-slate-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -173,7 +174,7 @@ const Sidebar = ({
           type="button"
           title="Notificaciones"
           aria-label="Notificaciones"
-          className="relative flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-slate-500 transition hover:bg-slate-800/70 hover:text-slate-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400"
+          className="relative flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 transition hover:bg-slate-800/70 hover:text-slate-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -199,7 +200,7 @@ const Sidebar = ({
             onClick={onInstall}
             title="Instalar app"
             aria-label="Instalar app"
-            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sky-400 transition hover:bg-sky-500/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400"
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sky-400 transition hover:bg-sky-500/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -230,7 +231,7 @@ const Sidebar = ({
           onClick={onLogout}
           title="Cerrar sesión"
           aria-label="Cerrar sesión"
-          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-slate-500 transition hover:bg-rose-500/10 hover:text-rose-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-400"
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 transition hover:bg-rose-500/10 hover:text-rose-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-400"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -345,22 +346,28 @@ const MobileHeader = ({ roleLabel, onLogout, onSearchOpen, timeLabel }) => (
 )
 
 // ── FAB IA ─────────────────────────────────────────────────────────────────
+const SPRING = { type: 'spring', damping: 26, stiffness: 140 }
+const MotionButton = motion.button
+
 const IaFab = () => {
-  const { openChat } = useIaContext()
+  const { openChat, isOpen } = useIaContext()
   return createPortal(
-    <button
-      type="button"
-      onClick={() => openChat()}
-      aria-label="Asistente IA"
-      style={{ position: 'fixed', bottom: '2rem', right: '2rem', zIndex: 9999 }}
-      className="flex h-12 w-12 items-center justify-center rounded-sm border border-amber-500/40 bg-amber-500/15 shadow-lg backdrop-blur transition hover:border-amber-400/70 hover:bg-amber-500/25 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
-    >
-      <span
-        className="pointer-events-none absolute inset-0 rounded-sm animate-ping bg-amber-500/20"
-        aria-hidden="true"
-      />
-      <i className="bx bx-bot relative text-xl text-amber-400" aria-hidden="true" />
-    </button>,
+    <AnimatePresence>
+      {!isOpen && (
+        <MotionButton
+          key="ia-fab"
+          layoutId="ia-panel"
+          type="button"
+          onClick={() => openChat()}
+          aria-label="Asistente IA"
+          style={{ position: 'fixed', bottom: '2rem', right: '2rem', zIndex: 9999 }}
+          className="flex h-12 w-12 items-center justify-center rounded-lg border border-amber-500/30 bg-slate-900 shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
+          transition={SPRING}
+        >
+          <i className="bx bx-bot text-xl text-amber-400" aria-hidden="true" />
+        </MotionButton>
+      )}
+    </AnimatePresence>,
     document.body
   )
 }
@@ -374,6 +381,7 @@ const AppShellInner = ({ children }) => {
   const { canInstall, triggerInstall } = usePwaInstall()
   const { showBanner, trial, dismiss } = useTrialStatus()
   const { isDark } = useTheme()
+  const location = useLocation()
 
   const role = profile?.role || 'operario'
   const roleLabel = role.toUpperCase()
@@ -381,12 +389,9 @@ const AppShellInner = ({ children }) => {
 
   return (
     <div className="flex h-screen bg-[var(--app-bg)] text-[var(--app-text)]">
-      {/* Efectos de fondo — solo en modo oscuro */}
+      {/* Glow sutil — solo en modo oscuro, sin grid */}
       {isDark && (
-        <>
-          <div className="pointer-events-none fixed inset-0 opacity-40 [background-image:linear-gradient(rgba(3,38,66,0.45)_1px,transparent_1px),linear-gradient(90deg,rgba(3,38,66,0.45)_1px,transparent_1px)] [background-size:30px_30px]" />
-          <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(700px_430px_at_0%_50%,rgba(245,158,11,0.07),transparent_65%)]" />
-        </>
+        <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(600px_400px_at_0%_60%,rgba(245,158,11,0.05),transparent_60%)]" />
       )}
 
       {/* Sidebar tablet/desktop — flex child, fills full height */}
@@ -408,7 +413,7 @@ const AppShellInner = ({ children }) => {
         <div className="h-14 shrink-0 md:hidden" aria-hidden="true" />
 
         <main className="min-h-0 flex-1 overflow-y-auto px-4 py-3 md:px-6 md:py-4 lg:px-8">
-          <div className="mx-auto w-full max-w-[1100px]">
+          <div key={location.pathname} className="page-enter mx-auto w-full max-w-[1100px]">
             {showBanner && <TrialBanner daysLeft={trial.days_left} onDismiss={dismiss} />}
             {children}
           </div>
@@ -429,7 +434,7 @@ const AppShellInner = ({ children }) => {
         <BottomNav items={navItems} />
       </div>
       <IaFab />
-      {iaIsOpen && <IaChatPanel />}
+      <AnimatePresence>{iaIsOpen && <IaChatPanel key="ia-panel" />}</AnimatePresence>
       <SearchModal {...search} />
     </div>
   )

@@ -82,9 +82,9 @@ const EquipoCard = ({ equipo, onCambiarEstado, onRegistrarMantenimiento, onElimi
             onChange={(e) => onCambiarEstado(equipo.id, e.target.value)}
             className="rounded-md border border-slate-700 bg-slate-800 px-2 py-1 text-xs text-slate-300 outline-none focus:border-sky-500"
           >
-            {ESTADOS_OPCIONES.map((e) => (
-              <option key={e} value={e}>
-                {getEstadoConfig(e).label}
+            {ESTADOS_OPCIONES.map((estado) => (
+              <option key={estado} value={estado}>
+                {getEstadoConfig(estado).label}
               </option>
             ))}
           </select>
@@ -249,9 +249,9 @@ const alertaBanner = ({ equiposConAlerta }) =>
         vencido
       </p>
       <ul className="mt-2 space-y-1">
-        {equiposConAlerta.map((e) => (
-          <li key={e.id} className="text-xs text-amber-200/70">
-            {e.nombre} — {e.dias_desde_mantenimiento}d sin mantenimiento
+        {equiposConAlerta.map((equipo) => (
+          <li key={equipo.id} className="text-xs text-amber-200/70">
+            {equipo.nombre} — {equipo.dias_desde_mantenimiento}d sin mantenimiento
           </li>
         ))}
       </ul>
@@ -280,14 +280,13 @@ const EquiposPage = () => {
   return (
     <AppShell>
       <div className="mx-auto w-full max-w-[720px] space-y-4 pb-5">
-        {/* Cabecera */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-300">GMAO</p>
-            <h1 className="text-3xl font-extrabold tracking-tight text-slate-100">
-              Equipos del taller
-            </h1>
-            <p className="mt-1 text-xs text-slate-500">{equipos.length} equipos registrados</p>
+            <p className="mb-0.5 text-[0.65rem] font-bold uppercase tracking-[0.18em] text-amber-400">
+              GMAO
+            </p>
+            <h1 className="text-2xl font-extrabold tracking-tight">Equipos del taller</h1>
+            <p className="mt-1 text-sm text-slate-500">{equipos.length} equipos registrados</p>
           </div>
           {isAdmin && (
             <WeldixButton variant="primary" size="sm" onClick={() => setModalAbierto(true)}>

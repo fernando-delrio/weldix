@@ -91,7 +91,7 @@ const HistorialSesiones = ({ registros }) => {
   if (!registros || registros.length === 0) return null
 
   // Solo mostramos sesiones cerradas en el historial
-  const cerradas = registros.filter((r) => r.fin !== null)
+  const cerradas = registros.filter((sesion) => sesion.fin !== null)
   if (cerradas.length === 0) return null
 
   return (
@@ -100,17 +100,19 @@ const HistorialSesiones = ({ registros }) => {
         Ver sesiones ({cerradas.length})
       </summary>
       <div className="mt-2 space-y-1">
-        {cerradas.map((r) => (
+        {cerradas.map((sesion) => (
           <div
-            key={r.id}
+            key={sesion.id}
             className="flex items-center justify-between rounded-lg border border-slate-800/60 px-3 py-1.5"
           >
             <div>
-              <span className="text-xs text-slate-400">{r.operario_nombre}</span>
-              <span className="ml-2 font-mono text-xs text-slate-600">{fmtFecha(r.inicio)}</span>
+              <span className="text-xs text-slate-400">{sesion.operario_nombre}</span>
+              <span className="ml-2 font-mono text-xs text-slate-600">
+                {fmtFecha(sesion.inicio)}
+              </span>
             </div>
             <span className="font-mono text-xs font-semibold text-slate-300">
-              {fmtHoras(r.horas)}
+              {fmtHoras(sesion.horas)}
             </span>
           </div>
         ))}

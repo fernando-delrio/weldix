@@ -20,10 +20,17 @@ from backend.features.registro_horas.model import (  # noqa: F401 — necesario 
 )
 from backend.features.nominas.model import Nomina  # noqa: F401 — necesario para create_all
 from backend.features.rrhh.model import (  # noqa: F401 — necesario para create_all
+    AccidenteLaboral,
+    Certificado,
     ConfiguracionLaboral,
     DocumentoJustificante,
+    EpiEntrega,
     Festivo,
+    PermisoTrabajoEspecial,
+    ReconocimientoMedico,
     SolicitudAusencia,
+    SolicitudCambioTurno,
+    TurnoAsignado,
 )
 from backend.features.stock.model import Material
 

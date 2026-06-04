@@ -1,9 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
+import { motion } from 'framer-motion'
+
+const MotionDiv = motion.div
 
 import { cx } from '../../core/lib/cx'
 import { useIaContext } from '../lib/IaContext'
 import { useIaChat } from '../hooks/useIaChat'
 import WeldixButton from '../../core/components/WeldixButton'
+
+const SPRING = { type: 'spring', damping: 26, stiffness: 140 }
 
 const UserBubble = ({ content }) => (
   <div className="flex justify-end">
@@ -35,7 +40,6 @@ const TypingIndicator = () => (
   </div>
 )
 
-// Banner de sección activa — muestra en qué sección está el usuario
 const sectionBanner = ({ pageContext }) =>
   pageContext?.seccion && (
     <div className="mx-4 mt-3 rounded-lg border border-sky-700/40 bg-sky-500/10 px-3 py-2">
@@ -48,7 +52,6 @@ const sectionBanner = ({ pageContext }) =>
     </div>
   )
 
-// Chips de sugerencias — preguntas rápidas por sección
 const SugerenciasChips = ({ sugerencias, onSelect, visible }) =>
   visible &&
   sugerencias?.length > 0 && (
@@ -109,118 +112,136 @@ const IaChatPanel = () => {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-end sm:items-end sm:p-4">
-      <div
-        className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"
+    <>
+      {/* Backdrop — fade independiente para ver la app detrás */}
+      <MotionDiv
+        key="ia-backdrop"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.25 }}
+        className="fixed inset-0 bg-slate-950/35 backdrop-blur-[3px]"
+        style={{ zIndex: 48 }}
         onClick={closeChat}
         aria-hidden="true"
       />
 
+      {/* Wrapper de centrado — no animado, solo posiciona el panel */}
       <div
-        className="relative z-10 flex w-full flex-col rounded-t-2xl border border-slate-700/80 bg-slate-900 shadow-2xl sm:w-[420px] sm:rounded-2xl"
-        style={{ height: 'min(600px, 85dvh)' }}
+        className="fixed inset-0 pointer-events-none flex items-center justify-center p-4"
+        style={{ zIndex: 50 }}
       >
-        {/* Header */}
-        <div className="flex shrink-0 items-center justify-between border-b border-slate-700/60 px-4 py-3">
-          <div className="flex items-center gap-2.5">
-            <div className="grid h-7 w-7 place-items-center rounded-lg bg-sky-500/20 text-sm">
-              🔧
+        {/* Panel — comparte layoutId con el FAB para el efecto morph */}
+        <MotionDiv
+          layoutId="ia-panel"
+          className="pointer-events-auto flex flex-col rounded-xl border border-slate-700/80 bg-slate-900 shadow-2xl overflow-hidden"
+          style={{
+            width: 'min(480px, calc(100vw - 2rem))',
+            height: 'min(600px, 85dvh)',
+          }}
+          transition={SPRING}
+        >
+          {/* Header */}
+          <div className="flex shrink-0 items-center justify-between border-b border-slate-700/60 px-4 py-3">
+            <div className="flex items-center gap-2.5">
+              <div className="grid h-7 w-7 place-items-center rounded-lg bg-sky-500/20 text-sm">
+                🔧
+              </div>
+              <div>
+                <p className="text-sm font-bold text-slate-100">Weldix AI</p>
+                <p className="text-xs text-slate-500 uppercase tracking-widest">
+                  {pageContext?.seccion ? pageContext.seccion : 'Asistente de taller'}
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-bold text-slate-100">Weldix AI</p>
-              <p className="text-xs text-slate-500 uppercase tracking-widest">
-                {pageContext?.seccion ? pageContext.seccion : 'Asistente de taller'}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            {messages.length > 0 && (
+            <div className="flex items-center gap-2">
+              {messages.length > 0 && (
+                <WeldixButton
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearChat}
+                  aria-label="Limpiar historial del chat"
+                >
+                  Limpiar
+                </WeldixButton>
+              )}
               <WeldixButton
                 variant="ghost"
-                size="sm"
-                onClick={clearChat}
-                aria-label="Limpiar historial del chat"
+                size="icon"
+                onClick={closeChat}
+                aria-label="Cerrar chat"
+                className="h-11 w-11 border border-slate-700"
               >
-                Limpiar
+                ✕
               </WeldixButton>
+            </div>
+          </div>
+
+          {sectionBanner({ pageContext })}
+
+          <SugerenciasChips
+            sugerencias={pageContext?.sugerencias}
+            onSelect={handleSend}
+            visible={messages.length === 0}
+          />
+
+          {/* Mensajes */}
+          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+            {emptyState({ messages, pageContext })}
+            {messages.map((msg, i) =>
+              msg.role === 'user' ? (
+                <UserBubble key={i} content={msg.content} />
+              ) : (
+                <AssistantBubble key={i} content={msg.content} />
+              )
             )}
-            <WeldixButton
-              variant="ghost"
-              size="icon"
-              onClick={closeChat}
-              aria-label="Cerrar chat"
-              className="h-11 w-11 border border-slate-700"
-            >
-              ✕
-            </WeldixButton>
+            {isLoading && <TypingIndicator />}
+            {error && <p className="text-center text-xs text-rose-400">{error}</p>}
+            <div ref={bottomRef} />
           </div>
-        </div>
 
-        {sectionBanner({ pageContext })}
-
-        {/* Chips de sugerencias — solo visibles cuando no hay mensajes */}
-        <SugerenciasChips
-          sugerencias={pageContext?.sugerencias}
-          onSelect={handleSend}
-          visible={messages.length === 0}
-        />
-
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
-          {emptyState({ messages, pageContext })}
-          {messages.map((msg, i) =>
-            msg.role === 'user' ? (
-              <UserBubble key={i} content={msg.content} />
-            ) : (
-              <AssistantBubble key={i} content={msg.content} />
-            )
-          )}
-          {isLoading && <TypingIndicator />}
-          {error && <p className="text-center text-xs text-rose-400">{error}</p>}
-          <div ref={bottomRef} />
-        </div>
-
-        {/* Input */}
-        <form onSubmit={handleSubmit} className="shrink-0 border-t border-slate-700/60 p-3">
-          <div className="flex items-end gap-2 rounded-xl border border-slate-700 bg-slate-800/60 px-3 py-2 focus-within:border-sky-500/60">
-            <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Escribe tu consulta..."
-              rows={1}
-              className="flex-1 resize-none bg-transparent text-sm text-slate-100 outline-none placeholder:text-slate-500"
-              style={{ maxHeight: '96px' }}
-            />
-            <button
-              type="submit"
-              disabled={isLoading || !input.trim()}
-              aria-label="Enviar mensaje"
-              className={cx(
-                'shrink-0 grid h-11 w-11 place-items-center rounded-lg transition',
-                'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400',
-                'disabled:pointer-events-none disabled:opacity-50',
-                input.trim() && !isLoading
-                  ? 'bg-sky-500 text-white hover:bg-sky-400'
-                  : 'bg-slate-700 text-slate-500'
-              )}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-                className="h-4 w-4"
+          {/* Input */}
+          <form onSubmit={handleSubmit} className="shrink-0 border-t border-slate-700/60 p-3">
+            <div className="flex items-end gap-2 rounded-xl border border-slate-700 bg-slate-800/60 px-3 py-2 focus-within:border-sky-500/60">
+              <textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Escribe tu consulta..."
+                rows={1}
+                className="flex-1 resize-none bg-transparent text-sm text-slate-100 outline-none placeholder:text-slate-500"
+                style={{ maxHeight: '96px' }}
+              />
+              <button
+                type="submit"
+                disabled={isLoading || !input.trim()}
+                aria-label="Enviar mensaje"
+                className={cx(
+                  'shrink-0 grid h-11 w-11 place-items-center rounded-lg transition',
+                  'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400',
+                  'disabled:pointer-events-none disabled:opacity-50',
+                  input.trim() && !isLoading
+                    ? 'bg-sky-500 text-white hover:bg-sky-400'
+                    : 'bg-slate-700 text-slate-500'
+                )}
               >
-                <path d="M3.105 2.288a.75.75 0 0 0-.826.95l1.414 4.926A1.5 1.5 0 0 0 5.135 9.25h6.115a.75.75 0 0 1 0 1.5H5.135a1.5 1.5 0 0 0-1.442 1.086l-1.414 4.926a.75.75 0 0 0 .826.95 28.897 28.897 0 0 0 15.293-7.154.75.75 0 0 0 0-1.115A28.897 28.897 0 0 0 3.105 2.288Z" />
-              </svg>
-            </button>
-          </div>
-          <p className="mt-1.5 text-center text-xs text-slate-600">
-            Enter para enviar · Shift+Enter para nueva línea
-          </p>
-        </form>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  className="h-4 w-4"
+                >
+                  <path d="M3.105 2.288a.75.75 0 0 0-.826.95l1.414 4.926A1.5 1.5 0 0 0 5.135 9.25h6.115a.75.75 0 0 1 0 1.5H5.135a1.5 1.5 0 0 0-1.442 1.086l-1.414 4.926a.75.75 0 0 0 .826.95 28.897 28.897 0 0 0 15.293-7.154.75.75 0 0 0 0-1.115A28.897 28.897 0 0 0 3.105 2.288Z" />
+                </svg>
+              </button>
+            </div>
+            <p className="mt-1.5 text-center text-xs text-slate-600">
+              Enter para enviar · Shift+Enter para nueva línea
+            </p>
+          </form>
+        </MotionDiv>
       </div>
-    </div>
+    </>
   )
 }
 

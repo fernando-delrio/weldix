@@ -23,7 +23,10 @@ const AdminUserRow = ({ user }) => {
     : null
 
   return (
-    <div className="flex items-center justify-between rounded-xl border border-white/[0.06] bg-slate-900 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+    <div
+      className="flex items-center justify-between rounded-lg border bg-[var(--card-bg)] px-4 py-3"
+      style={{ borderColor: 'var(--card-border)', boxShadow: 'var(--card-shadow-sm)' }}
+    >
       <div className="flex items-center gap-3">
         <div
           className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border text-xs font-bold tracking-wide ${grad.bg} ${grad.border} ${grad.text}`}

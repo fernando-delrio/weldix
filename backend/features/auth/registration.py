@@ -22,9 +22,13 @@ class SignupStrategy(ABC):
         self, db: Session, data: SignupData, tenant_id: int | None = None
     ) -> User:
         safe_email = data.email.lower().strip()
-        existing = db.query(User).filter(User.email == safe_email).first()
+        existing = (
+            db.query(User)
+            .filter(User.email == safe_email, User.tenant_id == tenant_id)
+            .first()
+        )
         if existing:
-            raise ValueError("El email ya existe")
+            raise ValueError("El email ya existe en este taller")
 
         return create_user(
             db=db,

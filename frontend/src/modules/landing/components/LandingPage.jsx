@@ -1,8 +1,19 @@
 import { Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { useTheme } from '../../core/lib/ThemeContext'
+
+// Alias en JS puro → ESLint detecta el uso de `motion` fuera de JSX
+const MotionDiv = motion.div
 import { cx } from '../../core/lib/cx'
 import { useLandingAnimations } from '../hooks/useLandingAnimations'
+import useTilt from '../hooks/useTilt'
 import DemoPreview from './DemoPreview'
+import ScrollProgress from './ScrollProgress'
+import CountUp from './CountUp'
+import MagneticWrap from './MagneticWrap'
+import WordReveal from './WordReveal'
+import RotatingBadge from './RotatingBadge'
+import SocialProofToast from './SocialProofToast'
 
 // ─── sistema de tema ──────────────────────────────────────────────────────────
 
@@ -45,44 +56,43 @@ const T = {
     painText: 'text-rose-400',
   },
   light: {
-    // NOTA: index.css invierte la escala slate en light mode.
-    // slate-100 → #1a1510 (casi negro), slate-950 → #f2ebe0 (crema, invisible).
-    // Usar slate-100/200/300/400 para texto oscuro legible.
-    page: 'bg-[#f5f0e8] text-slate-300',
-    headline: 'text-slate-100',
+    // Paleta sincronizada con el app (index.css data-theme='light'):
+    // fondo #f1f5f9, cards #ffffff, texto #0f172a/#334155, bordes #e2e8f0
+    page: 'bg-[#f1f5f9] text-[#334155]',
+    headline: 'text-[#0f172a]',
     headlineAccent: 'text-amber-600',
-    nav: 'border-stone-300 bg-[#f5f0e8]/95',
-    navText: 'text-slate-400 hover:text-slate-200',
-    card: 'border-stone-300 bg-white',
-    cardHover: 'hover:border-amber-600/70 hover:bg-stone-50',
-    pill: 'border-amber-500/50 bg-amber-500/15 text-slate-200',
+    nav: 'border-[#e2e8f0] bg-white/95',
+    navText: 'text-[#475569] hover:text-[#0f172a]',
+    card: 'border-[#e2e8f0] bg-white',
+    cardHover: 'hover:border-amber-500/50 hover:bg-[#f8fafc]',
+    pill: 'border-amber-500/40 bg-amber-50 text-amber-700',
     accent: 'text-amber-600',
     accentBg: 'bg-amber-600',
     accentBgText: 'text-white',
-    accentBorder: 'border-amber-600/50',
-    accentTint: 'bg-amber-600/10',
-    muted: 'text-slate-300',
-    faint: 'text-slate-400',
-    divider: 'border-stone-300',
-    sectionAlt: 'bg-[#ede7db]',
-    btnPrimary: 'bg-amber-600 text-white hover:bg-amber-700 shadow-amber-600/25',
-    btnGhost: 'border border-stone-400 text-slate-200 hover:bg-stone-200',
-    footerBg: 'bg-[#e8e0d4]',
-    monoMuted: 'text-stone-500',
-    gridColor: 'rgba(0,0,0,0.05)',
-    glowLeft: 'rgba(180,83,9,0.08)',
-    toggleBg: 'bg-stone-200 text-amber-700 hover:bg-stone-300',
-    planPopular: 'border-amber-600/70 bg-amber-50',
-    planNormal: 'border-stone-300 bg-white',
+    accentBorder: 'border-amber-500/40',
+    accentTint: 'bg-amber-50',
+    muted: 'text-[#475569]',
+    faint: 'text-[#64748b]',
+    divider: 'border-[#e2e8f0]',
+    sectionAlt: 'bg-[#f8fafc]',
+    btnPrimary: 'bg-amber-600 text-white hover:bg-amber-700 shadow-amber-600/20',
+    btnGhost: 'border border-[#e2e8f0] text-[#334155] hover:bg-[#f1f5f9]',
+    footerBg: 'bg-white',
+    monoMuted: 'text-[#94a3b8]',
+    gridColor: 'rgba(15,23,42,0.04)',
+    glowLeft: 'rgba(217,119,6,0.06)',
+    toggleBg: 'bg-[#f1f5f9] text-amber-600 hover:bg-[#e2e8f0]',
+    planPopular: 'border-amber-500/60 bg-amber-50',
+    planNormal: 'border-[#e2e8f0] bg-white',
     planPopLine: 'bg-amber-600',
-    testimonial: 'border-stone-300 bg-white',
-    quoteColor: 'text-amber-600/50',
-    timelineLine: 'bg-stone-300',
+    testimonial: 'border-[#e2e8f0] bg-white',
+    quoteColor: 'text-amber-600/40',
+    timelineLine: 'bg-[#e2e8f0]',
     timelineDot: 'bg-amber-600 border-amber-600',
-    timelineDotInner: 'bg-[#f5f0e8]',
-    painBg: 'bg-[#ede7db]',
-    painBorder: 'border-rose-600/30',
-    painText: 'text-rose-700',
+    timelineDotInner: 'bg-[#f1f5f9]',
+    painBg: 'bg-[#f8fafc]',
+    painBorder: 'border-rose-200',
+    painText: 'text-rose-600',
   },
 }
 
@@ -93,6 +103,8 @@ const PAIN_POINTS = [
   { icon: 'bx bx-spreadsheet', text: 'Excel con fórmulas que nadie entiende' },
   { icon: 'bx bx-time', text: 'Calcular horas a mano cada fin de mes' },
   { icon: 'bx bx-confused', text: 'No saber qué OT lleva quién en este momento' },
+  { icon: 'bx bx-receipt', text: 'Albaranes de proveedor que tarda 30 min en transcribir' },
+  { icon: 'bx bx-search-alt', text: 'Sin saber si el material que necesitas está en el almacén' },
 ]
 
 const TRUST_METRICS = [
@@ -123,18 +135,37 @@ const FEATURES = [
   },
   {
     n: '04',
-    icon: 'bx bx-group',
-    title: 'RRHH Integrado',
-    desc: 'Vacaciones, ausencias y calendario laboral conectados directamente con el fichaje de cada operario.',
+    icon: 'bx bx-receipt',
+    title: 'Albaranes con IA',
+    desc: 'Fotografía el albarán del proveedor. La IA extrae los materiales y los incorpora al stock automáticamente — sin teclear nada.',
+    highlight: true,
   },
   {
     n: '05',
-    icon: 'bx bx-wrench',
-    title: 'GMAO — Equipos',
-    desc: 'Registra tu maquinaria, asigna estados operativos y recibe alertas de mantenimiento preventivo.',
+    icon: 'bx bx-qr',
+    title: 'Escáner QR',
+    desc: 'Cada OT tiene su QR. El operario lo escanea desde el móvil e inicia el trabajo al instante, sin buscar nada en pantalla.',
   },
   {
     n: '06',
+    icon: 'bxs bxs-file-pdf',
+    title: 'Nóminas Digitales',
+    desc: 'Sube las nóminas al sistema. Cada operario las descarga desde su perfil, sin WhatsApp, sin emails, sin papel.',
+  },
+  {
+    n: '07',
+    icon: 'bx bx-group',
+    title: 'RRHH Integrado',
+    desc: 'Vacaciones, ausencias, EPIs, certificados y turnos — todo conectado con el fichaje de cada operario.',
+  },
+  {
+    n: '08',
+    icon: 'bx bx-wrench',
+    title: 'GMAO — Equipos',
+    desc: 'Registra tu maquinaria, asigna estados operativos y recibe alertas de mantenimiento preventivo antes de que falle.',
+  },
+  {
+    n: '09',
     icon: 'bx bx-bot',
     title: 'IA Especializada',
     desc: 'Asistente con contexto real de tus OTs y stock. Solo sabe de tu taller — respuestas precisas, sin hallucinar.',
@@ -185,28 +216,25 @@ const TESTIMONIALS = [
   },
 ]
 
-const PLANS = [
-  {
-    name: 'STARTER',
-    users: 'hasta 5 operarios',
-    price: '29',
-    features: ['OTs ilimitadas', 'Control de fichaje', 'Gestión de stock', 'Soporte por email'],
-    popular: false,
-  },
-  {
-    name: 'PRO',
-    users: 'operarios ilimitados',
-    price: '59',
-    features: [
-      'Todo de Starter',
-      'RRHH completo',
-      'GMAO — Equipos',
-      'IA integrada',
-      'Escaneo QR',
-      'Soporte prioritario',
-    ],
-    popular: true,
-  },
+// Precios actualizados — base + por operario
+const PRECIO_BASE = 49
+const PRECIO_POR_OPERARIO = 17
+
+const PLAN_INCLUDES = [
+  'OTs ilimitadas',
+  'Control de fichaje (RDL 8/2019)',
+  'Stock + albaranes con IA',
+  'Escáner QR',
+  'RRHH completo + nóminas',
+  'GMAO — equipos y mantenimiento',
+  'IA especializada en tu taller',
+  'Soporte incluido',
+]
+
+const PLAN_EXAMPLES = [
+  { ops: 2, total: PRECIO_BASE + 2 * PRECIO_POR_OPERARIO },
+  { ops: 5, total: PRECIO_BASE + 5 * PRECIO_POR_OPERARIO },
+  { ops: 10, total: PRECIO_BASE + 10 * PRECIO_POR_OPERARIO },
 ]
 
 // ─── theme toggle ─────────────────────────────────────────────────────────────
@@ -271,16 +299,17 @@ const scrollToLandingSection = (event, targetId) => {
 
 const NavBar = ({ isDark, onToggle, t }) => (
   <nav
+    style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 9999 }}
     className={cx(
-      'fixed inset-x-0 top-0 z-50 flex items-center justify-between border-b px-6 py-3 backdrop-blur-md transition-colors duration-300',
-      t.nav
+      'flex items-center justify-between border-b px-6 py-3 transition-colors duration-300',
+      isDark ? 'border-slate-800 bg-[#070b0f]' : 'border-[#e2e8f0] bg-white'
     )}
   >
     <div className="flex items-center gap-3">
       <img src="/weldix-icon.svg" alt="Weldix" className="h-7 w-7 shrink-0 object-contain" />
       <div>
-        <p className="text-sm font-black tracking-[0.22em]">WELDIX</p>
-        <p className={cx('text-[0.48rem] font-bold uppercase tracking-[0.22em]', t.monoMuted)}>
+        <p className="font-display text-base font-bold tracking-tight">Weldix</p>
+        <p className={cx('text-[0.55rem] font-medium uppercase tracking-[0.18em]', t.monoMuted)}>
           gestión industrial
         </p>
       </div>
@@ -326,7 +355,7 @@ const NavBar = ({ isDark, onToggle, t }) => (
       <Link
         to="/registro"
         className={cx(
-          'flex items-center gap-1.5 rounded-sm px-4 py-2 text-[0.7rem] font-black uppercase tracking-wider shadow-lg transition',
+          'flex items-center gap-1.5 rounded-lg px-4 py-2 text-[0.7rem] font-bold tracking-wide shadow-lg transition',
           t.btnPrimary
         )}
       >
@@ -344,81 +373,87 @@ const HeroSection = ({ t, isDark }) => (
     data-gsap="hero-section"
     className="relative flex min-h-screen flex-col justify-center overflow-hidden px-6 pb-24 pt-28 lg:flex-row lg:items-center lg:gap-20"
   >
+    {/* Gradiente animado — vivo, cambia de posición suavemente */}
     <div
-      data-gsap="hero-grid"
-      className="pointer-events-none absolute inset-0"
+      className="landing-hero-gradient-anim pointer-events-none absolute inset-0"
       style={{
-        backgroundImage: `linear-gradient(${t.gridColor} 1px, transparent 1px), linear-gradient(90deg, ${t.gridColor} 1px, transparent 1px)`,
-        backgroundSize: '48px 48px',
+        background: isDark
+          ? 'linear-gradient(135deg, rgba(245,158,11,0.08) 0%, rgba(56,189,248,0.04) 33%, rgba(245,158,11,0.06) 66%, rgba(139,92,246,0.03) 100%)'
+          : 'linear-gradient(135deg, rgba(245,158,11,0.07) 0%, rgba(56,189,248,0.03) 33%, rgba(245,158,11,0.05) 66%, transparent 100%)',
       }}
     />
-    <div
-      className="pointer-events-none absolute inset-0"
-      style={{
-        background: `radial-gradient(ellipse 80% 70% at -10% 55%, ${t.glowLeft} 0%, transparent 60%)`,
-      }}
-    />
+
+    {/* RotatingBadge decorativo — flotante top-right, solo desktop */}
+    <div className="pointer-events-none absolute right-8 top-28 hidden opacity-60 lg:block">
+      <RotatingBadge
+        size={90}
+        className={t.accent}
+        text="✦ GRATIS 15 DÍAS ✦ SIN TARJETA"
+        speed={16}
+      />
+    </div>
 
     <div className="relative z-10 flex-1 space-y-7 lg:max-w-2xl">
-      {/* Pain pill */}
-      <div
-        data-gsap="hero-badge"
-        className={cx('inline-flex items-center gap-2 rounded-sm border px-3 py-1.5', t.pill)}
+      {/* Badge — animado con Framer Motion (reemplaza GSAP hero-badge) */}
+      <MotionDiv
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        className={cx('inline-flex items-center gap-2 rounded-full border px-4 py-1.5', t.pill)}
       >
         <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-current" />
-        <span className="text-[0.58rem] font-bold uppercase tracking-[0.18em]">
-          Para talleres de soldadura · calderería · metal
+        <span className="text-[11px] font-medium uppercase tracking-[0.1em]">
+          Talleres de soldadura · calderería · metal
         </span>
-      </div>
+      </MotionDiv>
 
-      {/* Pain-first headline */}
-      <div className="space-y-3">
-        <h1 className="text-[3.8rem] font-black uppercase leading-[0.9] tracking-tighter sm:text-[5rem] lg:text-[5.8rem]">
-          <span data-gsap="hero-line" className={cx('block', t.headline)}>
-            ¿Sigues
-          </span>
-          <span data-gsap="hero-line" className={cx('block', t.headline)}>
-            gestionando
-          </span>
-          <span data-gsap="hero-line" className={cx('block', t.headlineAccent)}>
-            con papel
-          </span>
-          <span data-gsap="hero-line" className={cx('block', t.headline)}>
-            y Excel?
-          </span>
+      {/* Headline — WordReveal reemplaza los data-gsap="hero-line" */}
+      <div className="space-y-4">
+        <h1 className="font-display text-[3.4rem] font-extrabold leading-[1.02] tracking-[-0.03em] sm:text-[4.6rem] lg:text-[5.4rem]">
+          <WordReveal text="¿Sigues con" className={cx('block', t.headline)} initialDelay={0} />
+          <WordReveal
+            text="papel y Excel"
+            className={cx('block', t.headlineAccent)}
+            initialDelay={0.3}
+          />
+          <WordReveal text="en tu taller?" className={cx('block', t.headline)} initialDelay={0.6} />
         </h1>
-        <div data-gsap="hero-bar" className={cx('h-[3px] w-20', t.accentBg)} />
+        <div data-gsap="hero-bar" className={cx('h-[2px] w-16 rounded-full', t.accentBg)} />
       </div>
 
-      <p data-gsap="hero-sub" className={cx('max-w-lg text-base leading-relaxed', t.muted)}>
-        Cada hora que pierdes con papel y llamadas es dinero que no cobras. Weldix digitaliza tu
-        taller en 5 minutos — sin instalar nada, sin formación.
+      <p data-gsap="hero-sub" className={cx('max-w-lg text-[1.05rem] leading-relaxed', t.muted)}>
+        Cada hora perdida con papeleo es dinero que no cobras. Weldix digitaliza tu taller en 5
+        minutos — sin instalar nada.
       </p>
 
-      {/* CTAs múltiples */}
+      {/* CTAs envueltos en MagneticWrap */}
       <div className="flex flex-wrap gap-3">
-        <Link
-          to="/registro"
-          data-gsap="hero-cta"
-          className={cx(
-            'flex items-center gap-2 rounded-sm px-7 py-3.5 text-sm font-black uppercase tracking-wider shadow-lg transition',
-            t.btnPrimary
-          )}
-        >
-          <i className="bx bx-rocket text-base" />
-          Probar 15 días gratis
-        </Link>
-        <a
-          href="mailto:hola@weldix.app?subject=Quiero%20saber%20más%20sobre%20Weldix"
-          data-gsap="hero-cta"
-          className={cx(
-            'flex items-center gap-2 rounded-sm px-7 py-3.5 text-sm font-semibold uppercase tracking-wider transition',
-            t.btnGhost
-          )}
-        >
-          <i className="bx bx-envelope text-base" />
-          Email
-        </a>
+        <MagneticWrap strength={0.3}>
+          <Link
+            to="/registro"
+            data-gsap="hero-cta"
+            className={cx(
+              'flex items-center gap-2 rounded-xl px-7 py-3.5 text-sm font-bold tracking-wide shadow-lg transition',
+              t.btnPrimary
+            )}
+          >
+            <i className="bx bx-rocket text-base" />
+            Probar 15 días gratis
+          </Link>
+        </MagneticWrap>
+        <MagneticWrap strength={0.25}>
+          <a
+            href="mailto:hola@weldix.app?subject=Quiero%20saber%20más%20sobre%20Weldix"
+            data-gsap="hero-cta"
+            className={cx(
+              'flex items-center gap-2 rounded-xl px-7 py-3.5 text-sm font-medium tracking-wide transition',
+              t.btnGhost
+            )}
+          >
+            <i className="bx bx-envelope text-base" />
+            Email
+          </a>
+        </MagneticWrap>
       </div>
 
       <p className={cx('text-[0.62rem] font-semibold uppercase tracking-[0.18em]', t.faint)}>
@@ -495,7 +530,7 @@ const PainSection = ({ t }) => (
           <div
             key={text}
             data-gsap="pain-card"
-            className={cx('flex items-start gap-3 rounded-sm border p-4', t.painBorder)}
+            className={cx('flex items-start gap-3 rounded-xl border p-4', t.painBorder)}
           >
             <i className={cx(icon, 'mt-0.5 shrink-0 text-lg', t.painText)} />
             <p className={cx('text-sm leading-relaxed', t.muted)}>{text}</p>
@@ -542,6 +577,68 @@ const TrustMetricsBar = ({ t, isDark }) => (
   </section>
 )
 
+// ─── feature card con tilt 3D ─────────────────────────────────────────────────
+
+const FeatureCard = ({ n, icon, title, desc, highlight, t }) => {
+  const { ref, onMouseMove, onMouseLeave } = useTilt(6)
+
+  return (
+    <article
+      ref={ref}
+      onMouseMove={onMouseMove}
+      onMouseLeave={onMouseLeave}
+      data-gsap="feature-card"
+      style={{ transformStyle: 'preserve-3d', willChange: 'transform' }}
+      className={cx(
+        'group relative border-b border-r p-7 transition-colors duration-200 last:border-r-0',
+        highlight ? t.planPopular : t.card,
+        t.cardHover
+      )}
+    >
+      {highlight && (
+        <span
+          className={cx(
+            'absolute right-3 top-3 rounded-sm px-2 py-0.5 text-[0.48rem] font-black uppercase tracking-widest',
+            t.accentBg,
+            t.accentBgText
+          )}
+        >
+          Nuevo
+        </span>
+      )}
+      <div className="flex items-start gap-4">
+        <div
+          className={cx(
+            'flex h-10 w-10 shrink-0 items-center justify-center border text-xl',
+            t.accentTint,
+            t.accentBorder,
+            t.accent
+          )}
+        >
+          <i className={icon} />
+        </div>
+        <div className="space-y-2">
+          <div className="flex items-baseline gap-2">
+            <span
+              className={cx('font-mono text-[0.52rem] font-black tracking-widest', t.monoMuted)}
+            >
+              {n}
+            </span>
+            <h3 className="text-sm font-black uppercase tracking-wide">{title}</h3>
+          </div>
+          <p className={cx('text-xs leading-relaxed', t.muted)}>{desc}</p>
+        </div>
+      </div>
+      <div
+        className={cx(
+          'absolute bottom-0 right-0 h-5 w-5 border-b-2 border-r-2 opacity-0 transition-opacity group-hover:opacity-100',
+          t.accentBorder
+        )}
+      />
+    </article>
+  )
+}
+
 // ─── features ─────────────────────────────────────────────────────────────────
 
 const FeaturesSection = ({ t }) => (
@@ -554,16 +651,14 @@ const FeaturesSection = ({ t }) => (
         )}
       >
         <div>
-          <p
-            className={cx(
-              'mb-2 font-mono text-[0.58rem] font-bold uppercase tracking-[0.25em]',
-              t.accent
-            )}
-          >
-            // 01 · módulos
+          <p className={cx('mb-3 text-[11px] font-medium uppercase tracking-[0.12em]', t.accent)}>
+            Módulos
           </p>
           <h2
-            className={cx('text-3xl font-black uppercase tracking-tight sm:text-4xl', t.headline)}
+            className={cx(
+              'font-display text-3xl font-extrabold tracking-tight sm:text-4xl',
+              t.headline
+            )}
           >
             Todo lo que necesita
             <br />
@@ -577,49 +672,16 @@ const FeaturesSection = ({ t }) => (
         </p>
       </div>
       <div className="grid sm:grid-cols-2 lg:grid-cols-3">
-        {FEATURES.map(({ n, icon, title, desc }) => (
-          <article
+        {FEATURES.map(({ n, icon, title, desc, highlight }) => (
+          <FeatureCard
             key={n}
-            data-gsap="feature-card"
-            className={cx(
-              'group relative border-b border-r p-7 transition-colors duration-200 last:border-r-0',
-              t.card,
-              t.cardHover
-            )}
-          >
-            <div className="flex items-start gap-4">
-              <div
-                className={cx(
-                  'flex h-10 w-10 shrink-0 items-center justify-center border text-xl',
-                  t.accentTint,
-                  t.accentBorder,
-                  t.accent
-                )}
-              >
-                <i className={icon} />
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-baseline gap-2">
-                  <span
-                    className={cx(
-                      'font-mono text-[0.52rem] font-black tracking-widest',
-                      t.monoMuted
-                    )}
-                  >
-                    {n}
-                  </span>
-                  <h3 className="text-sm font-black uppercase tracking-wide">{title}</h3>
-                </div>
-                <p className={cx('text-xs leading-relaxed', t.muted)}>{desc}</p>
-              </div>
-            </div>
-            <div
-              className={cx(
-                'absolute bottom-0 right-0 h-5 w-5 border-b-2 border-r-2 opacity-0 transition-opacity group-hover:opacity-100',
-                t.accentBorder
-              )}
-            />
-          </article>
+            n={n}
+            icon={icon}
+            title={title}
+            desc={desc}
+            highlight={highlight}
+            t={t}
+          />
         ))}
       </div>
     </div>
@@ -636,15 +698,15 @@ const TimelineSection = ({ t }) => (
   >
     <div className="mx-auto max-w-6xl">
       <div className={cx('mb-14 border-b pb-8', t.divider)}>
-        <p
+        <p className={cx('mb-3 text-[11px] font-medium uppercase tracking-[0.12em]', t.accent)}>
+          Cómo funciona
+        </p>
+        <h2
           className={cx(
-            'mb-2 font-mono text-[0.58rem] font-bold uppercase tracking-[0.25em]',
-            t.accent
+            'font-display text-3xl font-extrabold tracking-tight sm:text-4xl',
+            t.headline
           )}
         >
-          // 02 · proceso
-        </p>
-        <h2 className={cx('text-3xl font-black uppercase tracking-tight sm:text-4xl', t.headline)}>
           De cero a taller digital.
           <br />
           Sin complicaciones.
@@ -712,7 +774,7 @@ const TimelineSection = ({ t }) => (
         <Link
           to="/registro"
           className={cx(
-            'inline-flex items-center gap-2 rounded-sm px-8 py-3.5 text-sm font-black uppercase tracking-wider shadow-lg transition',
+            'inline-flex items-center gap-2 rounded-xl px-8 py-3.5 text-sm font-bold tracking-wide shadow-lg transition',
             t.btnPrimary
           )}
         >
@@ -730,15 +792,15 @@ const TestimonialsSection = ({ t }) => (
   <section className="px-6 py-24">
     <div className="mx-auto max-w-6xl">
       <div className={cx('mb-12 border-b pb-8', t.divider)}>
-        <p
+        <p className={cx('mb-3 text-[11px] font-medium uppercase tracking-[0.12em]', t.accent)}>
+          Testimonios
+        </p>
+        <h2
           className={cx(
-            'mb-2 font-mono text-[0.58rem] font-bold uppercase tracking-[0.25em]',
-            t.accent
+            'font-display text-3xl font-extrabold tracking-tight sm:text-4xl',
+            t.headline
           )}
         >
-          // 03 · testimonios
-        </p>
-        <h2 className={cx('text-3xl font-black uppercase tracking-tight sm:text-4xl', t.headline)}>
           Lo que dicen
           <br />
           los talleres
@@ -751,7 +813,7 @@ const TestimonialsSection = ({ t }) => (
             key={name}
             data-gsap="testimonial"
             className={cx(
-              'relative rounded-sm border p-8 transition-colors duration-200',
+              'relative rounded-2xl border p-8 transition-colors duration-200',
               t.testimonial
             )}
           >
@@ -792,11 +854,118 @@ const TestimonialsSection = ({ t }) => (
       </div>
 
       {/* ROI metric */}
-      <div data-gsap="roi-metric" className={cx('mt-8 rounded-sm border p-6 text-center', t.card)}>
-        <p className={cx('text-3xl font-black', t.accent)}>+2 horas/día ahorradas</p>
+      <div data-gsap="roi-metric" className={cx('mt-8 rounded-2xl border p-6 text-center', t.card)}>
+        <p className={cx('text-3xl font-black', t.accent)}>1.125€/mes ahorrados</p>
         <p className={cx('mt-1 text-sm', t.muted)}>
-          de media por taller en los primeros 30 días de uso
+          de media por taller con 5 operarios en los primeros 30 días de uso
         </p>
+      </div>
+    </div>
+  </section>
+)
+
+// ─── ROI — cuánto ahorra el taller ───────────────────────────────────────────
+
+const ROI_ITEMS = [
+  {
+    icon: 'bx bx-time-five',
+    title: 'Fichaje digital',
+    savingNum: 560,
+    savingSuffix: '€/mes',
+    desc: '5 operarios × 15 min/día de papeleo eliminado = 27 h/mes × 20€/h',
+  },
+  {
+    icon: 'bx bx-receipt',
+    title: 'Albaranes con IA',
+    savingNum: 270,
+    savingSuffix: '€/mes',
+    desc: '8 h/mes de transcripción eliminadas + errores de stock evitados',
+  },
+  {
+    icon: 'bx bx-list-check',
+    title: 'OTs digitales',
+    savingNum: 295,
+    savingSuffix: '€/mes',
+    desc: '13 h/mes de gestión en papel eliminadas + llamadas al taller reducidas',
+  },
+]
+
+const RoiSection = ({ t }) => (
+  <section
+    className={cx('border-y px-6 py-20 transition-colors duration-300', t.divider, t.sectionAlt)}
+  >
+    <div className="mx-auto max-w-6xl">
+      <div className={cx('mb-12 border-b pb-8', t.divider)}>
+        <p className={cx('mb-3 text-[11px] font-medium uppercase tracking-[0.12em]', t.accent)}>
+          ROI real
+        </p>
+        <h2
+          className={cx(
+            'font-display text-3xl font-extrabold tracking-tight sm:text-4xl',
+            t.headline
+          )}
+        >
+          Un taller de 5 operarios ahorra <span className={t.accent}>más de 1.100€ al mes</span>{' '}
+          <span className="font-light opacity-30">con Weldix.</span>
+        </h2>
+        <p className={cx('mt-3 max-w-lg text-sm leading-relaxed', t.muted)}>
+          Weldix no es un gasto — es una inversión que se paga sola el primer día del mes. Aquí el
+          desglose real.
+        </p>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-3">
+        {ROI_ITEMS.map(({ icon, title, savingNum, savingSuffix, desc }) => (
+          <div key={title} className={cx('rounded-2xl border p-6 transition-colors', t.card)}>
+            <i className={cx(icon, 'mb-3 text-2xl', t.accent)} />
+            <p className={cx('text-2xl font-black', t.accent)}>
+              <CountUp end={savingNum} suffix={savingSuffix} duration={1.8} />
+            </p>
+            <p className="mt-1 text-sm font-black uppercase tracking-wide">{title}</p>
+            <p className={cx('mt-2 text-xs leading-relaxed', t.muted)}>{desc}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Comparativa precio vs ahorro */}
+      <div className={cx('mt-8 grid gap-3 border p-6 sm:grid-cols-3', t.card)}>
+        <div className="text-center">
+          <p className={cx('text-[0.6rem] font-bold uppercase tracking-widest', t.muted)}>
+            Coste Weldix
+          </p>
+          <p className={cx('text-3xl font-black', t.accent)}>
+            <CountUp end={134} suffix="€" duration={1.5} />
+            <span className={cx('text-sm font-normal', t.muted)}>/mes</span>
+          </p>
+          <p className={cx('text-xs', t.muted)}>49€ base + 5 ops × 17€</p>
+        </div>
+        <div className="flex items-center justify-center">
+          <div
+            className={cx(
+              'rounded-full border px-4 py-2 text-xs font-black uppercase tracking-widest',
+              t.accentBorder,
+              t.accent
+            )}
+          >
+            vs
+          </div>
+        </div>
+        <div className="text-center">
+          <p className={cx('text-[0.6rem] font-bold uppercase tracking-widest', t.muted)}>
+            Ahorro real
+          </p>
+          <p className="text-3xl font-black text-emerald-400">
+            <CountUp end={1125} suffix="€" duration={2} format={(n) => n.toLocaleString('es-ES')} />
+            <span className={cx('text-sm font-normal', t.muted)}>/mes</span>
+          </p>
+          <p className={cx('text-xs', t.muted)}>
+            ROI:{' '}
+            <strong className="text-emerald-400">
+              <CountUp end={8} suffix="x" duration={1.2} />
+            </strong>{' '}
+            — se paga en el primer día
+          </p>
+        </div>
       </div>
     </div>
   </section>
@@ -817,82 +986,123 @@ const PricingSection = ({ t }) => (
         )}
       >
         <div>
-          <p
-            className={cx(
-              'mb-2 font-mono text-[0.58rem] font-bold uppercase tracking-[0.25em]',
-              t.accent
-            )}
-          >
-            // 04 · precios
+          <p className={cx('mb-3 text-[11px] font-medium uppercase tracking-[0.12em]', t.accent)}>
+            Precios
           </p>
           <h2
-            className={cx('text-3xl font-black uppercase tracking-tight sm:text-4xl', t.headline)}
+            className={cx(
+              'font-display text-3xl font-extrabold tracking-tight sm:text-4xl',
+              t.headline
+            )}
           >
-            Sin sorpresas.
-            <br />
-            Sin letra pequeña.
+            Sin sorpresas. <span className="font-light opacity-40">Sin letra pequeña.</span>
           </h2>
         </div>
-        <p className={cx('hidden text-right text-xs', t.muted)}>
+        <p className={cx('hidden text-right text-xs leading-relaxed', t.muted)}>
           15 días de prueba gratuita.
           <br />
           Sin tarjeta de crédito.
         </p>
       </div>
 
-      <div className="mx-auto grid max-w-3xl md:grid-cols-2">
-        {PLANS.map(({ name, users, price, features, popular }, i) => (
+      <div className="mx-auto max-w-3xl">
+        {/* Tarjeta de precio único — glow-pulse-amber se aplica via CSS keyframe (sin JS) */}
+        <div
+          data-gsap="plan-card"
+          className={cx('glow-pulse-amber relative border p-8', t.planPopular)}
+        >
+          <div className={cx('absolute inset-x-0 top-0 h-[2px]', t.planPopLine)} />
+
+          <div className="mb-6 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className={cx('font-mono text-[0.52rem] uppercase tracking-[0.2em]', t.monoMuted)}>
+                Un solo plan · Todo incluido
+              </p>
+              <h3 className="text-2xl font-black uppercase tracking-wider">Weldix Pro</h3>
+              <span
+                className={cx(
+                  'inline-flex items-center gap-1 rounded-sm px-2 py-0.5 text-[0.52rem] font-black uppercase tracking-widest',
+                  t.accentBg,
+                  t.accentBgText
+                )}
+              >
+                <i className="bx bx-star text-[0.7rem]" />
+                Incluye todo
+              </span>
+            </div>
+            {/* Fórmula de precio */}
+            <div className="text-right">
+              <p className={cx('text-[0.6rem] uppercase tracking-widest', t.muted)}>
+                Base del sistema
+              </p>
+              <p className="text-4xl font-black">
+                {PRECIO_BASE}€<span className={cx('text-base font-normal', t.muted)}>/mes</span>
+              </p>
+              <p className={cx('text-sm font-bold', t.accent)}>
+                + {PRECIO_POR_OPERARIO}€ por operario/mes
+              </p>
+            </div>
+          </div>
+
+          {/* Ejemplos de precio */}
           <div
-            key={name}
-            data-gsap="plan-card"
             className={cx(
-              'relative flex flex-col border p-8 transition-colors',
-              popular ? t.planPopular : t.planNormal,
-              i > 0 && '-ml-px'
+              'mb-6 grid grid-cols-3 divide-x rounded-sm border',
+              t.divider,
+              'overflow-hidden'
             )}
           >
-            {popular && <div className={cx('absolute inset-x-0 top-0 h-[2px]', t.planPopLine)} />}
-            <div className="mb-6 space-y-1">
-              <p className={cx('font-mono text-[0.52rem] uppercase tracking-[0.2em]', t.monoMuted)}>
-                {users}
-              </p>
-              <h3 className="text-lg font-black uppercase tracking-wider">{name}</h3>
-              {popular && (
-                <span
-                  className={cx(
-                    'inline-flex items-center gap-1 rounded-sm px-2 py-0.5 text-[0.52rem] font-black uppercase tracking-widest',
-                    t.accentBg,
-                    t.accentBgText
-                  )}
-                >
-                  <i className="bx bx-star text-[0.7rem]" />
-                  Recomendado
-                </span>
-              )}
-            </div>
-            <div className="mb-6">
-              <span className="text-5xl font-black">{price}€</span>
-              <span className={cx('text-sm', t.muted)}> / mes</span>
-            </div>
-            <ul className="mb-8 flex-1 space-y-2.5">
-              {features.map((f) => (
-                <li key={f} className={cx('flex items-start gap-2 text-xs', t.muted)}>
-                  <i className={cx('bx bx-check mt-px shrink-0 text-sm', t.accent)} />
-                  {f}
-                </li>
-              ))}
-            </ul>
+            {PLAN_EXAMPLES.map(({ ops, total }) => (
+              <div key={ops} className="p-3 text-center">
+                <p className={cx('text-xs font-bold', t.muted)}>{ops} operarios</p>
+                <p className={cx('text-xl font-black', t.accent)}>{total}€</p>
+                <p className={cx('text-[0.55rem] uppercase tracking-wider', t.muted)}>/ mes</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Qué incluye */}
+          <ul className="mb-8 grid gap-2 sm:grid-cols-2">
+            {PLAN_INCLUDES.map((f) => (
+              <li key={f} className={cx('flex items-start gap-2 text-xs', t.muted)}>
+                <i className={cx('bx bx-check mt-px shrink-0 text-sm', t.accent)} />
+                {f}
+              </li>
+            ))}
+          </ul>
+
+          <div className="flex flex-col gap-3 sm:flex-row">
             <Link
               to="/registro"
               className={cx(
-                'flex items-center justify-center gap-2 rounded-sm py-3 text-xs font-black uppercase tracking-wider transition',
-                popular ? t.btnPrimary : t.btnGhost
+                'flex flex-1 items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold tracking-wide transition shadow-lg',
+                t.btnPrimary
               )}
             >
-              Empezar 15 días gratis
+              <i className="bx bx-rocket" />
+              Probar 15 días gratis — sin tarjeta
             </Link>
+            <a
+              href="mailto:hola@weldix.app?subject=Consulta%20sobre%20Weldix"
+              className={cx(
+                'flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-medium tracking-wide transition',
+                t.btnGhost
+              )}
+            >
+              <i className="bx bx-envelope" />
+              Hablar con nosotros
+            </a>
           </div>
-        ))}
+        </div>
+
+        <p
+          className={cx(
+            'mt-4 text-center text-[0.62rem] font-semibold uppercase tracking-[0.18em]',
+            t.faint
+          )}
+        >
+          Sin permanencia · Cancela cuando quieras · Precio final según operarios reales
+        </p>
       </div>
     </div>
   </section>
@@ -907,12 +1117,12 @@ const CtaSection = ({ t }) => (
   >
     <div className="mx-auto max-w-2xl space-y-6">
       <p className={cx('font-mono text-[0.58rem] font-bold uppercase tracking-[0.25em]', t.accent)}>
-        // fin de línea
+        Empieza hoy
       </p>
       <h2
         data-gsap="cta-headline"
         className={cx(
-          'text-5xl font-black uppercase leading-tight tracking-tighter sm:text-6xl',
+          'font-display text-5xl font-extrabold leading-tight tracking-tight sm:text-6xl',
           t.headline
         )}
       >
@@ -929,7 +1139,7 @@ const CtaSection = ({ t }) => (
           to="/registro"
           data-gsap="cta-primary"
           className={cx(
-            'flex items-center gap-2 rounded-sm px-10 py-4 text-sm font-black uppercase tracking-wider shadow-lg transition',
+            'flex items-center gap-2 rounded-xl px-10 py-4 text-sm font-bold tracking-wide shadow-lg transition',
             t.btnPrimary
           )}
         >
@@ -957,13 +1167,8 @@ const LandingFooter = ({ t }) => (
           alt="Weldix"
           className="h-5 w-5 shrink-0 opacity-40 object-contain"
         />
-        <span
-          className={cx(
-            'font-mono text-[0.52rem] font-bold uppercase tracking-[0.25em]',
-            t.monoMuted
-          )}
-        >
-          WELDIX
+        <span className={cx('font-display text-sm font-bold tracking-tight', t.monoMuted)}>
+          Weldix
         </span>
       </div>
       <div
@@ -1003,18 +1208,24 @@ const LandingPage = () => {
   useLandingAnimations()
 
   return (
-    <div className={cx('min-h-screen transition-colors duration-300', t.page)}>
+    <>
+      {/* ScrollProgress y SocialProofToast fuera del wrapper — sin transforms de GSAP */}
+      <ScrollProgress />
       <NavBar isDark={isDark} onToggle={toggleTheme} t={t} />
-      <HeroSection t={t} isDark={isDark} />
-      <PainSection t={t} />
-      <TrustMetricsBar t={t} isDark={isDark} />
-      <FeaturesSection t={t} />
-      <TimelineSection t={t} />
-      <TestimonialsSection t={t} />
-      <PricingSection t={t} />
-      <CtaSection t={t} />
-      <LandingFooter t={t} />
-    </div>
+      <SocialProofToast isDark={isDark} />
+      <div className={cx('min-h-screen transition-colors duration-300', t.page)}>
+        <HeroSection t={t} isDark={isDark} />
+        <PainSection t={t} />
+        <TrustMetricsBar t={t} isDark={isDark} />
+        <FeaturesSection t={t} />
+        <RoiSection t={t} />
+        <TimelineSection t={t} />
+        <TestimonialsSection t={t} />
+        <PricingSection t={t} />
+        <CtaSection t={t} />
+        <LandingFooter t={t} />
+      </div>
+    </>
   )
 }
 

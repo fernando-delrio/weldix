@@ -191,8 +191,10 @@ def authenticate_user(db: Session, email: str, password: str) -> dict:
     if _is_locked(safe_email):
         raise ValueError("Cuenta bloqueada temporalmente por intentos fallidos")
 
-    user = db.query(User).filter(User.email == safe_email).first()
-    if not user or not verify_password(password, user.password_hash):
+    # Busca todos los usuarios con ese email (puede existir en varios talleres)
+    candidates = db.query(User).filter(User.email == safe_email).all()
+    user = next((u for u in candidates if verify_password(password, str(u.password_hash))), None)
+    if not user:
         _register_failed_attempt(safe_email)
         raise ValueError("Credenciales invalidas")
 

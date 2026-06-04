@@ -1,9 +1,5 @@
-// 🆕 Debounce: técnica que retrasa la ejecución de una función hasta que el usuario
-// "para" de escribir. Evita N llamadas al servidor mientras el usuario teclea.
-// Aquí lo implementamos con useEffect + setTimeout: cada vez que cambia `query`,
-// el efecto agenda una búsqueda en 300ms. Si `query` cambia antes de que pasen
-// los 300ms, el cleanup cancela el timer anterior y arranca uno nuevo.
 import { useCallback, useEffect, useState } from 'react'
+import hotkeys from 'hotkeys-js'
 
 import { searchJobs } from '../../jobs/services/jobsService'
 import { mapJobsModel } from '../../jobs/lib/jobsModel'
@@ -54,17 +50,19 @@ export const useSearch = () => {
     return () => clearTimeout(timer)
   }, [query])
 
-  // Ctrl+K abre el modal desde cualquier parte de la app
+  // Ctrl+K / Cmd+K — abre o cierra el modal de búsqueda
   useEffect(() => {
-    const handleKeyDown = (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-        e.preventDefault()
-        isOpen ? close() : open()
-      }
-      if (e.key === 'Escape') close()
+    hotkeys('ctrl+k, command+k', (e) => {
+      e.preventDefault()
+      isOpen ? close() : open()
+    })
+    hotkeys('esc', () => {
+      if (isOpen) close()
+    })
+    return () => {
+      hotkeys.unbind('ctrl+k, command+k')
+      hotkeys.unbind('esc')
     }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
   }, [isOpen, open, close])
 
   return { isOpen, open, close, query, setQuery, results, isSearching, error }
