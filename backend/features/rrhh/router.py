@@ -17,16 +17,37 @@ from backend.features.auth.model import User
 from . import service
 from .schemas import (
     TIPOS_AUSENCIA,
+    TIPOS_CERTIFICADO,
+    TIPOS_EPI,
+    TIPOS_PERMISO_ESPECIAL,
     TIPOS_REQUIEREN_JUSTIFICANTE,
+    AccidenteRequest,
+    ActualizarAccidenteRequest,
+    AccidenteLaboralResponse,
+    CertificadoRequest,
+    CertificadoResponse,
     ConfiguracionLaboralRequest,
     ConfiguracionLaboralResponse,
     CrearSolicitudRequest,
+    EpiEntregaRequest,
+    EpiEntregaResponse,
     EventoCalendarioResponse,
     FestivoResponse,
+    IndicesSiniestralidad,
     InformeMensualResponse,
+    PermisoTrabajoRequest,
+    PermisoTrabajoResponse,
+    ReconocimientoMedicoResponse,
+    ReconocimientoRequest,
+    ResumenHorasResponse,
+    RevisarCambioTurnoRequest,
     RevisarSolicitudRequest,
     SaldoVacacionesResponse,
     SolicitudAusenciaResponse,
+    SolicitudCambioTurnoRequest,
+    SolicitudCambioTurnoResponse,
+    TurnoAsignadoResponse,
+    TurnosBulkRequest,
 )
 
 router = APIRouter(
@@ -269,3 +290,457 @@ def informe_mensual(
 ):
     """Admin: resumen mensual del equipo — ausencias + horas fichadas."""
     return service.get_informe_mensual(db, year, month)
+
+
+# ── Lookups ──────────────────────────────────────────────────────────────────
+
+@router.get("/tipos-epi")
+def get_tipos_epi(_: User = Depends(get_current_user)):
+    return [{"valor": k, "label": v} for k, v in TIPOS_EPI.items()]
+
+
+@router.get("/tipos-certificado")
+def get_tipos_certificado(_: User = Depends(get_current_user)):
+    return [{"valor": k, "label": v} for k, v in TIPOS_CERTIFICADO.items()]
+
+
+@router.get("/tipos-permiso-especial")
+def get_tipos_permiso_especial(_: User = Depends(get_current_user)):
+    return [{"valor": k, "label": v} for k, v in TIPOS_PERMISO_ESPECIAL.items()]
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# RRHH-1 — EPIs
+# ══════════════════════════════════════════════════════════════════════════════
+
+MEDIA_RRHH = "media/rrhh"
+
+
+@router.get("/epis", response_model=list[EpiEntregaResponse])
+def listar_epis(
+    operario_id: int | None = Query(default=None),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Admin ve todos los EPIs del tenant. Operario ve solo los suyos."""
+    uid = None if current_user.role == "admin" else current_user.id
+    epis = service.get_epis(db, current_user.tenant_id, operario_id or uid)
+    return [EpiEntregaResponse.from_orm(epi) for epi in epis]
+
+
+@router.get("/epis/proximos-caducar", response_model=list[EpiEntregaResponse])
+def epis_proximos_caducar(
+    dias: int = Query(default=30, ge=1, le=365),
+    db: Session = Depends(get_db),
+    _: User = Depends(require_role("admin")),
+):
+    """Admin: EPIs que caducan en los próximos N días."""
+    epis = service.get_epis_proximos_caducar(db, _.tenant_id, dias)
+    return [EpiEntregaResponse.from_orm(epi) for epi in epis]
+
+
+@router.post("/epis", response_model=EpiEntregaResponse, status_code=201)
+def crear_epi(
+    body: EpiEntregaRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("admin")),
+):
+    """Admin: registra la entrega de un EPI a un operario."""
+    epi = service.crear_epi(db, current_user.tenant_id, current_user.id, body)
+    return EpiEntregaResponse.from_orm(epi)
+
+
+@router.patch("/epis/{epi_id}/estado", response_model=EpiEntregaResponse)
+def actualizar_estado_epi(
+    epi_id: int,
+    estado: str = Query(...),
+    db: Session = Depends(get_db),
+    _: User = Depends(require_role("admin")),
+):
+    """Admin: cambia el estado de un EPI (activo → repuesto → baja)."""
+    try:
+        epi = service.actualizar_estado_epi(db, epi_id, estado)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    return EpiEntregaResponse.from_orm(epi)
+
+
+@router.delete("/epis/{epi_id}", status_code=204)
+def eliminar_epi(
+    epi_id: int,
+    db: Session = Depends(get_db),
+    _: User = Depends(require_role("admin")),
+):
+    """Admin: elimina un registro de entrega de EPI (para corregir errores)."""
+    try:
+        service.eliminar_epi(db, epi_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# RRHH-1 — Certificados
+# ══════════════════════════════════════════════════════════════════════════════
+
+
+@router.get("/certificados", response_model=list[CertificadoResponse])
+def listar_certificados(
+    operario_id: int | None = Query(default=None),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    uid = None if current_user.role == "admin" else current_user.id
+    certs = service.get_certificados(db, current_user.tenant_id, operario_id or uid)
+    return [CertificadoResponse.from_orm(cert) for cert in certs]
+
+
+@router.get("/certificados/proximos-caducar", response_model=list[CertificadoResponse])
+def certificados_proximos_caducar(
+    dias: int = Query(default=60, ge=1, le=365),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("admin")),
+):
+    certs = service.get_certificados_proximos_caducar(db, current_user.tenant_id, dias)
+    return [CertificadoResponse.from_orm(cert) for cert in certs]
+
+
+@router.post("/certificados", response_model=CertificadoResponse, status_code=201)
+def crear_certificado(
+    tipo: str = File(default=...),
+    operario_id: int = File(default=...),
+    fecha_emision: str = File(default=...),
+    fecha_caducidad: str | None = File(default=None),
+    descripcion: str | None = File(default=None),
+    entidad_certificadora: str | None = File(default=None),
+    archivo: UploadFile | None = File(default=None),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("admin")),
+):
+    """Admin: sube un certificado (con archivo adjunto opcional)."""
+    from datetime import date as date_type
+    ruta = None
+    nombre = None
+    if archivo and archivo.filename:
+        contenido = archivo.file.read()
+        if len(contenido) > 10 * 1024 * 1024:
+            raise HTTPException(400, "El archivo no puede superar 10MB.")
+        os.makedirs(MEDIA_RRHH, exist_ok=True)
+        ext = archivo.filename.rsplit(".", 1)[-1] if "." in archivo.filename else "bin"
+        nombre_unico = f"{uuid.uuid4().hex}.{ext}"
+        ruta = os.path.join(MEDIA_RRHH, nombre_unico)
+        with open(ruta, "wb") as archivo_destino:
+            archivo_destino.write(contenido)
+        nombre = archivo.filename
+
+    data = CertificadoRequest(
+        operario_id=operario_id,
+        tipo=tipo,
+        descripcion=descripcion,
+        entidad_certificadora=entidad_certificadora,
+        fecha_emision=date_type.fromisoformat(fecha_emision),
+        fecha_caducidad=date_type.fromisoformat(fecha_caducidad) if fecha_caducidad else None,
+    )
+    try:
+        cert = service.crear_certificado(db, current_user.tenant_id, current_user.id, data, ruta, nombre)
+    except ValueError as exc:
+        if ruta and os.path.exists(ruta):
+            os.remove(ruta)
+        raise HTTPException(400, detail=str(exc))
+    return CertificadoResponse.from_orm(cert)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# RRHH-1 — Reconocimientos médicos
+# ══════════════════════════════════════════════════════════════════════════════
+
+
+@router.get("/reconocimientos", response_model=list[ReconocimientoMedicoResponse])
+def listar_reconocimientos(
+    operario_id: int | None = Query(default=None),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    uid = None if current_user.role == "admin" else current_user.id
+    recs = service.get_reconocimientos(db, current_user.tenant_id, operario_id or uid)
+    return [ReconocimientoMedicoResponse.from_orm(rec) for rec in recs]
+
+
+@router.post("/reconocimientos", response_model=ReconocimientoMedicoResponse, status_code=201)
+def crear_reconocimiento(
+    operario_id: int = File(default=...),
+    fecha_realizado: str = File(default=...),
+    fecha_proximo: str | None = File(default=None),
+    resultado: str = File(default="apto"),
+    restricciones: str | None = File(default=None),
+    observaciones: str | None = File(default=None),
+    archivo: UploadFile | None = File(default=None),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("admin")),
+):
+    from datetime import date as date_type
+    ruta = None
+    nombre = None
+    if archivo and archivo.filename:
+        contenido = archivo.file.read()
+        if len(contenido) > 10 * 1024 * 1024:
+            raise HTTPException(400, "El archivo no puede superar 10MB.")
+        os.makedirs(MEDIA_RRHH, exist_ok=True)
+        ext = archivo.filename.rsplit(".", 1)[-1] if "." in archivo.filename else "bin"
+        nombre_unico = f"{uuid.uuid4().hex}.{ext}"
+        ruta = os.path.join(MEDIA_RRHH, nombre_unico)
+        with open(ruta, "wb") as archivo_destino:
+            archivo_destino.write(contenido)
+        nombre = archivo.filename
+
+    data = ReconocimientoRequest(
+        operario_id=operario_id,
+        fecha_realizado=date_type.fromisoformat(fecha_realizado),
+        fecha_proximo=date_type.fromisoformat(fecha_proximo) if fecha_proximo else None,
+        resultado=resultado,
+        restricciones=restricciones,
+        observaciones=observaciones,
+    )
+    try:
+        rec = service.crear_reconocimiento(db, current_user.tenant_id, current_user.id, data, ruta, nombre)
+    except ValueError as exc:
+        if ruta and os.path.exists(ruta):
+            os.remove(ruta)
+        raise HTTPException(400, detail=str(exc))
+    return ReconocimientoMedicoResponse.from_orm(rec)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# RRHH-1 — Horas extra
+# ══════════════════════════════════════════════════════════════════════════════
+
+
+@router.get("/horas-extra/{operario_id}", response_model=ResumenHorasResponse)
+def resumen_horas(
+    operario_id: int,
+    mes: str = Query(default=None, description="Formato YYYY-MM. Por defecto mes actual."),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Resumen de horas ordinarias, extra, nocturnas y festivas de un mes."""
+    if not mes:
+        hoy = date.today()
+        mes = f"{hoy.year}-{hoy.month:02d}"
+    if current_user.role != "admin" and current_user.id != operario_id:
+        raise HTTPException(403, "Solo puedes consultar tus propias horas")
+    return service.get_resumen_horas(db, current_user.tenant_id, operario_id, mes)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# RRHH-2 — Turnos
+# ══════════════════════════════════════════════════════════════════════════════
+
+
+@router.get("/turnos", response_model=list[TurnoAsignadoResponse])
+def listar_turnos(
+    fecha_inicio: date = Query(default=None),
+    fecha_fin: date = Query(default=None),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Admin: todos los turnos del rango. Operario: solo los suyos.
+    Por defecto devuelve la semana actual.
+    """
+    import datetime
+    if not fecha_inicio:
+        hoy = datetime.date.today()
+        fecha_inicio = hoy - datetime.timedelta(days=hoy.weekday())
+        fecha_fin = fecha_inicio + datetime.timedelta(days=6)
+    elif not fecha_fin:
+        fecha_fin = fecha_inicio
+    # Operario solo ve sus propios turnos
+    operario_id_filtro = None if current_user.role == "admin" else current_user.id
+    turnos = service.get_turnos_semana(
+        db, current_user.tenant_id, fecha_inicio, fecha_fin,
+        operario_id=operario_id_filtro,
+    )
+    return [TurnoAsignadoResponse.from_orm(turno) for turno in turnos]
+
+
+@router.post("/turnos/bulk", response_model=list[TurnoAsignadoResponse], status_code=201)
+def crear_turnos_bulk(
+    body: TurnosBulkRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("admin")),
+):
+    """Admin: asigna o actualiza varios turnos de una vez (cuadrante semanal)."""
+    turnos = service.crear_turno_bulk(db, current_user.tenant_id, current_user.id, body.turnos)
+    return [TurnoAsignadoResponse.from_orm(turno) for turno in turnos]
+
+
+@router.delete("/turnos/{turno_id}", status_code=204)
+def eliminar_turno(
+    turno_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("admin")),
+):
+    try:
+        service.eliminar_turno(db, turno_id, current_user.tenant_id)
+    except ValueError as exc:
+        raise HTTPException(404, detail=str(exc))
+
+
+@router.post("/turnos/solicitar-cambio", response_model=SolicitudCambioTurnoResponse, status_code=201)
+def solicitar_cambio_turno(
+    body: SolicitudCambioTurnoRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Operario solicita un cambio de turno con un compañero."""
+    sol = service.solicitar_cambio_turno(db, current_user.tenant_id, current_user.id, body)
+    return SolicitudCambioTurnoResponse.from_orm(sol)
+
+
+@router.get("/turnos/cambios", response_model=list[SolicitudCambioTurnoResponse])
+def listar_cambios_turno(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("admin")),
+):
+    solicitudes = service.get_solicitudes_cambio_turno(db, current_user.tenant_id)
+    return [SolicitudCambioTurnoResponse.from_orm(sol) for sol in solicitudes]
+
+
+@router.patch("/turnos/cambios/{solicitud_id}/revisar", response_model=SolicitudCambioTurnoResponse)
+def revisar_cambio_turno(
+    solicitud_id: int,
+    body: RevisarCambioTurnoRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("admin")),
+):
+    try:
+        sol = service.revisar_cambio_turno(db, solicitud_id, current_user.id, body)
+    except ValueError as exc:
+        raise HTTPException(400, detail=str(exc))
+    return SolicitudCambioTurnoResponse.from_orm(sol)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# RRHH-3 — Accidentes laborales
+# ══════════════════════════════════════════════════════════════════════════════
+
+
+@router.get("/accidentes/mios", response_model=list[AccidenteLaboralResponse])
+def mis_accidentes(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Operario: accidentes/incidentes en los que figura como afectado."""
+    from sqlalchemy import extract
+    accidentes = (
+        db.query(AccidenteLaboral)
+        .filter(
+            AccidenteLaboral.tenant_id == current_user.tenant_id,
+            AccidenteLaboral.afectado_id == current_user.id,
+        )
+        .order_by(AccidenteLaboral.fecha_hora.desc())
+        .all()
+    )
+    return [AccidenteLaboralResponse.from_orm(acc) for acc in accidentes]
+
+
+@router.get("/accidentes", response_model=list[AccidenteLaboralResponse])
+def listar_accidentes(
+    db: Session = Depends(get_db),
+    _: User = Depends(require_role("admin")),
+):
+    accidentes = service.get_accidentes(db, _.tenant_id)
+    return [AccidenteLaboralResponse.from_orm(acc) for acc in accidentes]
+
+
+@router.post("/accidentes", response_model=AccidenteLaboralResponse, status_code=201)
+def crear_accidente(
+    body: AccidenteRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Cualquier usuario autenticado puede reportar un accidente/incidente."""
+    acc = service.crear_accidente(db, current_user.tenant_id, current_user.id, body)
+    return AccidenteLaboralResponse.from_orm(acc)
+
+
+@router.patch("/accidentes/{accidente_id}", response_model=AccidenteLaboralResponse)
+def actualizar_accidente(
+    accidente_id: int,
+    body: ActualizarAccidenteRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("admin")),
+):
+    try:
+        acc = service.actualizar_accidente(db, accidente_id, current_user.tenant_id, body)
+    except ValueError as exc:
+        raise HTTPException(400, detail=str(exc))
+    return AccidenteLaboralResponse.from_orm(acc)
+
+
+@router.get("/accidentes/indices", response_model=IndicesSiniestralidad)
+def indices_siniestralidad(
+    year: int = Query(default=date.today().year),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("admin")),
+):
+    return service.calcular_indices_siniestralidad(db, current_user.tenant_id, year)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# RRHH-3 — Permisos de trabajo especiales
+# ══════════════════════════════════════════════════════════════════════════════
+
+
+@router.get("/permisos-especiales", response_model=list[PermisoTrabajoResponse])
+def listar_permisos_especiales(
+    operario_id: int | None = Query(default=None),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    uid = None if current_user.role == "admin" else current_user.id
+    permisos = service.get_permisos_trabajo(db, current_user.tenant_id, operario_id or uid)
+    return [PermisoTrabajoResponse.from_orm(permiso) for permiso in permisos]
+
+
+@router.post("/permisos-especiales", response_model=PermisoTrabajoResponse, status_code=201)
+def crear_permiso_especial(
+    operario_id: int = File(default=...),
+    tipo: str = File(default=...),
+    fecha_emision: str = File(default=...),
+    fecha_caducidad: str | None = File(default=None),
+    descripcion_trabajo: str | None = File(default=None),
+    archivo: UploadFile | None = File(default=None),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("admin")),
+):
+    from datetime import date as date_type
+    ruta = None
+    nombre = None
+    if archivo and archivo.filename:
+        contenido = archivo.file.read()
+        if len(contenido) > 10 * 1024 * 1024:
+            raise HTTPException(400, "El archivo no puede superar 10MB.")
+        os.makedirs(MEDIA_RRHH, exist_ok=True)
+        ext = archivo.filename.rsplit(".", 1)[-1] if "." in archivo.filename else "bin"
+        nombre_unico = f"{uuid.uuid4().hex}.{ext}"
+        ruta = os.path.join(MEDIA_RRHH, nombre_unico)
+        with open(ruta, "wb") as archivo_destino:
+            archivo_destino.write(contenido)
+        nombre = archivo.filename
+
+    data = PermisoTrabajoRequest(
+        operario_id=operario_id,
+        tipo=tipo,
+        descripcion_trabajo=descripcion_trabajo,
+        fecha_emision=date_type.fromisoformat(fecha_emision),
+        fecha_caducidad=date_type.fromisoformat(fecha_caducidad) if fecha_caducidad else None,
+    )
+    try:
+        permiso = service.crear_permiso_trabajo(
+            db, current_user.tenant_id, current_user.id, data, ruta, nombre
+        )
+    except ValueError as exc:
+        if ruta and os.path.exists(ruta):
+            os.remove(ruta)
+        raise HTTPException(400, detail=str(exc))
+    return PermisoTrabajoResponse.from_orm(permiso)
