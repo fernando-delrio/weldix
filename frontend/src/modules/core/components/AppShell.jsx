@@ -14,6 +14,8 @@ import { getNavItems } from '../lib/navigation'
 import { NavIcon } from '../lib/icons'
 import { cx } from '../lib/cx'
 import useTrialStatus from '../hooks/useTrialStatus'
+import useNotifications from '../hooks/useNotifications'
+import NotificationBell from './NotificationBell'
 import { useTheme } from '../lib/ThemeContext'
 
 const SunIcon = () => (
@@ -93,6 +95,9 @@ const Sidebar = ({
   timeLabel,
   onInstall,
   canInstall,
+  alerts,
+  unread,
+  onRead,
 }) => {
   const location = useLocation()
 
@@ -169,29 +174,7 @@ const Sidebar = ({
           <span className="hidden text-sm font-semibold tracking-wide lg:block">Buscar</span>
         </button>
 
-        {/* Campana de notificaciones — placeholder Fase 5 */}
-        <button
-          type="button"
-          title="Notificaciones"
-          aria-label="Notificaciones"
-          className="relative flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 transition hover:bg-slate-800/70 hover:text-slate-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.8}
-            stroke="currentColor"
-            className="h-5 w-5 shrink-0"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"
-            />
-          </svg>
-          <span className="hidden text-sm font-semibold tracking-wide lg:block">Avisos</span>
-        </button>
+        <NotificationBell alerts={alerts} unread={unread} onRead={onRead} />
 
         {/* Instalar PWA — solo aparece cuando el browser lo permite */}
         {canInstall && (
@@ -260,7 +243,7 @@ const Sidebar = ({
 }
 
 // ── Header móvil ────────────────────────────────────────────────────────────
-const MobileHeader = ({ roleLabel, onLogout, onSearchOpen, timeLabel }) => (
+const MobileHeader = ({ roleLabel, onLogout, onSearchOpen, timeLabel, alerts, unread, onRead }) => (
   <header className="fixed inset-x-0 top-0 z-40 border-b border-slate-800 bg-slate-950/95 backdrop-blur md:hidden">
     <div className="relative flex h-14 items-center justify-between px-4">
       <div className="flex items-center gap-2.5">
@@ -297,27 +280,7 @@ const MobileHeader = ({ roleLabel, onLogout, onSearchOpen, timeLabel }) => (
             />
           </svg>
         </button>
-        {/* Campana — placeholder Fase 5 */}
-        <button
-          type="button"
-          className="relative grid h-11 w-11 place-items-center rounded-lg border border-slate-700/60 bg-slate-800/60 text-slate-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400"
-          aria-label="Notificaciones"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={2}
-            stroke="currentColor"
-            className="h-4 w-4"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"
-            />
-          </svg>
-        </button>
+        <NotificationBell alerts={alerts} unread={unread} onRead={onRead} compact />
         <ThemeToggleBtn compact />
         <button
           type="button"
@@ -380,6 +343,7 @@ const AppShellInner = ({ children }) => {
   const search = useSearch()
   const { canInstall, triggerInstall } = usePwaInstall()
   const { showBanner, trial, dismiss } = useTrialStatus()
+  const { alerts, unread, markAllRead } = useNotifications()
   const { isDark } = useTheme()
   const location = useLocation()
 
@@ -404,6 +368,9 @@ const AppShellInner = ({ children }) => {
           onSearchOpen={search.open}
           canInstall={canInstall}
           onInstall={triggerInstall}
+          alerts={alerts}
+          unread={unread}
+          onRead={markAllRead}
         />
       </div>
 
@@ -429,6 +396,9 @@ const AppShellInner = ({ children }) => {
         onLogout={clearSession}
         onSearchOpen={search.open}
         timeLabel={timeLabel}
+        alerts={alerts}
+        unread={unread}
+        onRead={markAllRead}
       />
       <div className="md:hidden">
         <BottomNav items={navItems} />
