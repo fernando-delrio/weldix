@@ -52,8 +52,10 @@ export default defineConfig({
         ],
       },
       workbox: {
-        // Cachea assets estáticos (JS, CSS, imágenes)
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+        // Cachea assets estáticos — excluye formatos de fuente legacy (eot, ttf, woff, svg)
+        // Solo woff2 es necesario en browsers modernos
+        globPatterns: ["**/*.{js,css,html,ico,png,woff2}"],
+        globIgnores: ["**/*.{eot,ttf,woff}"],
         // Estrategia NetworkFirst para las llamadas a la API (datos siempre frescos)
         runtimeCaching: [
           {
@@ -76,6 +78,22 @@ export default defineConfig({
       },
     }),
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // React core — se carga siempre
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          // Gráficos — solo en Admin (recharts ~300KB)
+          'vendor-charts': ['recharts'],
+          // QR scanner — solo en Jobs (html5-qrcode ~200KB)
+          'vendor-qr': ['html5-qrcode'],
+          // Animaciones Landing — framer-motion ~100KB
+          'vendor-motion': ['framer-motion'],
+        },
+      },
+    },
+  },
   server: {
     port: 5173,
     strictPort: false,

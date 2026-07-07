@@ -159,6 +159,7 @@ const WorkerDashboardPage = () => {
     setShowModal(false)
     setCreatedFeedback(`Trabajo "${newJob.title}" creado correctamente.`)
     setTimeout(() => setCreatedFeedback(''), 4000)
+    refresh()
   }
 
   return (

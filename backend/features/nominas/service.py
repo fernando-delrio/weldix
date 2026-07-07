@@ -4,9 +4,11 @@ from pathlib import Path
 from fastapi import UploadFile
 from sqlalchemy.orm import Session, joinedload
 
+from backend.core.config import settings
+
 from .model import Nomina
 
-MEDIA_DIR = Path("media/nominas")
+MEDIA_DIR = Path(settings.media_base_dir) / "nominas"
 MAX_PDF_BYTES = 10 * 1024 * 1024  # 10 MB
 TIPOS_PERMITIDOS = {"application/pdf"}
 READ_CHUNK = 1024 * 1024

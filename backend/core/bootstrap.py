@@ -310,6 +310,8 @@ _SEED_STOCK = [
 
 
 def seed_stock() -> None:
+    if not settings.seed_demo_data:
+        return
     db = SessionLocal()
     try:
         if db.query(Material).count() > 0:

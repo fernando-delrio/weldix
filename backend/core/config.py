@@ -37,6 +37,9 @@ class Settings(BaseSettings):
     allowed_hosts: list[str] = ["localhost", "127.0.0.1", "testserver"]
     force_https: bool = False
     max_upload_mb: int = 10
+    # Directorio raíz de archivos subidos (fotos, nóminas).
+    # En producción apunta al Persistent Disk de Render: /opt/render/project/src/media
+    media_base_dir: str = "media"
 
     mistral_api_key: str | None = None
 
