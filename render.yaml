@@ -37,16 +37,11 @@ services:
   - type: web
     name: weldix-api
     runtime: python
-    plan: starter          # starter ($7/mo) requerido por el Persistent Disk
+    plan: free
     buildCommand: pip install -r requirements.txt
     # Migra el schema antes de arrancar el servidor
     startCommand: alembic upgrade head && uvicorn backend.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
-
-    disk:
-      name: weldix-media
-      mountPath: /opt/render/project/src/media
-      sizeGB: 10           # ampliar en el dashboard si crece el volumen de fotos
 
     envVars:
       - key: ENVIRONMENT
@@ -58,7 +53,7 @@ services:
           name: weldix-db
           property: connectionString
       - key: MEDIA_BASE_DIR
-        value: /opt/render/project/src/media
+        value: media
       - key: FORCE_HTTPS
         value: "true"
       - key: SEED_ADMIN_ON_STARTUP
