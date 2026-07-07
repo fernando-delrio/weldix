@@ -18,8 +18,10 @@ import backend.features.registro_horas.model  # noqa: F401
 import backend.features.rrhh.model  # noqa: F401
 import backend.features.stock.model  # noqa: F401
 
+from backend.core.database import _normalize_db_url
+
 config = context.config
-config.set_main_option("sqlalchemy.url", settings.database_url)
+config.set_main_option("sqlalchemy.url", _normalize_db_url(settings.database_url))
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
