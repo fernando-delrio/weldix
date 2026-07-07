@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
@@ -8,9 +10,18 @@ from backend.core.config import settings
 from backend.features.registry import ENABLED_ROUTERS
 
 is_production = settings.environment.lower() in {"prod", "production"}
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    run_startup_tasks()
+    yield
+
+
 app = FastAPI(
     title="Weldix API",
     version="1.0.0",
+    lifespan=lifespan,
     docs_url=None if is_production else "/docs",
     redoc_url=None if is_production else "/redoc",
     openapi_url=None if is_production else "/openapi.json",
@@ -29,12 +40,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-@app.on_event("startup")
-def on_startup() -> None:
-    run_startup_tasks()
-
 
 for router in ENABLED_ROUTERS:
     app.include_router(router)

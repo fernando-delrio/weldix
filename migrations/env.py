@@ -13,6 +13,7 @@ import backend.features.fichaje.model  # noqa: F401
 import backend.features.fotos.model  # noqa: F401
 import backend.features.historial.model  # noqa: F401
 import backend.features.jobs.model  # noqa: F401
+import backend.features.nominas.model  # noqa: F401
 import backend.features.registro_horas.model  # noqa: F401
 import backend.features.rrhh.model  # noqa: F401
 import backend.features.stock.model  # noqa: F401

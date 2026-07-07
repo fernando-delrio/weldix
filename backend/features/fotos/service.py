@@ -9,7 +9,7 @@ from backend.features.jobs.service import get_job_by_id
 
 from .model import Foto
 
-MEDIA_DIR = Path("media/fotos")
+MEDIA_DIR = Path(settings.media_base_dir) / "fotos"
 ETIQUETAS_VALIDAS = {"antes", "durante", "despues"}
 READ_CHUNK_BYTES = 1024 * 1024
 

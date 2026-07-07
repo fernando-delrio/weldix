@@ -1,0 +1,138 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Weldix — Render Blueprint
+# Documentación: https://render.com/docs/blueprint-spec
+#
+# PRIMER DESPLIEGUE — pasos manuales en el Render Dashboard tras conectar repo:
+#
+# 1. Variables marcadas sync: false → configurar en el Dashboard antes del deploy:
+#
+#    SEED_ADMIN_EMAIL        tu-email@dominio.com
+#    SEED_ADMIN_PASSWORD     contraseña-segura-del-primer-admin
+#    SEED_ADMIN_FULL_NAME    "Tu Nombre"
+#    ALLOWED_ORIGINS         ["https://weldix.app","https://www.weldix.app"]
+#    ALLOWED_HOSTS           ["api.weldix.app","weldix-api.onrender.com"]
+#    FRONTEND_URL            https://weldix.app
+#    MISTRAL_API_KEY         (de console.mistral.ai)
+#    STRIPE_SECRET_KEY       sk_live_...
+#    STRIPE_WEBHOOK_SECRET   whsec_...  (tras crear el endpoint en Stripe)
+#    STRIPE_PRICE_BASE       price_...  (precio base mensual en Stripe)
+#    STRIPE_PRICE_PER_SEAT   price_...  (precio por operario en Stripe)
+#    RESEND_API_KEY          re_...
+#    N8N_WEBHOOK_URL         https://tu-n8n.dominio.com/webhook/weldix
+#    SUPERADMIN_KEY          clave-larga-secreta
+#    VITE_API_URL            https://api.weldix.app   (en el servicio frontend)
+#
+# 2. Stripe webhook — registrar en https://dashboard.stripe.com/webhooks:
+#    URL: https://api.weldix.app/billing/webhook
+#    Eventos: checkout.session.completed, customer.subscription.updated,
+#             customer.subscription.deleted, customer.subscription.created
+#
+# 3. Dominio personalizado — en el Dashboard de cada servicio → Custom Domains
+#    Backend:  api.weldix.app  → weldix-api.onrender.com
+#    Frontend: weldix.app      → weldix-frontend.onrender.com
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+  # ── Backend FastAPI ─────────────────────────────────────────────────────────
+  - type: web
+    name: weldix-api
+    runtime: python
+    plan: starter          # starter ($7/mo) requerido por el Persistent Disk
+    buildCommand: pip install -r requirements.txt
+    # Migra el schema antes de arrancar el servidor
+    startCommand: alembic upgrade head && uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+
+    disk:
+      name: weldix-media
+      mountPath: /opt/render/project/src/media
+      sizeGB: 10           # ampliar en el dashboard si crece el volumen de fotos
+
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: AUTO_CREATE_TABLES
+        value: "false"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: weldix-db
+          property: connectionString
+      - key: MEDIA_BASE_DIR
+        value: /opt/render/project/src/media
+      - key: FORCE_HTTPS
+        value: "true"
+      - key: SEED_ADMIN_ON_STARTUP
+        value: "true"           # crea el admin en el primer arranque, idempotente
+      - key: SEED_DEMO_DATA
+        value: "false"
+      - key: JWT_SECRET_KEY
+        generateValue: true     # Render genera una clave aleatoria segura
+
+      # Configurar manualmente en el Dashboard antes del primer deploy
+      - key: SEED_ADMIN_EMAIL
+        sync: false
+      - key: SEED_ADMIN_PASSWORD
+        sync: false
+      - key: SEED_ADMIN_FULL_NAME
+        sync: false
+      - key: ALLOWED_ORIGINS
+        sync: false
+      - key: ALLOWED_HOSTS
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: MISTRAL_API_KEY
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: STRIPE_PRICE_BASE
+        sync: false
+      - key: STRIPE_PRICE_PER_SEAT
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: N8N_WEBHOOK_URL
+        sync: false
+      - key: SUPERADMIN_KEY
+        sync: false
+
+  # ── Frontend React (Static Site) ────────────────────────────────────────────
+  - type: web
+    name: weldix-frontend
+    runtime: static
+    buildCommand: cd frontend && npm ci && npm run build
+    staticPublishPath: ./frontend/dist
+
+    headers:
+      # Assets con hash en el nombre → caché agresivo (Vite lo garantiza)
+      - path: /assets/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+      # HTML y service worker → sin caché para que el navegador siempre pida la última versión
+      - path: /
+        name: Cache-Control
+        value: no-cache
+      - path: /sw.js
+        name: Cache-Control
+        value: no-cache
+
+    # SPA routing — todas las rutas sirven index.html
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
+    envVars:
+      # URL del backend — debe apuntar al servicio weldix-api
+      # Ejemplo: https://api.weldix.app  o  https://weldix-api.onrender.com
+      - key: VITE_API_URL
+        sync: false
+
+# ── Base de datos PostgreSQL ──────────────────────────────────────────────────
+databases:
+  - name: weldix-db
+    databaseName: weldix
+    user: weldix
+    plan: free             # 1GB gratis, ampliar a starter ($7/mo) cuando crezca
