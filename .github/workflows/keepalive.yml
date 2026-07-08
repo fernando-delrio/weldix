@@ -1,0 +1,36 @@
+name: Keep-alive Render API
+
+# CONTEXTO: Render en plan gratuito duerme los servicios web tras ~15 minutos sin
+# tráfico. Este workflow es un parche para evitarlo, no una solución de ingeniería.
+# La solución real es el plan de pago de Render o un proveedor que no duerma.
+# Quien toque esto en el futuro debe saber qué está compensando.
+#
+# AVISO: GitHub desactiva automáticamente los `schedule` en repositorios que llevan
+# más de 60 días sin commits. Si la API vuelve a dormirse tras un periodo inactivo,
+# revisa primero si Actions tiene el schedule pausado.
+
+"on":
+  # Cada 10 minutos en lugar de 14 porque el scheduler de GitHub Actions
+  # puede retrasarse varios minutos. Con 14 llegaríamos tarde con frecuencia.
+  schedule:
+    - cron: "*/10 * * * *"
+
+  # Permite lanzarlo a mano desde la pestaña Actions para comprobar
+  # que la API responde sin esperar al siguiente ciclo del cron.
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Ping /health
+        # --fail hace que curl devuelva código de salida != 0 si HTTP != 2xx/3xx.
+        # --max-time 120 porque el primer golpe tras dormir puede tardar ~60 s.
+        # Si la API no responde, el job falla y GitHub envía notificación por email:
+        # un keep-alive que se cae en silencio no sirve de nada.
+        run: |
+          curl --fail --max-time 120 \
+            -o /dev/null \
+            -w "HTTP %{http_code} en %{time_total}s\n" \
+            https://weldix-api.onrender.com/health
