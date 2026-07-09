@@ -16,6 +16,34 @@ from datetime import datetime, timezone
 from fpdf import FPDF
 from sqlalchemy.orm import Session
 
+# ── Helpers de encoding ────────────────────────────────────────────────────────
+
+_UNICODE_MAP = {
+    '—': '-',   # em dash —
+    '–': '-',   # en dash –
+    '‘': "'",   # comilla simple izquierda '
+    '’': "'",   # comilla simple derecha '
+    '“': '"',   # comilla doble izquierda "
+    '”': '"',   # comilla doble derecha "
+    '…': '...',  # puntos suspensivos …
+    '·': '·',   # punto centrado (latin-1 0xB7, OK)
+    '•': '-',   # viñeta •
+}
+
+
+def _safe(text: str | None, max_chars: int = 999) -> str:
+    """Convierte texto a latin-1 seguro para fpdf2 con fuentes core (Helvetica).
+
+    Helvetica solo soporta latin-1 (U+0000–U+00FF). Caracteres fuera de ese
+    rango como el em dash U+2014 causan UnicodeEncodeError en fpdf2. Esta
+    función reemplaza los más comunes por equivalentes ASCII y descarta el resto.
+    """
+    if not text:
+        return "—"
+    for char, replacement in _UNICODE_MAP.items():
+        text = text.replace(char, replacement)
+    return text[:max_chars].encode('latin-1', 'replace').decode('latin-1')
+
 from backend.features.auth.model import Tenant, User
 from backend.features.historial.model import JobEvent
 from backend.features.jobs.model import Job
@@ -96,7 +124,7 @@ class _WeldixPDF(FPDF):
         # Nombre del taller / meta
         self.set_font("Helvetica", "", 8)
         self.set_text_color(*_C_SLATE)
-        self.cell(100, 4, self._taller_nombre, ln=False)
+        self.cell(100, 4, _safe(self._taller_nombre), ln=False)
         self.set_font("Helvetica", "", 7.5)
         self.set_text_color(*_C_MUTED)
         self.cell(0, 4, f"Generado: {self._fecha_gen}  ·  Ref: {self._job_code}", align="R", ln=True)
@@ -163,13 +191,13 @@ def _draw_job_header(pdf: _WeldixPDF, job: Job, operario_nombre: str | None):
     pdf.set_xy(bx + 4, by + 3)
     pdf.set_font("Helvetica", "B", 7)
     pdf.set_text_color(*_C_SLATE)
-    pdf.cell(bw - 8, 4, (job.code or f"OT #{job.id}").upper(), ln=True)
+    pdf.cell(bw - 8, 4, _safe(job.code or f"OT #{job.id}").upper(), ln=True)
 
     # Título
     pdf.set_x(bx + 4)
     pdf.set_font("Helvetica", "B", 14)
     pdf.set_text_color(*_C_DARK)
-    pdf.cell(bw - 55, 7, job.titulo[:55], ln=False)
+    pdf.cell(bw - 55, 7, _safe(job.titulo, 55), ln=False)
 
     # Badge de estado (esquina superior derecha del bloque)
     estado = job.estado or "pendiente"
@@ -190,7 +218,7 @@ def _draw_job_header(pdf: _WeldixPDF, job: Job, operario_nombre: str | None):
     pdf.set_x(bx + 4)
     pdf.set_font("Helvetica", "", 9)
     pdf.set_text_color(*_C_SLATE)
-    pdf.cell(bw - 8, 5, job.cliente, ln=True)
+    pdf.cell(bw - 8, 5, _safe(job.cliente), ln=True)
 
     # Barra de progreso
     if job.progreso and job.progreso > 0:
@@ -257,14 +285,15 @@ def _draw_description(pdf: _WeldixPDF, descripcion: str):
     pdf.set_font("Helvetica", "", 9)
     pdf.set_text_color(*_C_SLATE)
 
+    safe_desc = _safe(descripcion)
     # multi_cell calcula la altura; dibujar fondo antes
     pdf.set_xy(bx + 4, y0 + 3)
-    lines_h = pdf.get_string_width(descripcion) / (bw - 8) * 5 + 5
+    lines_h = pdf.get_string_width(safe_desc) / (bw - 8) * 5 + 5
     box_h = max(12, lines_h)
     pdf.set_xy(bx, y0)
     pdf.rect(bx, y0, bw, box_h, style="FD")
     pdf.set_xy(bx + 4, y0 + 3)
-    pdf.multi_cell(bw - 8, 5, descripcion)
+    pdf.multi_cell(bw - 8, 5, safe_desc)
     pdf.ln(4)
 
 
@@ -296,7 +325,7 @@ def _draw_horas_table(pdf: _WeldixPDF, registros: list[RegistroHoras]):
     # Filas
     total_horas = 0.0
     for idx, r in enumerate(registros):
-        nombre = (r.operario.full_name or r.operario.email) if r.operario else "—"
+        nombre = _safe((r.operario.full_name or r.operario.email) if r.operario else "—")
         inicio = _fmt_dt(r.inicio)
         fin = _fmt_dt(r.fin) if r.fin else "—"
         horas_str = f"{r.horas:.2f}" if r.horas else "—"
@@ -308,7 +337,7 @@ def _draw_horas_table(pdf: _WeldixPDF, registros: list[RegistroHoras]):
         pdf.set_font("Helvetica", "", 9)
         pdf.set_text_color(*_C_DARK)
 
-        row_data = [nombre[:30], inicio, fin, horas_str]
+        row_data = [nombre[:30], _safe(inicio), _safe(fin), _safe(horas_str)]
         for i, cell in enumerate(row_data):
             align = "R" if i == 3 else "L"
             pdf.cell(col_widths[i], 6, cell, border=0, align=align, fill=fill, ln=(i == 3))
@@ -353,7 +382,7 @@ def _draw_historial_table(pdf: _WeldixPDF, events: list[JobEvent]):
         pdf.set_fill_color(*(_C_BG if fill else _C_WHITE))
         pdf.set_font("Helvetica", "", 8.5)
         pdf.set_text_color(*_C_DARK)
-        row = [_fmt_dt(ev.created_at), ev.descripcion[:60], ev.usuario[:20]]
+        row = [_fmt_dt(ev.created_at), _safe(ev.descripcion, 60), _safe(ev.usuario, 20)]
         for i, cell in enumerate(row):
             pdf.cell(col_widths[i], 6, cell, border=0, fill=fill, ln=(i == 2))
 
@@ -367,7 +396,7 @@ def _draw_firmas(pdf: _WeldixPDF, operario_nombre: str | None):
     x0 = pdf.l_margin
 
     for i, (titulo, nombre) in enumerate([
-        ("Firma del operario", operario_nombre or ""),
+        ("Firma del operario", _safe(operario_nombre or "")),
         ("Firma del responsable / Conforme del cliente", ""),
     ]):
         cx = x0 + i * (col_w + 10)
@@ -384,7 +413,7 @@ def _draw_firmas(pdf: _WeldixPDF, operario_nombre: str | None):
 
     pdf.ln(10)
 
-    for i, nombre in enumerate([operario_nombre or "", ""]):
+    for i, nombre in enumerate([_safe(operario_nombre or ""), ""]):
         cx = x0 + i * (col_w + 10)
         pdf.set_xy(cx, pdf.get_y())
         pdf.set_font("Helvetica", "B", 8.5)

@@ -14,7 +14,6 @@ const AdminDashboardPage = lazy(() => import('./modules/admin/components/AdminDa
 const WorkerDashboardPage = lazy(() => import('./modules/dashboard/components/WorkerDashboardPage'))
 const ProfilePage = lazy(() => import('./modules/dashboard/components/ProfilePage'))
 const StockPage = lazy(() => import('./modules/stock/components/StockPage'))
-const EquiposPage = lazy(() => import('./modules/equipos/components/EquiposPage'))
 const JobsPage = lazy(() => import('./modules/jobs/components/JobsPage'))
 const JobDetailPage = lazy(() => import('./modules/jobs/components/JobDetailPage'))
 const RegisterWorkspacePage = lazy(() => import('./modules/auth/components/RegisterWorkspacePage'))
@@ -61,7 +60,6 @@ const AppRoutes = () => {
               <Route path="/app/trabajos" element={<JobsPage />} />
               <Route path="/app/trabajos/:id" element={<JobDetailPage />} />
               <Route path="/app/stock" element={<StockPage />} />
-              <Route path="/app/equipos" element={<EquiposPage />} />
               <Route path="/app/admin" element={<AdminDashboardPage />} />
               <Route path="/app/rrhh" element={<RrhhPage />} />
               <Route path="/app/perfil" element={<ProfilePage />} />

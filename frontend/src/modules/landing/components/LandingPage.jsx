@@ -142,30 +142,18 @@ const FEATURES = [
   },
   {
     n: '05',
-    icon: 'bx bx-qr',
-    title: 'Escáner QR',
-    desc: 'Cada OT tiene su QR. El operario lo escanea desde el móvil e inicia el trabajo al instante, sin buscar nada en pantalla.',
-  },
-  {
-    n: '06',
     icon: 'bxs bxs-file-pdf',
     title: 'Nóminas Digitales',
     desc: 'Sube las nóminas al sistema. Cada operario las descarga desde su perfil, sin WhatsApp, sin emails, sin papel.',
   },
   {
-    n: '07',
+    n: '06',
     icon: 'bx bx-group',
     title: 'RRHH Integrado',
     desc: 'Vacaciones, ausencias, EPIs, certificados y turnos — todo conectado con el fichaje de cada operario.',
   },
   {
-    n: '08',
-    icon: 'bx bx-wrench',
-    title: 'GMAO — Equipos',
-    desc: 'Registra tu maquinaria, asigna estados operativos y recibe alertas de mantenimiento preventivo antes de que falle.',
-  },
-  {
-    n: '09',
+    n: '07',
     icon: 'bx bx-bot',
     title: 'IA Especializada',
     desc: 'Asistente con contexto real de tus OTs y stock. Solo sabe de tu taller — respuestas precisas, sin hallucinar.',
@@ -224,9 +212,7 @@ const PLAN_INCLUDES = [
   'OTs ilimitadas',
   'Control de fichaje (RDL 8/2019)',
   'Stock + albaranes con IA',
-  'Escáner QR',
   'RRHH completo + nóminas',
-  'GMAO — equipos y mantenimiento',
   'IA especializada en tu taller',
   'Soporte incluido',
 ]
@@ -334,7 +320,7 @@ const NavBar = ({ isDark, onToggle, t }) => (
     <div className="flex items-center gap-2">
       <ThemeToggle isDark={isDark} onToggle={onToggle} t={t} />
       <a
-        href="mailto:hola@weldix.app?subject=Contacto%20Weldix"
+        href="mailto:melacrujo@gmail.com?subject=Contacto%20Weldix"
         className={cx(
           'hidden items-center gap-1.5 px-3 py-1.5 text-[0.7rem] font-semibold uppercase tracking-wider transition sm:flex',
           t.navText
@@ -443,7 +429,7 @@ const HeroSection = ({ t, isDark }) => (
         </MagneticWrap>
         <MagneticWrap strength={0.25}>
           <a
-            href="mailto:hola@weldix.app?subject=Quiero%20saber%20más%20sobre%20Weldix"
+            href="mailto:melacrujo@gmail.com?subject=Quiero%20saber%20más%20sobre%20Weldix"
             data-gsap="hero-cta"
             className={cx(
               'flex items-center gap-2 rounded-xl px-7 py-3.5 text-sm font-medium tracking-wide transition',
@@ -1083,7 +1069,7 @@ const PricingSection = ({ t }) => (
               Probar 15 días gratis — sin tarjeta
             </Link>
             <a
-              href="mailto:hola@weldix.app?subject=Consulta%20sobre%20Weldix"
+              href="mailto:melacrujo@gmail.com?subject=Consulta%20sobre%20Weldix"
               className={cx(
                 'flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-medium tracking-wide transition',
                 t.btnGhost
@@ -1183,7 +1169,7 @@ const LandingFooter = ({ t }) => (
         <Link to="/terminos" className="transition hover:opacity-100">
           Términos
         </Link>
-        <a href="mailto:hola@weldix.app" className="transition hover:opacity-100">
+        <a href="mailto:melacrujo@gmail.com" className="transition hover:opacity-100">
           Contacto
         </a>
         <Link to="/login" className="transition hover:opacity-100">

@@ -86,8 +86,6 @@ export default defineConfig({
           'vendor-react': ['react', 'react-dom', 'react-router-dom'],
           // Gráficos — solo en Admin (recharts ~300KB)
           'vendor-charts': ['recharts'],
-          // QR scanner — solo en Jobs (html5-qrcode ~200KB)
-          'vendor-qr': ['html5-qrcode'],
           // Animaciones Landing — framer-motion ~100KB
           'vendor-motion': ['framer-motion'],
         },

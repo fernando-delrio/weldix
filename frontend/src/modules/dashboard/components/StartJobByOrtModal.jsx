@@ -1,8 +1,7 @@
-import { useRef, useState } from 'react'
+import { useRef } from 'react'
 import { cx } from '../../core/lib/cx'
 import useFocusTrap from '../../core/hooks/useFocusTrap'
 import { useStartByOrtForm } from '../hooks/useStartByOrtForm'
-import QrScannerModal from '../../jobs/components/QrScannerModal'
 
 const fieldBase =
   'flex min-h-[48px] items-center rounded-lg border border-slate-700 bg-slate-900/70 transition focus-within:border-amber-500 focus-within:ring-2 focus-within:ring-amber-500/20'
@@ -30,15 +29,6 @@ const StartJobByOrtModal = ({ onClose, onStart }) => {
   const modalRef = useRef(null)
   useFocusTrap(modalRef)
   const form = useStartByOrtForm({ onStart, onClose })
-  const [qrAbierto, setQrAbierto] = useState(false)
-
-  // Al detectar el QR, volcamos el código en el input y lanzamos la búsqueda
-  const onQrDetectado = (code) => {
-    form.setCode(code)
-    setQrAbierto(false)
-    // Disparamos la búsqueda directamente con el código detectado
-    form.searchByCode(code)
-  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
@@ -72,7 +62,7 @@ const StartJobByOrtModal = ({ onClose, onStart }) => {
         </div>
 
         <p className="mb-4 text-sm text-slate-400">
-          Introduce el número de OT o escanea el QR del papel de trabajo.
+          Introduce el número de OT del papel de trabajo.
         </p>
 
         <form onSubmit={form.search} className="grid gap-1">
@@ -88,33 +78,6 @@ const StartJobByOrtModal = ({ onClose, onStart }) => {
               autoFocus
               className={inputBase}
             />
-            {/* Botón QR — abre la cámara para escanear la OT en tablet */}
-            <button
-              type="button"
-              onClick={() => setQrAbierto(true)}
-              className="shrink-0 border-l border-slate-700 px-3 text-slate-400 transition hover:bg-slate-800 hover:text-amber-300"
-              title="Escanear QR"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.8}
-                stroke="currentColor"
-                className="h-4 w-4"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 3.75 9.375v-4.5ZM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5ZM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 13.5 9.375v-4.5Z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M6.75 6.75h.75v.75h-.75v-.75ZM6.75 16.5h.75v.75h-.75v-.75ZM16.5 6.75h.75v.75h-.75v-.75ZM13.5 13.5h.75v.75h-.75v-.75ZM13.5 19.5h.75v.75h-.75v-.75ZM19.5 13.5h.75v.75h-.75v-.75ZM19.5 19.5h.75v.75h-.75v-.75ZM16.5 16.5h.75v.75h-.75v-.75Z"
-                />
-              </svg>
-            </button>
             <button
               type="submit"
               disabled={form.isSearching || !form.code.trim()}
@@ -139,10 +102,6 @@ const StartJobByOrtModal = ({ onClose, onStart }) => {
           </button>
         )}
       </div>
-
-      {qrAbierto && (
-        <QrScannerModal onDetected={onQrDetectado} onClose={() => setQrAbierto(false)} />
-      )}
     </div>
   )
 }
