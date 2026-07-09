@@ -64,10 +64,10 @@ const NotificationBell = ({ alerts = [], unread = 0, onRead, compact = false }) 
         aria-label={`Notificaciones${unread ? ` — ${unread} sin leer` : ''}`}
         aria-expanded={open}
         className={cx(
-          'relative transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400',
+          'relative transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400',
           compact
             ? 'grid h-11 w-11 place-items-center rounded-lg border border-slate-700/60 bg-slate-800/60 text-slate-400 hover:text-slate-200'
-            : 'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 hover:bg-slate-800/70 hover:text-slate-300'
+            : 'flex w-full flex-col items-center justify-center gap-0.5 rounded-lg py-3 min-h-14 text-slate-500 hover:bg-slate-800/70 hover:text-slate-300 lg:flex-row lg:justify-start lg:gap-3 lg:px-3 lg:py-2.5 lg:min-h-0'
         )}
       >
         <svg
@@ -85,7 +85,12 @@ const NotificationBell = ({ alerts = [], unread = 0, onRead, compact = false }) 
           />
         </svg>
         {!compact && (
-          <span className="hidden text-sm font-semibold tracking-wide lg:block">Avisos</span>
+          <>
+            <span className="block text-[10px] font-semibold leading-tight text-center lg:hidden">
+              Avisos
+            </span>
+            <span className="hidden text-sm font-semibold tracking-wide lg:block">Avisos</span>
+          </>
         )}
         {unread > 0 && (
           <span

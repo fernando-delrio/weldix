@@ -76,9 +76,12 @@ const ThemeToggleBtn = ({ compact = false }) => {
       onClick={toggleTheme}
       aria-label={label}
       title={label}
-      className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 transition hover:bg-slate-800/70 hover:text-slate-300"
+      className="flex w-full flex-col items-center justify-center gap-0.5 rounded-lg py-3 min-h-14 text-slate-500 transition hover:bg-slate-800/70 hover:text-slate-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400 lg:flex-row lg:justify-start lg:gap-3 lg:px-3 lg:py-2.5 lg:min-h-0"
     >
       {isDark ? <SunIcon /> : <MoonIcon />}
+      <span className="block text-[10px] font-semibold leading-tight text-center lg:hidden">
+        {isDark ? 'Claro' : 'Oscuro'}
+      </span>
       <span className="hidden text-sm font-semibold tracking-wide lg:block">
         {isDark ? 'Modo claro' : 'Modo oscuro'}
       </span>
@@ -125,20 +128,29 @@ const Sidebar = ({
               to={item.to}
               title={item.label}
               className={cx(
-                'relative flex items-center gap-3 rounded-lg px-3 py-2.5 transition overflow-hidden',
+                'relative flex rounded-lg transition overflow-hidden',
+                // md: icono + etiqueta apilados, centrados, target ≥56px
+                'flex-col items-center justify-center gap-0.5 py-3 px-1 min-h-14',
+                // lg: icono + etiqueta en línea, alineados a la izquierda
+                'lg:flex-row lg:items-center lg:justify-start lg:gap-3 lg:py-2.5 lg:px-3 lg:min-h-0',
                 isActive
                   ? 'bg-amber-500/15 text-amber-400 shadow-[inset_0_0_0_1px_rgba(245,158,11,0.20)]'
                   : 'text-slate-500 hover:bg-slate-800/70 hover:text-slate-300'
               )}
             >
-              {/* Barra vertical de acento — visible solo en item activo */}
+              {/* Barra de acento — solo visible en lg (layout horizontal) */}
               {isActive && (
                 <span
-                  className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[3px] bg-amber-400"
+                  className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[3px] bg-amber-400 hidden lg:block"
                   aria-hidden="true"
                 />
               )}
-              <NavIcon itemKey={item.key} />
+              <NavIcon itemKey={item.key} className="h-5 w-5 shrink-0" />
+              {/* Etiqueta corta bajo el icono — solo en tablet (md), oculta en desktop (lg) */}
+              <span className="block text-[10px] font-semibold leading-tight text-center truncate w-full px-0.5 lg:hidden">
+                {item.label}
+              </span>
+              {/* Etiqueta completa en línea — solo en desktop (lg) */}
               <span className="hidden text-sm font-semibold tracking-wide lg:block">
                 {item.label}
               </span>
@@ -147,7 +159,7 @@ const Sidebar = ({
         })}
       </nav>
 
-      {/* Bottom actions */}
+      {/* Bottom actions — misma lógica que nav items: apilado en tablet, horizontal en desktop */}
       <div className="shrink-0 space-y-1 border-t border-slate-800 p-2">
         {/* Búsqueda */}
         <button
@@ -155,7 +167,7 @@ const Sidebar = ({
           onClick={onSearchOpen}
           title="Buscar (Ctrl+K)"
           aria-label="Buscar (Ctrl+K)"
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 transition hover:bg-slate-800/70 hover:text-slate-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400"
+          className="flex w-full flex-col items-center justify-center gap-0.5 rounded-lg py-3 min-h-14 text-slate-500 transition hover:bg-slate-800/70 hover:text-slate-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400 lg:flex-row lg:justify-start lg:gap-3 lg:px-3 lg:py-2.5 lg:min-h-0"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -171,6 +183,9 @@ const Sidebar = ({
               d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
             />
           </svg>
+          <span className="block text-[10px] font-semibold leading-tight text-center lg:hidden">
+            Buscar
+          </span>
           <span className="hidden text-sm font-semibold tracking-wide lg:block">Buscar</span>
         </button>
 
@@ -183,7 +198,7 @@ const Sidebar = ({
             onClick={onInstall}
             title="Instalar app"
             aria-label="Instalar app"
-            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sky-400 transition hover:bg-sky-500/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400"
+            className="flex w-full flex-col items-center justify-center gap-0.5 rounded-lg py-3 min-h-14 text-sky-400 transition hover:bg-sky-500/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400 lg:flex-row lg:justify-start lg:gap-3 lg:px-3 lg:py-2.5 lg:min-h-0"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -199,6 +214,9 @@ const Sidebar = ({
                 d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"
               />
             </svg>
+            <span className="block text-[10px] font-semibold leading-tight text-center lg:hidden">
+              Instalar
+            </span>
             <span className="hidden text-sm font-semibold tracking-wide lg:block">
               Instalar app
             </span>
@@ -214,7 +232,7 @@ const Sidebar = ({
           onClick={onLogout}
           title="Cerrar sesión"
           aria-label="Cerrar sesión"
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-slate-500 transition hover:bg-rose-500/10 hover:text-rose-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-400"
+          className="flex w-full flex-col items-center justify-center gap-0.5 rounded-lg py-3 min-h-14 text-slate-500 transition hover:bg-rose-500/10 hover:text-rose-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-400 lg:flex-row lg:justify-start lg:gap-3 lg:px-3 lg:py-2.5 lg:min-h-0"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -230,11 +248,14 @@ const Sidebar = ({
               d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15M12 9l3 3m0 0-3 3m3-3H2.25"
             />
           </svg>
+          <span className="block text-[10px] font-semibold leading-tight text-center lg:hidden">
+            Salir
+          </span>
           <span className="hidden text-sm font-semibold tracking-wide lg:block">Salir</span>
         </button>
 
-        {/* Reloj — visible en tablet y desktop */}
-        <p className="hidden px-3 py-1 font-mono text-xs font-semibold tracking-widest text-slate-400 md:block">
+        {/* Reloj — solo desktop (en tablet no cabe bien en modo icono) */}
+        <p className="hidden px-3 py-1 font-mono text-xs font-semibold tracking-widest text-slate-400 lg:block">
           {timeLabel}
         </p>
       </div>
@@ -323,8 +344,8 @@ const IaFab = () => {
           type="button"
           onClick={() => openChat()}
           aria-label="Asistente IA"
-          style={{ position: 'fixed', bottom: '2rem', right: '2rem', zIndex: 9999 }}
-          className="flex h-12 w-12 items-center justify-center rounded-lg border border-amber-500/30 bg-slate-900 shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
+          style={{ zIndex: 9999 }}
+          className="fixed bottom-24 right-8 md:bottom-8 flex h-12 w-12 items-center justify-center rounded-lg border border-amber-500/30 bg-slate-900 shadow-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
           transition={SPRING}
         >
           <i className="bx bx-bot text-xl text-amber-400" aria-hidden="true" />
@@ -359,7 +380,7 @@ const AppShellInner = ({ children }) => {
       )}
 
       {/* Sidebar tablet/desktop — flex child, fills full height */}
-      <div className="hidden md:flex md:w-16 lg:w-56 shrink-0 flex-col">
+      <div className="hidden md:flex md:w-18 lg:w-56 shrink-0 flex-col">
         <Sidebar
           navItems={navItems}
           roleLabel={roleLabel}

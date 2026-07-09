@@ -26,7 +26,7 @@ const BottomNav = ({ items }) => {
                   : 'text-slate-500 hover:text-slate-300'
               )}
             >
-              <NavIcon itemKey={item.key} className="h-[18px] w-[18px] shrink-0" />
+              <NavIcon itemKey={item.key} className="h-5 w-5 shrink-0" />
               <span className="text-xs font-semibold tracking-[0.08em]">{item.label}</span>
             </Link>
           )
