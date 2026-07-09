@@ -8,7 +8,8 @@ import { useJobDetail } from '../hooks/useJobDetail'
 import FotosGallery from './FotosGallery'
 import RegistroHorasOT from '../../registro_horas/components/RegistroHorasOT'
 import { useIaContext } from '../../ia/lib/IaContext'
-import { downloadJobPdf } from '../services/jobsService'
+import { downloadJobPdf, getShareToken } from '../services/jobsService'
+import { useAuthSession } from '../../auth/hooks/useAuthSession'
 
 // ── Estilos base ──────────────────────────────────────────────────────────────
 const cardBase = 'rounded-xl border border-cyan-900/50 bg-slate-900/65 p-5'
@@ -109,7 +110,7 @@ const historyTimeline = ({ history }) =>
     </section>
   )
 
-const jobContent = (state, onDownloadPdf, isDownloading) => {
+const jobContent = (state, onDownloadPdf, isDownloading, onShare, isCopied, canShare) => {
   const { isLoading, error, job, history, isAdvancing, advance, canAdvance } = state
   if (isLoading || error || !job) return null
 
@@ -133,17 +134,33 @@ const jobContent = (state, onDownloadPdf, isDownloading) => {
             >
               {job.status}
             </span>
-            <WeldixButton
-              variant="ghost"
-              size="sm"
-              onClick={onDownloadPdf}
-              disabled={isDownloading}
-              aria-busy={isDownloading}
-              aria-label={isDownloading ? 'Generando PDF…' : 'Descargar parte de trabajo en PDF'}
-            >
-              <i className="bx bx-file-pdf mr-1 text-base" aria-hidden="true" />
-              {isDownloading ? 'Generando…' : 'PDF'}
-            </WeldixButton>
+            <div className="flex items-center gap-1.5">
+              {canShare && (
+                <WeldixButton
+                  variant="ghost"
+                  size="sm"
+                  onClick={onShare}
+                  aria-label="Copiar enlace de seguimiento para el cliente"
+                >
+                  <i
+                    className={`bx mr-1 text-base ${isCopied ? 'bx-check text-emerald-400' : 'bx-link'}`}
+                    aria-hidden="true"
+                  />
+                  {isCopied ? '¡Copiado!' : 'Compartir'}
+                </WeldixButton>
+              )}
+              <WeldixButton
+                variant="ghost"
+                size="sm"
+                onClick={onDownloadPdf}
+                disabled={isDownloading}
+                aria-busy={isDownloading}
+                aria-label={isDownloading ? 'Generando PDF…' : 'Descargar parte de trabajo en PDF'}
+              >
+                <i className="bx bx-file-pdf mr-1 text-base" aria-hidden="true" />
+                {isDownloading ? 'Generando…' : 'PDF'}
+              </WeldixButton>
+            </div>
           </div>
         </div>
         {progressBar(job)}
@@ -182,7 +199,10 @@ const JobDetailPage = () => {
   const navigate = useNavigate()
   const state = useJobDetail()
   const { setPageContext } = useIaContext()
+  const { profile } = useAuthSession()
+  const role = profile?.role
   const [isDownloading, setIsDownloading] = useState(false)
+  const [isCopied, setIsCopied] = useState(false)
 
   const { job } = state
 
@@ -213,6 +233,19 @@ const JobDetailPage = () => {
     }
   }, [job, isDownloading])
 
+  const handleShareLink = useCallback(async () => {
+    if (!job || isCopied) return
+    try {
+      const { token } = await getShareToken(job.id)
+      const url = `${window.location.origin}/seguimiento/${token}`
+      await navigator.clipboard.writeText(url)
+      setIsCopied(true)
+      setTimeout(() => setIsCopied(false), 2500)
+    } catch {
+      // si el clipboard falla silenciosamente, no bloqueamos
+    }
+  }, [job, isCopied])
+
   return (
     <AppShell>
       {/* max-w-[720px] en lugar de 620 para que las fotos tengan más espacio en tablet */}
@@ -228,7 +261,14 @@ const JobDetailPage = () => {
 
         {loadingSkeleton(state)}
         {errorBanner(state)}
-        {jobContent(state, handleDownloadPdf, isDownloading)}
+        {jobContent(
+          state,
+          handleDownloadPdf,
+          isDownloading,
+          handleShareLink,
+          isCopied,
+          role === 'admin'
+        )}
       </div>
     </AppShell>
   )

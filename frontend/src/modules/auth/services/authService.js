@@ -12,6 +12,7 @@ const request = async (path, body) => {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   })
+  if (res.status === 204) return null
   const data = await res.json()
   assertResponseOk(res, data)
   return data
@@ -29,6 +30,11 @@ const authGet = async (path) => {
 
 export const authService = {
   login: ({ email, password }) => request('/auth/login', { email, password }),
+
+  forgotPassword: ({ email }) => request('/auth/forgot-password', { email }),
+
+  resetPassword: ({ token, new_password }) =>
+    request('/auth/reset-password', { token, new_password }),
 
   registerWorkspace: ({
     nombre_taller,
