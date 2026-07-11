@@ -72,3 +72,12 @@ class TrialStatusResponse(BaseModel):
     is_expired: bool
     days_left: int | None
     trial_expires_at: datetime | None
+
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str = Field(min_length=1)
+    new_password: str = Field(min_length=8)

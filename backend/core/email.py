@@ -9,6 +9,11 @@ import resend
 
 from backend.core.config import settings
 
+# Precios mostrados en los emails. Fuente de verdad: backend/features/billing/schemas.py
+# (mismo modelo que la landing). Mantener sincronizados hasta unificarlos en config.
+PRECIO_BASE = 49
+PRECIO_POR_OPERARIO = 17
+
 # ── Throttle en memoria (se resetea al reiniciar el servidor) ────────────────
 # Evita enviar el email de warning más de una vez por día por taller
 _warning_sent: dict[int, datetime] = {}
@@ -237,16 +242,17 @@ def _expired_html(name: str, tenant_nombre: str) -> str:
           <table cellpadding="0" cellspacing="0" style="margin:0 0 32px;width:100%;">
             <tr>
               <td style="background:#1e293b;padding:20px 24px;border-radius:6px;">
-                <p style="color:#94a3b8;font-size:13px;margin:0 0 12px;text-transform:uppercase;letter-spacing:1px;">Planes disponibles</p>
+                <p style="color:#94a3b8;font-size:13px;margin:0 0 12px;text-transform:uppercase;letter-spacing:1px;">Tu plan</p>
                 <table width="100%" cellpadding="0" cellspacing="0">
                   <tr>
                     <td style="color:#f1f5f9;font-size:14px;padding:6px 0;">
-                      <strong style="color:#f59e0b;">Starter</strong> — 29€/mes · Hasta 5 operarios
+                      <strong style="color:#f59e0b;">{PRECIO_BASE}€/mes</strong> de base
+                      + <strong style="color:#f59e0b;">{PRECIO_POR_OPERARIO}€</strong> por operario
                     </td>
                   </tr>
                   <tr>
-                    <td style="color:#f1f5f9;font-size:14px;padding:6px 0;">
-                      <strong style="color:#f59e0b;">Pro</strong> — 59€/mes · Operarios ilimitados
+                    <td style="color:#94a3b8;font-size:13px;padding:6px 0;">
+                      Todos los módulos incluidos · sin permanencia
                     </td>
                   </tr>
                 </table>

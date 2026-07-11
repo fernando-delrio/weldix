@@ -53,9 +53,10 @@ def require_active_trial(
     Lógica:
       1. Sin tenant_id (dev/superadmin) → pasa siempre
       2. subscription_status == 'active' o 'trialing' → pasa siempre (Stripe confirma)
-      3. trial_expires_at == None → plan sin restricción → pasa
-      4. trial_expires_at > now → trial vigente → pasa
-      5. trial_expires_at < now → bloqueado → 402
+      3. subscription_status negativo (canceled/past_due/unpaid) → BLOQUEA (402)
+      4. trial_expires_at == None → plan sin restricción → pasa
+      5. trial_expires_at > now → trial vigente → pasa
+      6. trial_expires_at < now → bloqueado → 402
     """
     from datetime import datetime, timezone
 
@@ -69,6 +70,16 @@ def require_active_trial(
     # Suscripción Stripe activa — fuente de verdad principal
     if tenant.subscription_status in ("active", "trialing"):
         return user
+
+    # Estado de pago negativo: bloquea SIEMPRE, aunque trial_expires_at sea None.
+    # Tras un pago exitoso trial_expires_at queda en None; sin este guard, cuando
+    # la suscripción se cancela o falla el pago el taller seguiría con acceso total
+    # (el paso 4 lo dejaría pasar). Este es el candado que revoca el acceso al churn.
+    if tenant.subscription_status in ("canceled", "past_due", "unpaid", "incomplete_expired"):
+        raise HTTPException(
+            status_code=402,
+            detail="Tu suscripción no está activa. Actualiza tu método de pago para continuar.",
+        )
 
     # Sin restricción de trial (plan legacy o dev)
     if tenant.trial_expires_at is None:

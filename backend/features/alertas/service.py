@@ -10,6 +10,7 @@ from datetime import date, timedelta
 
 from sqlalchemy.orm import Session
 
+from backend.core.ws_manager import ws_manager
 from backend.features.equipos.model import Equipo
 from backend.features.jobs.model import Job
 from backend.features.stock.model import Material
@@ -95,3 +96,17 @@ def get_current_alerts(db: Session, tenant_id: int) -> list[dict]:
     ]
 
     return alerts
+
+
+async def push_alerts(db: Session, tenant_id: int) -> None:
+    """Empuja snapshot fresco de alertas a todos los clientes WS del tenant.
+
+    Best-effort: si el broadcast falla no interrumpe el endpoint HTTP que lo llama.
+    """
+    try:
+        await ws_manager.broadcast(
+            tenant_id,
+            {"type": "snapshot", "alerts": get_current_alerts(db, tenant_id)},
+        )
+    except Exception:
+        pass

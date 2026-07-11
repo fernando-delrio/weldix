@@ -1,7 +1,10 @@
+from typing import cast
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from backend.core.database import get_db
+from backend.features.alertas.service import push_alerts
 from backend.features.auth.dependencies import (
     get_current_user,
     require_active_trial,
@@ -80,37 +83,37 @@ def parse_albaran(
 
 
 @router.post("/{material_id}/consume", response_model=StockItemResponse)
-def consume_material(
+async def consume_material(
     material_id: int,
     body: ConsumeMaterialRequest,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     try:
-        return StockItemResponse.from_orm_material(
-            service.consume_material(
-                db, material_id, body.consumed, tenant_id=current_user.tenant_id
-            )
+        material = service.consume_material(
+            db, material_id, body.consumed, tenant_id=current_user.tenant_id
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
+    await push_alerts(db, cast(int, current_user.tenant_id))
+    return StockItemResponse.from_orm_material(material)
 
 
 @router.post("/{material_id}/restock", response_model=StockItemResponse)
-def restock_material(
+async def restock_material(
     material_id: int,
     body: RestockMaterialRequest,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     try:
-        return StockItemResponse.from_orm_material(
-            service.restock_material(
-                db, material_id, body.cantidad, tenant_id=current_user.tenant_id
-            )
+        material = service.restock_material(
+            db, material_id, body.cantidad, tenant_id=current_user.tenant_id
         )
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
+    await push_alerts(db, cast(int, current_user.tenant_id))
+    return StockItemResponse.from_orm_material(material)
 
 
 @router.patch("/{material_id}", response_model=StockItemResponse)

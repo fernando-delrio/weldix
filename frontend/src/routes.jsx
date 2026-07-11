@@ -22,6 +22,9 @@ const PrivacidadPage = lazy(() => import('./modules/core/components/PrivacidadPa
 const TerminosPage = lazy(() => import('./modules/core/components/TerminosPage'))
 const TrialExpiredPage = lazy(() => import('./modules/core/components/TrialExpiredPage'))
 const SuperAdminPage = lazy(() => import('./modules/superadmin/components/SuperAdminPage'))
+const SeguimientoPage = lazy(() => import('./modules/seguimiento/components/SeguimientoPage'))
+const ForgotPasswordPage = lazy(() => import('./modules/auth/components/ForgotPasswordPage'))
+const ResetPasswordPage = lazy(() => import('./modules/auth/components/ResetPasswordPage'))
 
 const Splash = ({ text }) => (
   <main className="grid min-h-screen place-items-center bg-slate-950 text-slate-300">
@@ -54,6 +57,9 @@ const AppRoutes = () => {
             <Route path="/terminos" element={<TerminosPage />} />
             <Route path="/trial-expirado" element={<TrialExpiredPage />} />
             <Route path="/superadmin" element={<SuperAdminPage />} />
+            <Route path="/seguimiento/:token" element={<SeguimientoPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
 
             <Route element={<ProtectedRoute />}>
               <Route path="/app/inicio" element={<WorkerDashboardPage />} />

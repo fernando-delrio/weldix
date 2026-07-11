@@ -1,7 +1,7 @@
 """
 Billing service — integración con Stripe.
 
-Modelo de precios: base fija (19€/mes) + por operario (5€/operario/mes).
+Modelo de precios: base fija (49€/mes) + por operario (17€/operario/mes).
 El backend cuenta los operarios del tenant en el momento del checkout.
 
 Flujo de vida:
@@ -58,8 +58,8 @@ def create_checkout_session(
 ) -> str:
     """
     Crea una sesión de Stripe Checkout con dos line items:
-      - Tarifa base (19€/mes × 1)
-      - Por operario (5€/mes × num_seats)
+      - Tarifa base (49€/mes × 1)
+      - Por operario (17€/mes × num_seats)
     Devuelve la URL a la que redirigir al admin.
     """
     if not settings.stripe_price_base or not settings.stripe_price_per_seat:
@@ -71,13 +71,15 @@ def create_checkout_session(
     customer_id = _get_or_create_customer(tenant, admin_email)
     db.commit()  # persistir stripe_customer_id si es nuevo
 
-    has_active_trial = (
-        tenant.trial_expires_at is not None
-        and tenant.trial_expires_at > datetime.utcnow()
-    )
+    # Normalizamos a UTC-aware: en Postgres la columna es TIMESTAMPTZ (aware) y
+    # comparar con un datetime naive lanza TypeError → 500 justo en el checkout.
+    trial_dt = tenant.trial_expires_at
+    if trial_dt is not None and trial_dt.tzinfo is None:
+        trial_dt = trial_dt.replace(tzinfo=timezone.utc)
+    has_active_trial = trial_dt is not None and trial_dt > datetime.now(timezone.utc)
     subscription_data: dict = {"metadata": {"tenant_id": str(tenant.id)}}
-    if has_active_trial:
-        subscription_data["trial_end"] = int(tenant.trial_expires_at.timestamp())
+    if has_active_trial and trial_dt is not None:
+        subscription_data["trial_end"] = int(trial_dt.timestamp())
 
     session = stripe.checkout.Session.create(
         customer=customer_id,

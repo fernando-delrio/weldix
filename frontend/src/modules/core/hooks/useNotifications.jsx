@@ -8,7 +8,9 @@ const RECONNECT_MS = 4_000
 const useNotifications = () => {
   const { token } = useAuthSession()
   const [alerts, setAlerts] = useState([])
-  const [unread, setUnread] = useState(0)
+  // IDs de alertas que el usuario ya vio — se actualizan en markAllRead
+  // unread se deriva de alerts - seenIds, sin useState extra
+  const [seenIds, setSeenIds] = useState(() => new Set())
   const wsRef = useRef(null)
   const heartbeatRef = useRef(null)
   const reconnectRef = useRef(null)
@@ -16,7 +18,6 @@ const useNotifications = () => {
   useEffect(() => {
     if (!token) return
 
-    // connect se define dentro del efecto para evitar dependencia circular en useCallback
     const connect = () => {
       const ws = new WebSocket(`${WS_BASE}/ws/notificaciones?token=${token}`)
 
@@ -29,9 +30,12 @@ const useNotifications = () => {
       }
 
       ws.onmessage = (e) => {
-        const data = JSON.parse(e.data)
-        data.type === 'snapshot' && setAlerts(data.alerts)
-        data.type === 'snapshot' && setUnread((prev) => Math.max(prev, data.alerts.length))
+        try {
+          const data = JSON.parse(e.data)
+          if (data.type === 'snapshot') setAlerts(data.alerts ?? [])
+        } catch {
+          // ignorar mensajes malformados
+        }
       }
 
       ws.onclose = () => {
@@ -51,7 +55,14 @@ const useNotifications = () => {
     }
   }, [token])
 
-  const markAllRead = useCallback(() => setUnread(0), [])
+  // Marca como leídas las alertas actualmente visibles
+  const markAllRead = useCallback(
+    () => setSeenIds((prev) => new Set([...prev, ...alerts.map((a) => a.id)])),
+    [alerts]
+  )
+
+  // Estado derivado — no en useState para evitar bug de sincronización
+  const unread = alerts.filter((a) => !seenIds.has(a.id)).length
 
   return { alerts, unread, markAllRead }
 }

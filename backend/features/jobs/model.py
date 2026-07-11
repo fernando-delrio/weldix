@@ -18,6 +18,7 @@ class Job(Base):
     progreso = Column(Integer, nullable=False, default=0)
     descripcion = Column(Text, nullable=True)
     is_demo = Column(Boolean, nullable=False, default=False)
+    public_token = Column(String(64), unique=True, nullable=True, index=True)
     created_at = Column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )

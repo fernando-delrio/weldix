@@ -1,3 +1,5 @@
+from typing import cast
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -8,6 +10,8 @@ from backend.features.auth.dependencies import (
     require_role,
 )
 from backend.features.auth.model import User
+
+from backend.features.alertas.service import push_alerts
 
 from . import service
 from .schemas import (
@@ -93,7 +97,7 @@ def get_job(
 
 
 @router.patch("/{job_id}/estado", response_model=JobResponse)
-def update_estado(
+async def update_estado(
     job_id: int,
     body: UpdateEstadoRequest,
     db: Session = Depends(get_db),
@@ -114,6 +118,7 @@ def update_estado(
         raise HTTPException(status_code=403, detail=str(exc))
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
+    await push_alerts(db, cast(int, current_user.tenant_id))
     return JobResponse.from_orm_job(job)
 
 
@@ -129,6 +134,18 @@ def update_job(
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
     return JobResponse.from_orm_job(job)
+
+
+@router.post("/{job_id}/compartir")
+def get_share_token(
+    job_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("admin")),
+):
+    token = service.get_or_create_public_token(
+        db, job_id, tenant_id=current_user.tenant_id  # type: ignore[arg-type]
+    )
+    return {"token": token}
 
 
 @router.delete("/{job_id}", status_code=204)

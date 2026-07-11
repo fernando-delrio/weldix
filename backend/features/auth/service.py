@@ -1,4 +1,5 @@
 import re
+import secrets
 from datetime import datetime, timedelta, timezone
 from typing import Dict, Tuple
 
@@ -13,9 +14,25 @@ from .model import Tenant, User
 # { email: (attempts, locked_until_utc) }
 _login_state: Dict[str, Tuple[int, datetime | None]] = {}
 
+# Rate limiter genérico en memoria: { key: [timestamps recientes] }
+# NOTA: por-proceso y se resetea al reiniciar. Suficiente para un worker;
+# migrar a Redis cuando haya varios workers (mismo caso que _login_state y ws_manager).
+_rate_state: Dict[str, list[datetime]] = {}
+
 
 def _now():
     return datetime.now(timezone.utc)
+
+
+def check_rate_limit(key: str, max_hits: int, window_minutes: int) -> None:
+    """Lanza ValueError si `key` supera `max_hits` en la ventana dada."""
+    now = _now()
+    window_start = now - timedelta(minutes=window_minutes)
+    hits = [t for t in _rate_state.get(key, []) if t > window_start]
+    if len(hits) >= max_hits:
+        raise ValueError("Demasiadas solicitudes. Inténtalo de nuevo más tarde.")
+    hits.append(now)
+    _rate_state[key] = hits
 
 
 def _is_locked(email: str) -> bool:
@@ -183,6 +200,43 @@ def get_trial_status(db: Session, tenant_id: int | None) -> dict:
         "days_left": days_left,
         "trial_expires_at": tenant.trial_expires_at,
     }
+
+
+def request_password_reset(db: Session, email: str) -> str | None:
+    """
+    Genera un token de reset de un solo uso con TTL de 1 hora.
+    Devuelve el token o None si el email no existe.
+    El llamador NO debe revelar si el email existe — siempre responder 204.
+    """
+    safe_email = email.lower().strip()
+    user = db.query(User).filter(User.email == safe_email).first()
+    if not user:
+        return None
+    user.reset_token = secrets.token_urlsafe(32)  # type: ignore[assignment]
+    user.reset_token_expires_at = _now() + timedelta(hours=1)  # type: ignore[assignment]
+    db.commit()
+    return str(user.reset_token)
+
+
+def do_reset_password(db: Session, token: str, new_password: str) -> None:
+    """Valida el token, actualiza la contraseña y borra el token (uso único)."""
+    user = db.query(User).filter(User.reset_token == token).first()  # type: ignore[arg-type]
+    if not user:
+        raise ValueError("Enlace de recuperación no válido")
+
+    expires_at = user.reset_token_expires_at
+    if expires_at is not None and expires_at.tzinfo is None:
+        expires_at = expires_at.replace(tzinfo=timezone.utc)
+    if expires_at is None or _now() > expires_at:  # type: ignore[operator]
+        user.reset_token = None  # type: ignore[assignment]
+        user.reset_token_expires_at = None  # type: ignore[assignment]
+        db.commit()
+        raise ValueError("El enlace ha expirado. Solicita uno nuevo.")
+
+    user.password_hash = hash_password(new_password)  # type: ignore[assignment]
+    user.reset_token = None  # type: ignore[assignment]
+    user.reset_token_expires_at = None  # type: ignore[assignment]
+    db.commit()
 
 
 def authenticate_user(db: Session, email: str, password: str) -> dict:

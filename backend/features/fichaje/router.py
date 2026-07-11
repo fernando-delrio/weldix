@@ -124,7 +124,9 @@ def mis_jornadas(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    fichajes = service.get_fichajes_operario(db, current_user.id)
+    fichajes = service.get_fichajes_operario(
+        db, current_user.id, tenant_id=current_user.tenant_id
+    )
     return [FichajeResponse.from_orm_fichaje(f) for f in fichajes]
 
 
@@ -157,7 +159,10 @@ def forzar_cierre(
 def fichajes_por_operario(
     operario_id: int,
     db: Session = Depends(get_db),
-    _: User = Depends(require_role("admin")),
+    current_user: User = Depends(require_role("admin")),
 ):
-    fichajes = service.get_fichajes_operario(db, operario_id)
+    # tenant_id del admin: impide leer fichajes de un operario de otro taller
+    fichajes = service.get_fichajes_operario(
+        db, operario_id, tenant_id=current_user.tenant_id
+    )
     return [FichajeResponse.from_orm_fichaje(f) for f in fichajes]

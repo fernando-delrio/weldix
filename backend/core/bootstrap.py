@@ -79,9 +79,12 @@ def _sync_sqlite_dev_schema() -> None:
             ("users", "tenant_id", "INTEGER"),
             ("users", "worker_number", "INTEGER"),
             ("users", "onboarding_done", "BOOLEAN NOT NULL DEFAULT 0"),
+            ("users", "reset_token", "VARCHAR(64)"),
+            ("users", "reset_token_expires_at", "DATETIME"),
             ("tenants", "trial_expires_at", "DATETIME"),
             ("jobs", "tenant_id", "INTEGER"),
             ("jobs", "is_demo", "BOOLEAN NOT NULL DEFAULT 0"),
+            ("jobs", "public_token", "VARCHAR(64)"),
             ("stock", "tenant_id", "INTEGER"),
             ("stock", "is_demo", "BOOLEAN NOT NULL DEFAULT 0"),
             ("fotos", "tenant_id", "INTEGER"),
@@ -98,6 +101,46 @@ def _sync_sqlite_dev_schema() -> None:
             if table_name not in table_names:
                 continue
             _sqlite_add_column_if_missing(conn, table_name, column_name, ddl_fragment)
+
+
+def _sync_postgres_schema() -> None:
+    """
+    Additive schema sync para PostgreSQL en producción.
+    Usa ADD COLUMN IF NOT EXISTS — idempotente y sin riesgo de pérdida de datos.
+    NO usa create_all() ni Alembic: solo añade columnas que faltan al arrancar.
+    Se ejecuta siempre (independiente de auto_create_tables) en bases no-SQLite.
+    """
+    if settings.database_url.startswith("sqlite"):
+        return
+
+    additions = [
+        ("jobs", "public_token", "VARCHAR(64)"),
+        ("users", "reset_token", "VARCHAR(64)"),
+        ("users", "reset_token_expires_at", "TIMESTAMPTZ"),
+    ]
+
+    with engine.begin() as conn:
+        for table_name, column_name, ddl_fragment in additions:
+            conn.execute(
+                text(
+                    f'ALTER TABLE "{table_name}" '
+                    f'ADD COLUMN IF NOT EXISTS "{column_name}" {ddl_fragment}'
+                )
+            )
+            logger.info("PostgreSQL schema sync: ensured %s.%s", table_name, column_name)
+
+        conn.execute(
+            text(
+                "CREATE UNIQUE INDEX IF NOT EXISTS ix_jobs_public_token "
+                'ON "jobs" (public_token)'
+            )
+        )
+        conn.execute(
+            text(
+                "CREATE UNIQUE INDEX IF NOT EXISTS ix_users_reset_token "
+                'ON "users" (reset_token)'
+            )
+        )
 
 
 def init_schema() -> None:
@@ -408,6 +451,7 @@ def seed_equipos() -> None:
 def run_startup_tasks() -> None:
     _check_security_warnings()
     init_schema()
+    _sync_postgres_schema()
     seed_admin()
     seed_jobs()
     seed_stock()

@@ -14,6 +14,7 @@ from backend.features.nominas.router import router as nominas_router
 from backend.features.registro_horas.router import router as registro_horas_router
 from backend.features.rrhh.router import router as rrhh_router
 from backend.features.stock.router import router as stock_router
+from backend.features.seguimiento.router import router as seguimiento_router
 from backend.features.superadmin.router import router as superadmin_router
 
 ENABLED_ROUTERS = [
@@ -32,6 +33,7 @@ ENABLED_ROUTERS = [
     nominas_router,
     pdf_router,
     rrhh_router,
+    seguimiento_router,
     stock_router,
     superadmin_router,
 ]

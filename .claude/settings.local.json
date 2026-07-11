@@ -9,7 +9,13 @@
       "Bash(ls \"c:/Users/FeR/OneDrive/Escritorio/full stack/Weldix/\"*.db)",
       "Bash(taskkill /f /im python.exe)",
       "WebSearch",
-      "Bash(alembic revision *)"
+      "Bash(alembic revision *)",
+      "Bash(agent-browser snapshot *)",
+      "Bash(agent-browser click *)",
+      "Bash(agent-browser wait *)",
+      "Bash(agent-browser screenshot *)",
+      "Bash(agent-browser scroll *)",
+      "Bash(agent-browser type *)"
     ]
   }
 }

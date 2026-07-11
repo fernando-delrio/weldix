@@ -49,8 +49,8 @@ class Settings(BaseSettings):
     stripe_webhook_secret: str | None = None
     # Modelo de precios: base fija + por operario
     # Crear dos productos en Stripe → Products → Add product
-    stripe_price_base: str | None = None      # precio base fijo mensual (19€/mes)
-    stripe_price_per_seat: str | None = None  # precio por operario/mes (5€/operario/mes)
+    stripe_price_base: str | None = None      # precio base fijo mensual (49€/mes)
+    stripe_price_per_seat: str | None = None  # precio por operario/mes (17€/operario/mes)
     # URL del frontend para redirigir tras checkout
     frontend_url: str = "http://localhost:5174"
 

@@ -36,6 +36,8 @@ class User(Base):
     onboarding_done = Column(
         Boolean, nullable=False, default=False, server_default="false"
     )
+    reset_token = Column(String(64), nullable=True, unique=True, index=True)
+    reset_token_expires_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )

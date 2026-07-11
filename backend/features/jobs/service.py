@@ -1,3 +1,4 @@
+import secrets
 from datetime import date
 
 from sqlalchemy import or_
@@ -78,6 +79,7 @@ def create_job(
         fecha_inicio=data.fecha_inicio,
         progreso=_clamp_progress(data.progreso),
         descripcion=data.descripcion,
+        public_token=secrets.token_urlsafe(32),
     )
     db.add(job)
     db.flush()  # obtiene job.id sin commitear — evento y job van en el mismo commit
@@ -172,6 +174,18 @@ def delete_job(db: Session, job_id: int, tenant_id: int | None = None) -> None:
     job = get_job_by_id(db, job_id, tenant_id)
     db.delete(job)
     db.commit()
+
+
+def get_or_create_public_token(
+    db: Session, job_id: int, tenant_id: int | None = None
+) -> str:
+    """Devuelve el token público del job, generándolo si aún no tiene uno."""
+    job = get_job_by_id(db, job_id, tenant_id)
+    if job.public_token is None:  # type: ignore[comparison-overlap]
+        job.public_token = secrets.token_urlsafe(32)  # type: ignore[assignment]
+        db.commit()
+        db.refresh(job)
+    return str(job.public_token)
 
 
 def search_jobs(

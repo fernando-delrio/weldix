@@ -320,7 +320,7 @@ const NavBar = ({ isDark, onToggle, t }) => (
     <div className="flex items-center gap-2">
       <ThemeToggle isDark={isDark} onToggle={onToggle} t={t} />
       <a
-        href="mailto:melacrujo@gmail.com?subject=Contacto%20Weldix"
+        href="mailto:hola@weldix.app?subject=Contacto%20Weldix"
         className={cx(
           'hidden items-center gap-1.5 px-3 py-1.5 text-[0.7rem] font-semibold uppercase tracking-wider transition sm:flex',
           t.navText
@@ -429,7 +429,7 @@ const HeroSection = ({ t, isDark }) => (
         </MagneticWrap>
         <MagneticWrap strength={0.25}>
           <a
-            href="mailto:melacrujo@gmail.com?subject=Quiero%20saber%20más%20sobre%20Weldix"
+            href="mailto:hola@weldix.app?subject=Quiero%20saber%20más%20sobre%20Weldix"
             data-gsap="hero-cta"
             className={cx(
               'flex items-center gap-2 rounded-xl px-7 py-3.5 text-sm font-medium tracking-wide transition',
@@ -1069,7 +1069,7 @@ const PricingSection = ({ t }) => (
               Probar 15 días gratis — sin tarjeta
             </Link>
             <a
-              href="mailto:melacrujo@gmail.com?subject=Consulta%20sobre%20Weldix"
+              href="mailto:hola@weldix.app?subject=Consulta%20sobre%20Weldix"
               className={cx(
                 'flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-medium tracking-wide transition',
                 t.btnGhost
@@ -1169,7 +1169,7 @@ const LandingFooter = ({ t }) => (
         <Link to="/terminos" className="transition hover:opacity-100">
           Términos
         </Link>
-        <a href="mailto:melacrujo@gmail.com" className="transition hover:opacity-100">
+        <a href="mailto:hola@weldix.app" className="transition hover:opacity-100">
           Contacto
         </a>
         <Link to="/login" className="transition hover:opacity-100">

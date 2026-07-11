@@ -53,6 +53,15 @@ export const downloadJobPdf = async (id) => {
   URL.revokeObjectURL(url)
 }
 
+export const getShareToken = async (jobId) => {
+  const res = await fetch(`${API_BASE_URL}/trabajos/${jobId}/compartir`, {
+    method: 'POST',
+    headers: authHeaders(),
+  })
+  if (!res.ok) throw new Error('No se pudo generar el enlace')
+  return res.json()
+}
+
 export const searchJobs = async (q) => {
   const res = await fetch(`${API_BASE_URL}/trabajos/buscar-rapido?q=${encodeURIComponent(q)}`, {
     headers: authHeaders(),

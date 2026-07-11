@@ -1,7 +1,10 @@
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
+import logging
+
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
+from backend.core.config import settings
 from backend.core.database import get_db
 from backend.core.email import send_welcome_email
 from backend.core.security import create_access_token
@@ -13,10 +16,12 @@ from .registration import SignupData, SignupStrategyFactory
 from .schemas import (
     AdminSignupRequest,
     ChangePasswordRequest,
+    ForgotPasswordRequest,
     LoginRequest,
     MeResponse,
     RegisterWorkspaceRequest,
     RegisterWorkspaceResponse,
+    ResetPasswordRequest,
     TokenResponse,
     TrialStatusResponse,
     UpdateProfileRequest,
@@ -24,10 +29,15 @@ from .schemas import (
 from .service import (
     authenticate_user,
     change_password,
+    check_rate_limit,
     create_workspace,
+    do_reset_password,
     get_trial_status,
+    request_password_reset,
     update_profile,
 )
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 admin_signup_strategy = SignupStrategyFactory.for_admin_signup()
@@ -39,6 +49,7 @@ admin_signup_strategy = SignupStrategyFactory.for_admin_signup()
 def register_workspace(
     body: RegisterWorkspaceRequest,
     background_tasks: BackgroundTasks,
+    request: Request,
     db: Session = Depends(get_db),
 ):
     """
@@ -46,6 +57,12 @@ def register_workspace(
     Crea el Tenant + el primer usuario admin automáticamente.
     Devuelve un JWT listo para usar — el usuario queda logueado.
     """
+    client_ip = request.client.host if request.client else "unknown"
+    try:
+        check_rate_limit(f"register:{client_ip}", max_hits=5, window_minutes=60)
+    except ValueError as exc:
+        raise HTTPException(status_code=429, detail=str(exc))
+
     if not body.aceptar_terminos:
         raise HTTPException(
             status_code=422, detail="Debes aceptar los términos y condiciones"
@@ -177,6 +194,43 @@ def update_me(
         onboarding_done=user.onboarding_done,
         worker_number=user.worker_number,
     )
+
+
+@router.post("/forgot-password", status_code=204)
+def forgot_password(
+    body: ForgotPasswordRequest,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+):
+    """
+    Solicita un reset de contraseña. Siempre responde 204 sin revelar
+    si el email existe (evita enumeración de usuarios).
+    El token se envía al webhook n8n que dispara el email al usuario.
+    Rate-limit por email para evitar email-bombing a una víctima.
+    """
+    try:
+        check_rate_limit(f"forgot:{body.email.lower().strip()}", max_hits=3, window_minutes=15)
+    except ValueError:
+        return  # Silencioso: mismo 204 que el happy path, no revela nada
+
+    token = request_password_reset(db, body.email)
+    if token:
+        reset_link = f"{settings.frontend_url}/reset-password?token={token}"
+        logger.info("Password reset requested for %s — link: %s", body.email, reset_link)
+        background_tasks.add_task(
+            fire_webhook,
+            "password_reset_solicitado",
+            {"email": body.email, "reset_link": reset_link},
+        )
+
+
+@router.post("/reset-password", status_code=204)
+def reset_password(body: ResetPasswordRequest, db: Session = Depends(get_db)):
+    """Valida el token y actualiza la contraseña. El token se invalida al usarse."""
+    try:
+        do_reset_password(db, body.token, body.new_password)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
 
 
 @router.post("/me/password", status_code=204)

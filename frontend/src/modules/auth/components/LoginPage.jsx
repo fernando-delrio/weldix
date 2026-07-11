@@ -1,3 +1,4 @@
+import { Link, useSearchParams } from 'react-router-dom'
 import AuthLayout from './AuthLayout'
 import { authTw, cx } from '../utils/tw'
 import { useLoginForm } from '../hooks/useLoginForm'
@@ -5,6 +6,8 @@ import { useLoginForm } from '../hooks/useLoginForm'
 const LoginPage = () => {
   const { email, setEmail, password, setPassword, feedback, error, isSubmitting, submit } =
     useLoginForm()
+  const [searchParams] = useSearchParams()
+  const resetOk = searchParams.get('reset') === 'ok'
 
   return (
     <AuthLayout
@@ -14,6 +17,11 @@ const LoginPage = () => {
       feedback={feedback}
       error={error}
     >
+      {resetOk && (
+        <p className="rounded-lg border border-emerald-700/40 bg-emerald-900/20 px-4 py-3 text-center text-sm font-semibold text-emerald-300">
+          Contraseña actualizada. Ya puedes iniciar sesión.
+        </p>
+      )}
       <form onSubmit={submit} className={authTw.formGrid}>
         <label htmlFor="login-email" className={authTw.fieldLabel}>
           CORREO ELECTRONICO
@@ -49,7 +57,9 @@ const LoginPage = () => {
           />
         </div>
 
-        <p className={authTw.helperTextRight}>¿Olvidaste tu contraseña?</p>
+        <Link to="/forgot-password" className={authTw.helperTextRight}>
+          ¿Olvidaste tu contraseña?
+        </Link>
 
         <button
           type="submit"

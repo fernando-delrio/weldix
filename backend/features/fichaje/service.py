@@ -100,15 +100,14 @@ def forzar_cierre_jornada(
 
 
 def get_fichajes_operario(
-    db: Session, operario_id: int, limit: int = 30
+    db: Session, operario_id: int, limit: int = 30, tenant_id: int | None = None
 ) -> list[Fichaje]:
-    return (
-        db.query(Fichaje)
-        .filter(Fichaje.operario_id == operario_id)
-        .order_by(Fichaje.inicio.desc())
-        .limit(limit)
-        .all()
-    )
+    q = db.query(Fichaje).filter(Fichaje.operario_id == operario_id)
+    # Scoping por tenant: sin él, un admin podría leer las horas de un operario
+    # de OTRO taller pasando un operario_id ajeno (IDOR cross-tenant).
+    if tenant_id is not None:
+        q = q.filter(Fichaje.tenant_id == tenant_id)
+    return q.order_by(Fichaje.inicio.desc()).limit(limit).all()
 
 
 def get_todos_los_fichajes(
