@@ -41,6 +41,71 @@ def _send(to: str, subject: str, html: str) -> None:
         pass  # El email falla silenciosamente — nunca rompe el flujo principal
 
 
+# ── Email 0: Recuperación de contraseña ───────────────────────────────────────
+
+
+def send_password_reset_email(to: str, reset_link: str) -> bool:
+    """
+    Envía el enlace de recuperación por Resend. Devuelve True si se intentó el
+    envío (Resend configurado) y False si no hay canal de email disponible —
+    el llamador puede usar ese False para avisar de que no llegó nada.
+    """
+    if not _available():
+        return False
+    _send(
+        to=to,
+        subject="Restablece tu contraseña de Weldix",
+        html=_password_reset_html(reset_link),
+    )
+    return True
+
+
+def _password_reset_html(reset_link: str) -> str:
+    return f"""
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#020617;font-family:Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0">
+    <tr><td align="center" style="padding:40px 20px;">
+      <table width="600" cellpadding="0" cellspacing="0" style="background:#0f172a;border-radius:8px;overflow:hidden;">
+
+        <tr><td style="background:#f59e0b;padding:24px 32px;">
+          <span style="font-size:24px;font-weight:900;color:#020617;letter-spacing:3px;">WELDIX</span>
+        </td></tr>
+
+        <tr><td style="padding:40px 32px;">
+          <h1 style="color:#f1f5f9;font-size:20px;margin:0 0 16px;">Restablece tu contraseña</h1>
+          <p style="color:#94a3b8;font-size:15px;line-height:1.6;margin:0 0 24px;">
+            Recibimos una solicitud para restablecer la contraseña de tu cuenta.
+            Pulsa el botón para elegir una nueva. El enlace caduca en <strong style="color:#f1f5f9;">1 hora</strong>.
+          </p>
+
+          <a href="{reset_link}"
+             style="display:inline-block;background:#f59e0b;color:#020617;font-weight:700;
+                    font-size:15px;padding:14px 28px;border-radius:6px;text-decoration:none;">
+            Elegir nueva contraseña →
+          </a>
+
+          <p style="color:#475569;font-size:13px;margin:28px 0 0;line-height:1.6;">
+            Si no fuiste tú, ignora este email — tu contraseña actual sigue siendo válida.
+          </p>
+        </td></tr>
+
+        <tr><td style="padding:24px 32px;border-top:1px solid #1e293b;">
+          <p style="color:#475569;font-size:12px;margin:0;">
+            Weldix · Gestión digital para talleres metalúrgicos
+          </p>
+        </td></tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>
+"""
+
+
 # ── Email 1: Bienvenida ───────────────────────────────────────────────────────
 
 

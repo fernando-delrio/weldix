@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from backend.core.config import settings
 from backend.core.database import get_db
-from backend.core.email import send_welcome_email
+from backend.core.email import send_password_reset_email, send_welcome_email
 from backend.core.security import create_access_token
 from backend.core.webhooks import fire_webhook
 
@@ -14,6 +14,7 @@ from .dependencies import get_current_user, require_role
 from .model import User
 from .registration import SignupData, SignupStrategyFactory
 from .schemas import (
+    AdminResetPasswordRequest,
     AdminSignupRequest,
     ChangePasswordRequest,
     ForgotPasswordRequest,
@@ -27,6 +28,7 @@ from .schemas import (
     UpdateProfileRequest,
 )
 from .service import (
+    admin_reset_user_password,
     authenticate_user,
     change_password,
     check_rate_limit,
@@ -217,6 +219,9 @@ def forgot_password(
     if token:
         reset_link = f"{settings.frontend_url}/reset-password?token={token}"
         logger.info("Password reset requested for %s — link: %s", body.email, reset_link)
+        # Canal principal: email directo por Resend (fiable, ya usado para bienvenida/trial).
+        background_tasks.add_task(send_password_reset_email, body.email, reset_link)
+        # Canal secundario opcional: webhook n8n (WhatsApp, etc.) si está configurado.
         background_tasks.add_task(
             fire_webhook,
             "password_reset_solicitado",
@@ -241,6 +246,20 @@ def update_password(
 ):
     try:
         change_password(db, current_user, body.current_password, body.new_password)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
+@router.post("/admin/users/{user_id}/reset-password", status_code=204)
+def admin_reset_password(
+    user_id: int,
+    body: AdminResetPasswordRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("admin")),
+):
+    """Admin: fija una nueva contraseña para un operario de su taller (sin email)."""
+    try:
+        admin_reset_user_password(db, current_user, user_id, body.new_password)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 
