@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import {
   descargarFichajesCsvRango,
   forzarCierreJornada,
+  getKioskLink,
   getResumenExtras,
 } from '../services/fichajeService'
 import WeldixButton from '../../core/components/WeldixButton'
@@ -436,6 +437,9 @@ const FichajesAdminSection = ({ operarios = [], onRefresh }) => {
   const [exportError, setExportError] = useState('')
   const [expandedByOperario, setExpandedByOperario] = useState({})
   const [showExtras, setShowExtras] = useState(false)
+  const [kioskUrl, setKioskUrl] = useState('')
+  const [kioskLoading, setKioskLoading] = useState(false)
+  const [kioskCopied, setKioskCopied] = useState(false)
   const [desde, setDesde] = useState(firstOfMonthStr)
   const [hasta, setHasta] = useState(todayStr)
 
@@ -477,6 +481,28 @@ const FichajesAdminSection = ({ operarios = [], onRefresh }) => {
       setExportError(err.message || 'No se pudo exportar el CSV')
     } finally {
       setIsExportingCsv(false)
+    }
+  }
+
+  const handleKioskLink = async () => {
+    setKioskLoading(true)
+    try {
+      const { url } = await getKioskLink()
+      setKioskUrl(url)
+    } catch {
+      setKioskUrl('')
+    } finally {
+      setKioskLoading(false)
+    }
+  }
+
+  const copyKioskUrl = async () => {
+    try {
+      await navigator.clipboard.writeText(kioskUrl)
+      setKioskCopied(true)
+      setTimeout(() => setKioskCopied(false), 2500)
+    } catch {
+      /* si el clipboard falla, el enlace sigue visible para copiarlo a mano */
     }
   }
 
@@ -555,9 +581,42 @@ const FichajesAdminSection = ({ operarios = [], onRefresh }) => {
           <i className="bx bx-time-five mr-1" aria-hidden="true" />
           {showExtras ? 'Ocultar extras' : 'Ver horas extras'}
         </WeldixButton>
+        <WeldixButton
+          variant="secondary"
+          size="sm"
+          onClick={handleKioskLink}
+          isLoading={kioskLoading}
+          loadingLabel="Generando…"
+        >
+          <i className="bx bx-tab mr-1" aria-hidden="true" />
+          Modo Kiosko
+        </WeldixButton>
       </div>
 
       {exportError && <p className="text-xs text-rose-400">{exportError}</p>}
+
+      {kioskUrl && (
+        <div className="rounded-xl border border-amber-700/30 bg-amber-500/5 p-4">
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-amber-400">
+            Enlace del kiosko
+          </p>
+          <p className="mt-1 text-xs text-slate-400">
+            Abre este enlace en la tablet del taller. Los operarios ficharán con su número, sin
+            iniciar sesión.
+          </p>
+          <div className="mt-2 flex items-center gap-2">
+            <input
+              readOnly
+              value={kioskUrl}
+              onFocus={(e) => e.target.select()}
+              className="flex-1 rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-xs text-slate-200 outline-none"
+            />
+            <WeldixButton variant="primary" size="sm" onClick={copyKioskUrl}>
+              {kioskCopied ? '¡Copiado!' : 'Copiar'}
+            </WeldixButton>
+          </div>
+        </div>
+      )}
 
       {showExtras && <ResumenExtrasPanel desde={desde || undefined} hasta={hasta || undefined} />}
 

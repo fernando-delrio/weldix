@@ -61,6 +61,16 @@ export const forzarCierreJornada = async (fichajeId, horasReales) => {
   return res.json()
 }
 
+// Modo Kiosko: obtiene (o genera) el enlace de la tablet compartida del taller.
+export const getKioskLink = async () => {
+  const res = await fetch(`${API_BASE_URL}/kiosko/generar-link`, {
+    method: 'POST',
+    headers: authHeaders(),
+  })
+  if (!res.ok) throw new Error('No se pudo generar el enlace del kiosko')
+  return res.json()
+}
+
 export const getResumenExtras = async ({ desde, hasta } = {}) => {
   const params = new URLSearchParams()
   if (desde) params.set('desde', desde)

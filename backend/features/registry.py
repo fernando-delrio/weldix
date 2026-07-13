@@ -10,6 +10,7 @@ from backend.features.fotos.router import router as fotos_router
 from backend.features.historial.router import router as historial_router
 from backend.features.ia.router import router as ia_router
 from backend.features.jobs.router import router as jobs_router
+from backend.features.kiosko.router import router as kiosko_router
 from backend.features.nominas.router import router as nominas_router
 from backend.features.registro_horas.router import router as registro_horas_router
 from backend.features.rrhh.router import router as rrhh_router
@@ -30,6 +31,7 @@ ENABLED_ROUTERS = [
     historial_router,
     ia_router,
     jobs_router,
+    kiosko_router,
     nominas_router,
     pdf_router,
     rrhh_router,
