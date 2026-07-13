@@ -35,6 +35,7 @@ from .service import (
     create_workspace,
     do_reset_password,
     get_trial_status,
+    regenerate_pin,
     request_password_reset,
     update_profile,
 )
@@ -248,6 +249,20 @@ def update_password(
         change_password(db, current_user, body.current_password, body.new_password)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
+
+
+@router.post("/admin/users/{user_id}/regenerar-pin")
+def admin_regenerate_pin(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("admin")),
+):
+    """Admin: genera un PIN de kiosko nuevo (único en su taller) para un usuario."""
+    try:
+        pin = regenerate_pin(db, current_user, user_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    return {"pin": pin}
 
 
 @router.post("/admin/users/{user_id}/reset-password", status_code=204)

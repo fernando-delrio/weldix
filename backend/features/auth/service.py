@@ -103,6 +103,7 @@ def create_workspace(
         full_name=(admin_name or "").strip() or None,
         role="admin",
         password_hash=hash_password(admin_password),
+        pin=generate_unique_pin(db, tenant.id),
     )
     db.add(admin)
     seed_workspace_demo_data(db, tenant.id)  # type: ignore[arg-type]
@@ -141,6 +142,7 @@ def create_user(
     user = User(
         tenant_id=tenant_id,
         worker_number=worker_number,
+        pin=generate_unique_pin(db, tenant_id) if tenant_id is not None else None,
         email=email.lower().strip(),
         full_name=full_name,
         role=normalized_role,
@@ -237,6 +239,39 @@ def do_reset_password(db: Session, token: str, new_password: str) -> None:
     user.reset_token = None  # type: ignore[assignment]
     user.reset_token_expires_at = None  # type: ignore[assignment]
     db.commit()
+
+
+def generate_unique_pin(db: Session, tenant_id: int | None) -> str:
+    """
+    Genera un PIN de 4 dígitos único DENTRO del taller.
+    La unicidad es por tenant: dos talleres distintos pueden repetir PIN sin cruzarse
+    porque el kiosko resuelve el tenant por su token antes de buscar el PIN.
+    """
+    for _ in range(200):
+        pin = f"{secrets.randbelow(10000):04d}"
+        exists = (
+            db.query(User)
+            .filter(User.tenant_id == tenant_id, User.pin == pin)
+            .first()
+        )
+        if not exists:
+            return pin
+    raise ValueError("No se pudo generar un PIN libre en el taller")
+
+
+def regenerate_pin(db: Session, admin: User, target_user_id: int) -> str:
+    """Admin: genera un PIN nuevo (único en su taller) para un usuario suyo."""
+    target = (
+        db.query(User)
+        .filter(User.id == target_user_id, User.tenant_id == admin.tenant_id)
+        .first()
+    )
+    if not target:
+        raise ValueError("Usuario no encontrado en tu taller")
+    target.pin = generate_unique_pin(db, admin.tenant_id)  # type: ignore[assignment]
+    db.commit()
+    db.refresh(target)
+    return str(target.pin)
 
 
 def admin_reset_user_password(

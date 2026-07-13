@@ -47,6 +47,7 @@ def _user_item(user: User) -> dict:
         "full_name": user.full_name,
         "role": user.role,
         "worker_number": user.worker_number,
+        "pin": user.pin,
     }
 
 

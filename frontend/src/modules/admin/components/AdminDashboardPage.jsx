@@ -46,7 +46,7 @@ const feedbackBanner = ({ feedback }) =>
 
 // ── Componente principal ─────────────────────────────────────────────────────
 const AdminDashboardPage = () => {
-  const { dashboard, isLoading, error, refresh, createUser, resetUserPassword } =
+  const { dashboard, isLoading, error, refresh, createUser, resetUserPassword, regenerateUserPin } =
     useAdminDashboard()
 
   const [showNewJobModal, setShowNewJobModal] = useState(false)
@@ -102,7 +102,12 @@ const AdminDashboardPage = () => {
                 }
               />
               {dashboard.users.map((user) => (
-                <AdminUserRow key={user.id} user={user} onResetPassword={resetUserPassword} />
+                <AdminUserRow
+                  key={user.id}
+                  user={user}
+                  onResetPassword={resetUserPassword}
+                  onRegeneratePin={regenerateUserPin}
+                />
               ))}
             </section>
           </>

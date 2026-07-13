@@ -48,6 +48,18 @@ export const createUser = async (data) => {
   return res.json()
 }
 
+export const regenerateUserPin = async (userId) => {
+  const res = await fetch(`${API_BASE_URL}/auth/admin/users/${userId}/regenerar-pin`, {
+    method: 'POST',
+    headers: authHeaders(),
+  })
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}))
+    throw new Error(body.detail ?? 'No se pudo regenerar el PIN')
+  }
+  return res.json()
+}
+
 export const resetUserPassword = async (userId, newPassword) => {
   const res = await fetch(`${API_BASE_URL}/auth/admin/users/${userId}/reset-password`, {
     method: 'POST',

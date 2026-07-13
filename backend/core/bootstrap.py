@@ -81,7 +81,9 @@ def _sync_sqlite_dev_schema() -> None:
             ("users", "onboarding_done", "BOOLEAN NOT NULL DEFAULT 0"),
             ("users", "reset_token", "VARCHAR(64)"),
             ("users", "reset_token_expires_at", "DATETIME"),
+            ("users", "pin", "VARCHAR(4)"),
             ("tenants", "trial_expires_at", "DATETIME"),
+            ("tenants", "kiosk_token", "VARCHAR(64)"),
             ("jobs", "tenant_id", "INTEGER"),
             ("jobs", "is_demo", "BOOLEAN NOT NULL DEFAULT 0"),
             ("jobs", "public_token", "VARCHAR(64)"),
@@ -117,6 +119,8 @@ def _sync_postgres_schema() -> None:
         ("jobs", "public_token", "VARCHAR(64)"),
         ("users", "reset_token", "VARCHAR(64)"),
         ("users", "reset_token_expires_at", "TIMESTAMPTZ"),
+        ("users", "pin", "VARCHAR(4)"),
+        ("tenants", "kiosk_token", "VARCHAR(64)"),
     ]
 
     with engine.begin() as conn:
@@ -210,6 +214,27 @@ def _assign_missing_worker_numbers(db) -> None:
 
     if changed:
         db.commit()
+
+
+def _assign_missing_pins(db) -> None:
+    """
+    Asigna un PIN de kiosko a los usuarios que aún no tienen (migración de datos).
+    flush por usuario para que el siguiente PIN generado vea los ya asignados
+    (autoflush está desactivado en la sesión).
+    """
+    from backend.features.auth.service import generate_unique_pin
+
+    users = (
+        db.query(User)
+        .filter(User.tenant_id.isnot(None), User.pin.is_(None))
+        .all()
+    )
+    if not users:
+        return
+    for user in users:
+        user.pin = generate_unique_pin(db, user.tenant_id)
+        db.flush()
+    db.commit()
 
 
 def seed_admin() -> None:
@@ -459,5 +484,6 @@ def run_startup_tasks() -> None:
     db = SessionLocal()
     try:
         _assign_missing_worker_numbers(db)
+        _assign_missing_pins(db)
     finally:
         db.close()

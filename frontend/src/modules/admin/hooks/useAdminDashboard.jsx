@@ -7,6 +7,7 @@ import {
   createUser as apiCreateUser,
   deleteJob as apiDeleteJob,
   getAdminDashboard,
+  regenerateUserPin as apiRegenerateUserPin,
   resetUserPassword as apiResetUserPassword,
 } from '../services/adminService'
 
@@ -82,6 +83,15 @@ export const useAdminDashboard = () => {
     }
   }, [])
 
+  const regenerateUserPin = useCallback(async (userId) => {
+    try {
+      const { pin } = await apiRegenerateUserPin(userId)
+      return { ok: true, pin }
+    } catch (err) {
+      return { ok: false, error: err.message }
+    }
+  }, [])
+
   return {
     dashboard,
     isLoading,
@@ -92,5 +102,6 @@ export const useAdminDashboard = () => {
     createUser,
     changeJobStatus,
     resetUserPassword,
+    regenerateUserPin,
   }
 }

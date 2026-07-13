@@ -112,12 +112,21 @@ const ResetPasswordModal = ({ user, onClose, onResetPassword }) => {
   )
 }
 
-const AdminUserRow = ({ user, onResetPassword }) => {
+const AdminUserRow = ({ user, onResetPassword, onRegeneratePin }) => {
   const grad = avatarGrad(user.full_name || user.email)
   const workerCode = Number.isFinite(user.worker_number)
     ? `OP-${String(user.worker_number).padStart(3, '0')}`
     : null
   const [showReset, setShowReset] = useState(false)
+  const [pin, setPin] = useState(user.pin)
+  const [regenerating, setRegenerating] = useState(false)
+
+  const handleRegen = async () => {
+    setRegenerating(true)
+    const result = await onRegeneratePin(user.id)
+    setRegenerating(false)
+    return result.ok ? setPin(result.pin) : undefined
+  }
 
   return (
     <div
@@ -142,6 +151,28 @@ const AdminUserRow = ({ user, onResetPassword }) => {
       </div>
 
       <div className="flex items-center gap-2">
+        {pin && (
+          <span
+            className="rounded-md border border-slate-700 bg-slate-800/60 px-2 py-1 font-mono text-xs font-bold tracking-wider text-slate-200"
+            title="PIN de fichaje en el kiosko"
+          >
+            PIN {pin}
+          </span>
+        )}
+        {onRegeneratePin && (
+          <button
+            onClick={handleRegen}
+            disabled={regenerating}
+            aria-label={`Regenerar PIN de ${user.full_name || user.email}`}
+            title="Regenerar PIN"
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-700 text-slate-400 hover:border-amber-500/50 hover:text-amber-300 disabled:opacity-50"
+          >
+            <i
+              className={`bx bx-refresh text-lg ${regenerating ? 'animate-spin' : ''}`}
+              aria-hidden="true"
+            />
+          </button>
+        )}
         {onResetPassword && (
           <button
             onClick={() => setShowReset(true)}
