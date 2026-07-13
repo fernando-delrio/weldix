@@ -7,6 +7,7 @@ import {
   createUser as apiCreateUser,
   deleteJob as apiDeleteJob,
   getAdminDashboard,
+  resetUserPassword as apiResetUserPassword,
 } from '../services/adminService'
 
 export const useAdminDashboard = () => {
@@ -70,5 +71,26 @@ export const useAdminDashboard = () => {
     [refresh]
   )
 
-  return { dashboard, isLoading, error, refresh, assignJob, removeJob, createUser, changeJobStatus }
+  // El service lanza; el hook captura y devuelve un resultado que el componente
+  // consume sin try/catch (regla del proyecto: try/catch solo en el hook).
+  const resetUserPassword = useCallback(async (userId, newPassword) => {
+    try {
+      await apiResetUserPassword(userId, newPassword)
+      return { ok: true }
+    } catch (err) {
+      return { ok: false, error: err.message }
+    }
+  }, [])
+
+  return {
+    dashboard,
+    isLoading,
+    error,
+    refresh,
+    assignJob,
+    removeJob,
+    createUser,
+    changeJobStatus,
+    resetUserPassword,
+  }
 }

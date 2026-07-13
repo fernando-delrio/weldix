@@ -48,6 +48,18 @@ export const createUser = async (data) => {
   return res.json()
 }
 
+export const resetUserPassword = async (userId, newPassword) => {
+  const res = await fetch(`${API_BASE_URL}/auth/admin/users/${userId}/reset-password`, {
+    method: 'POST',
+    headers: jsonHeaders(),
+    body: JSON.stringify({ new_password: newPassword }),
+  })
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}))
+    throw new Error(body.detail ?? 'Error al restablecer la contraseña')
+  }
+}
+
 export const changeJobStatus = async (jobId, estado) => {
   const res = await fetch(`${API_BASE_URL}/trabajos/${jobId}/estado`, {
     method: 'PATCH',

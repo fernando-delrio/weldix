@@ -239,6 +239,35 @@ def do_reset_password(db: Session, token: str, new_password: str) -> None:
     db.commit()
 
 
+def admin_reset_user_password(
+    db: Session, admin: User, target_user_id: int, new_password: str
+) -> User:
+    """
+    El admin fija una nueva contraseña para un usuario de SU taller.
+    Pensado para operarios que no tienen email o no pueden usar el flujo de reset.
+    - Scoping por tenant: no puede tocar usuarios de otro taller.
+    - No puede resetearse a sí mismo (para eso usa 'cambiar contraseña').
+    """
+    if target_user_id == admin.id:
+        raise ValueError("Para tu propia cuenta usa 'cambiar contraseña'")
+
+    target = (
+        db.query(User)
+        .filter(User.id == target_user_id, User.tenant_id == admin.tenant_id)
+        .first()
+    )
+    if not target:
+        raise ValueError("Usuario no encontrado en tu taller")
+
+    target.password_hash = hash_password(new_password)
+    # Invalida cualquier token de reset por email que estuviera pendiente
+    target.reset_token = None
+    target.reset_token_expires_at = None
+    db.commit()
+    db.refresh(target)
+    return target
+
+
 def authenticate_user(db: Session, email: str, password: str) -> dict:
     safe_email = email.lower().strip()
 

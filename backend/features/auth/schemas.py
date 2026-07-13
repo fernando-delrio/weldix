@@ -81,3 +81,9 @@ class ForgotPasswordRequest(BaseModel):
 class ResetPasswordRequest(BaseModel):
     token: str = Field(min_length=1)
     new_password: str = Field(min_length=8)
+
+
+class AdminResetPasswordRequest(BaseModel):
+    """El admin fija una nueva contraseña para un usuario de su taller."""
+
+    new_password: str = Field(min_length=8)
