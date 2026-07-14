@@ -12,10 +12,74 @@ MEDIA_DIR = Path(settings.media_base_dir) / "nominas"
 MAX_PDF_BYTES = 10 * 1024 * 1024  # 10 MB
 TIPOS_PERMITIDOS = {"application/pdf"}
 READ_CHUNK = 1024 * 1024
+MAX_TEXTO_IA = 6000  # cap del texto que se manda a la IA (evita prompts enormes)
 
 
 def _es_pdf_por_magic(header: bytes) -> bool:
     return header[:4] == b"%PDF"
+
+
+def _a_float(valor) -> float | None:
+    try:
+        return float(valor) if valor is not None else None
+    except (ValueError, TypeError):
+        return None
+
+
+def extraer_importes_nomina(filepath: str) -> dict:
+    """
+    Lee el PDF de la nómina y extrae importe bruto y neto con IA.
+    Best-effort: devuelve {} si no hay API key, el PDF no tiene texto o la IA falla.
+    Nunca lanza — la subida de la nómina no debe romperse por esto.
+    """
+    if not settings.mistral_api_key:
+        return {}
+
+    try:
+        import json
+
+        from mistralai import Mistral
+        from pypdf import PdfReader
+
+        reader = PdfReader(filepath)
+        texto = "\n".join((page.extract_text() or "") for page in reader.pages).strip()
+        if not texto:
+            return {}  # PDF escaneado (imagen) sin texto — no hay nada que leer
+        texto = texto[:MAX_TEXTO_IA]
+
+        prompt = f"""Esto es el texto de una nómina española. Extrae dos importes:
+- importe_bruto: el TOTAL DEVENGADO (bruto) en euros, solo el número.
+- importe_neto: el LÍQUIDO A PERCIBIR (neto) en euros, solo el número.
+
+TEXTO DE LA NÓMINA:
+{texto}
+
+Responde ÚNICAMENTE con JSON puro, sin markdown ni explicación:
+{{"importe_bruto": <numero o null>, "importe_neto": <numero o null>}}"""
+
+        client = Mistral(api_key=settings.mistral_api_key)
+        response = client.chat.complete(
+            model="mistral-small-latest",
+            messages=[{"role": "user", "content": prompt}],
+        )
+        content = response.choices[0].message.content.strip()
+
+        if "```" in content:
+            for part in content.split("```"):
+                stripped = part.strip()
+                if stripped.startswith("json"):
+                    stripped = stripped[4:].strip()
+                if stripped.startswith("{"):
+                    content = stripped
+                    break
+
+        data = json.loads(content)
+        return {
+            "importe_bruto": _a_float(data.get("importe_bruto")),
+            "importe_neto": _a_float(data.get("importe_neto")),
+        }
+    except Exception:
+        return {}
 
 
 async def subir_nomina(
@@ -84,6 +148,9 @@ async def subir_nomina(
         db.delete(existing)
         db.flush()
 
+    # Lectura inteligente del PDF con IA (best-effort — no rompe la subida si falla)
+    importes = extraer_importes_nomina(str(dest))
+
     nomina = Nomina(
         tenant_id=tenant_id,
         operario_id=operario_id,
@@ -92,6 +159,8 @@ async def subir_nomina(
         month=month,
         filename=file.filename or f"nomina_{year}_{month:02d}.pdf",
         filepath=str(dest),
+        importe_bruto=importes.get("importe_bruto"),
+        importe_neto=importes.get("importe_neto"),
     )
     db.add(nomina)
     db.commit()
@@ -154,6 +223,18 @@ def get_nomina_by_id(
     nomina = q.first()
     if not nomina:
         raise ValueError(f"Nómina {nomina_id} no encontrada")
+    return nomina
+
+
+def reanalizar_nomina(db: Session, nomina_id: int, tenant_id: int | None) -> Nomina:
+    """Vuelve a leer el PDF con IA y actualiza los importes de una nómina existente."""
+    nomina = get_nomina_by_id(db, nomina_id, tenant_id)
+    importes = extraer_importes_nomina(nomina.filepath)
+    nomina.importe_bruto = importes.get("importe_bruto")
+    nomina.importe_neto = importes.get("importe_neto")
+    db.commit()
+    db.refresh(nomina)
+    nomina.operario  # trigger lazy load para el schema
     return nomina
 
 

@@ -63,6 +63,23 @@ def list_nominas(
     return [NominaResponse.from_orm_nomina(n) for n in nominas]
 
 
+# ─── Admin: re-analizar con IA ────────────────────────────────────────────────
+
+
+@router.post("/{nomina_id}/analizar", response_model=NominaResponse)
+def reanalizar_nomina(
+    nomina_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("admin")),
+):
+    """Admin: vuelve a leer el PDF con IA y actualiza los importes de la nómina."""
+    try:
+        nomina = service.reanalizar_nomina(db, nomina_id, current_user.tenant_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+    return NominaResponse.from_orm_nomina(nomina)
+
+
 # ─── Admin: eliminar ─────────────────────────────────────────────────────────
 
 

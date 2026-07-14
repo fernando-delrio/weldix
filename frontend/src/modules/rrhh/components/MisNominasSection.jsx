@@ -6,6 +6,9 @@ const YEARS = Array.from({ length: 5 }, (_, i) => currentYear - i)
 
 // ── Fila de nómina ────────────────────────────────────────────────────────────
 
+const fmtEur = (n) =>
+  n == null ? null : `${n.toLocaleString('es-ES', { maximumFractionDigits: 2 })} €`
+
 const NominaRow = ({ nomina, onDownload }) => (
   <div className="flex items-center justify-between rounded-lg border border-slate-700/60 bg-slate-800/50 px-4 py-3">
     <div className="flex items-center gap-3">
@@ -19,14 +22,22 @@ const NominaRow = ({ nomina, onDownload }) => (
         </p>
       </div>
     </div>
-    <button
-      onClick={() => onDownload(nomina)}
-      aria-label={`Descargar nómina de ${nomina.month_label} ${nomina.year}`}
-      className="flex items-center gap-1.5 rounded-lg border border-sky-700/50 bg-sky-500/10 px-3 py-1.5 text-xs font-semibold text-sky-300 transition hover:bg-sky-500/20 min-h-[36px]"
-    >
-      <i className="bx bx-download text-sm" />
-      Descargar
-    </button>
+    <div className="flex items-center gap-3">
+      {nomina.importe_neto != null && (
+        <div className="text-right leading-tight">
+          <p className="text-sm font-bold text-emerald-400">{fmtEur(nomina.importe_neto)}</p>
+          <p className="text-[0.6rem] uppercase tracking-wider text-slate-500">neto</p>
+        </div>
+      )}
+      <button
+        onClick={() => onDownload(nomina)}
+        aria-label={`Descargar nómina de ${nomina.month_label} ${nomina.year}`}
+        className="flex items-center gap-1.5 rounded-lg border border-sky-700/50 bg-sky-500/10 px-3 py-1.5 text-xs font-semibold text-sky-300 transition hover:bg-sky-500/20 min-h-[36px]"
+      >
+        <i className="bx bx-download text-sm" />
+        Descargar
+      </button>
+    </div>
   </div>
 )
 

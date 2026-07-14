@@ -1,4 +1,13 @@
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, UniqueConstraint, func
+from sqlalchemy import (
+    Column,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    UniqueConstraint,
+    func,
+)
 from sqlalchemy.orm import relationship
 
 from backend.core.database import Base
@@ -24,6 +33,10 @@ class Nomina(Base):
     month = Column(Integer, nullable=False)  # 1-12
     filename = Column(String(255), nullable=False)  # nombre original para la descarga
     filepath = Column(String(500), nullable=False)  # ruta física en disco
+
+    # Importes leídos del PDF con IA al subir la nómina (best-effort: pueden ser None)
+    importe_bruto = Column(Float, nullable=True)
+    importe_neto = Column(Float, nullable=True)
 
     uploaded_at = Column(DateTime, server_default=func.now(), nullable=False)
 

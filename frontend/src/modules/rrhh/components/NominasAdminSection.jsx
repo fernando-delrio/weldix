@@ -28,7 +28,10 @@ const labelCls = 'block text-xs font-semibold uppercase tracking-[0.16em] text-s
 
 // ── Fila de nómina ────────────────────────────────────────────────────────────
 
-const NominaRow = ({ nomina, onDelete, onDownload }) => (
+const fmtEur = (n) =>
+  n == null ? null : `${n.toLocaleString('es-ES', { maximumFractionDigits: 2 })} €`
+
+const NominaRow = ({ nomina, onDelete, onDownload, onReanalizar, reanalizando }) => (
   <div className="flex items-center justify-between rounded-lg border border-slate-700/60 bg-slate-800/50 px-4 py-2.5 text-sm">
     <div className="flex items-center gap-3 min-w-0">
       <i className="bx bxs-file-pdf text-rose-400 text-lg shrink-0" />
@@ -39,21 +42,42 @@ const NominaRow = ({ nomina, onDelete, onDownload }) => (
         </p>
       </div>
     </div>
-    <div className="flex gap-2 shrink-0 ml-3">
-      <button
-        onClick={() => onDownload(nomina)}
-        aria-label={`Descargar nómina ${nomina.month_label} ${nomina.year}`}
-        className="min-h-[36px] min-w-[36px] flex items-center justify-center rounded-lg text-sky-400 hover:bg-sky-500/10 transition"
-      >
-        <i className="bx bx-download text-base" />
-      </button>
-      <button
-        onClick={() => onDelete(nomina.id)}
-        aria-label={`Eliminar nómina ${nomina.month_label} ${nomina.year}`}
-        className="min-h-[36px] min-w-[36px] flex items-center justify-center rounded-lg text-rose-400 hover:bg-rose-500/10 transition"
-      >
-        <i className="bx bx-trash text-base" />
-      </button>
+    <div className="flex items-center gap-3 shrink-0 ml-3">
+      {nomina.importe_neto != null ? (
+        <div className="text-right leading-tight">
+          <p className="text-sm font-bold text-emerald-400">{fmtEur(nomina.importe_neto)}</p>
+          <p className="text-[0.6rem] uppercase tracking-wider text-slate-500">
+            neto{nomina.importe_bruto != null ? ` · ${fmtEur(nomina.importe_bruto)} bruto` : ''}
+          </p>
+        </div>
+      ) : (
+        <span className="text-[0.65rem] italic text-slate-600">sin importe leído</span>
+      )}
+      <div className="flex gap-1">
+        <button
+          onClick={() => onReanalizar(nomina.id)}
+          disabled={reanalizando}
+          aria-label="Leer importes con IA"
+          title="Leer importes con IA"
+          className="min-h-[36px] min-w-[36px] flex items-center justify-center rounded-lg text-amber-400 hover:bg-amber-500/10 transition disabled:opacity-50"
+        >
+          <i className={`bx bx-brain text-base ${reanalizando ? 'animate-pulse' : ''}`} />
+        </button>
+        <button
+          onClick={() => onDownload(nomina)}
+          aria-label={`Descargar nómina ${nomina.month_label} ${nomina.year}`}
+          className="min-h-[36px] min-w-[36px] flex items-center justify-center rounded-lg text-sky-400 hover:bg-sky-500/10 transition"
+        >
+          <i className="bx bx-download text-base" />
+        </button>
+        <button
+          onClick={() => onDelete(nomina.id)}
+          aria-label={`Eliminar nómina ${nomina.month_label} ${nomina.year}`}
+          className="min-h-[36px] min-w-[36px] flex items-center justify-center rounded-lg text-rose-400 hover:bg-rose-500/10 transition"
+        >
+          <i className="bx bx-trash text-base" />
+        </button>
+      </div>
     </div>
   </div>
 )
@@ -207,9 +231,11 @@ const NominasAdminSection = () => {
     error,
     uploading,
     uploadError,
+    reanalizandoId,
     handleUpload,
     handleDelete,
     handleDescargar,
+    handleReanalizar,
   } = useNominasAdmin({
     operarioId: filterOperarioId || undefined,
     year: filterYear || undefined,
@@ -275,7 +301,14 @@ const NominasAdminSection = () => {
       {!isLoading && !error && nominasFiltradas.length > 0 && (
         <div className="space-y-2">
           {nominasFiltradas.map((n) => (
-            <NominaRow key={n.id} nomina={n} onDelete={handleDelete} onDownload={handleDescargar} />
+            <NominaRow
+              key={n.id}
+              nomina={n}
+              onDelete={handleDelete}
+              onDownload={handleDescargar}
+              onReanalizar={handleReanalizar}
+              reanalizando={reanalizandoId === n.id}
+            />
           ))}
         </div>
       )}

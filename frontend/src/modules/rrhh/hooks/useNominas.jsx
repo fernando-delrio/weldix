@@ -4,6 +4,7 @@ import {
   descargarNomina,
   getMisNominas,
   getNominas,
+  reanalizarNomina,
   uploadNomina,
 } from '../services/nominasService'
 
@@ -65,15 +66,31 @@ export const useNominasAdmin = ({ operarioId, year } = {}) => {
     }
   }
 
+  const [reanalizandoId, setReanalizandoId] = useState(null)
+
+  const handleReanalizar = async (nominaId) => {
+    setReanalizandoId(nominaId)
+    try {
+      const actualizada = await reanalizarNomina(nominaId)
+      setNominas((prev) => prev.map((n) => (n.id === nominaId ? actualizada : n)))
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setReanalizandoId(null)
+    }
+  }
+
   return {
     nominas,
     isLoading,
     error,
     uploading,
     uploadError,
+    reanalizandoId,
     handleUpload,
     handleDelete,
     handleDescargar,
+    handleReanalizar,
     refresh: fetchNominas,
   }
 }

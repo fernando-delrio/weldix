@@ -97,6 +97,8 @@ def _sync_sqlite_dev_schema() -> None:
             ("job_events", "tenant_id", "INTEGER"),
             ("configuracion_laboral", "tenant_id", "INTEGER"),
             ("solicitudes_ausencia", "tenant_id", "INTEGER"),
+            ("nominas", "importe_bruto", "FLOAT"),
+            ("nominas", "importe_neto", "FLOAT"),
         ]
 
         for table_name, column_name, ddl_fragment in additions:

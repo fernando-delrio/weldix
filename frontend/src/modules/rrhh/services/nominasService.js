@@ -52,6 +52,15 @@ export const deleteNomina = async (nominaId) => {
   if (!res.ok) throw new Error('Error al eliminar la nómina')
 }
 
+export const reanalizarNomina = async (nominaId) => {
+  const res = await fetch(`${API_BASE_URL}/nominas/${nominaId}/analizar`, {
+    method: 'POST',
+    headers: authHeaders(),
+  })
+  if (!res.ok) throw new Error('Error al re-analizar la nómina')
+  return res.json()
+}
+
 // ── Operario ───────────────────────────────────────────────────────────────────
 
 export const getMisNominas = async (year) => {

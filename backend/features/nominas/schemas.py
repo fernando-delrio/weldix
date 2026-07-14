@@ -18,6 +18,8 @@ class NominaResponse(BaseModel):
     month_label: str
     filename: str
     uploaded_at: datetime
+    importe_bruto: float | None = None
+    importe_neto: float | None = None
 
     model_config = {"from_attributes": True}
 
@@ -32,4 +34,6 @@ class NominaResponse(BaseModel):
             month_label=MESES_ES.get(nomina.month, str(nomina.month)),
             filename=nomina.filename,
             uploaded_at=nomina.uploaded_at,
+            importe_bruto=nomina.importe_bruto,
+            importe_neto=nomina.importe_neto,
         )
