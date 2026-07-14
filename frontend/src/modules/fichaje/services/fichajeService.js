@@ -83,6 +83,18 @@ export const getResumenExtras = async ({ desde, hasta } = {}) => {
   return res.json()
 }
 
+export const getBalanceHoras = async ({ desde, hasta } = {}) => {
+  const params = new URLSearchParams()
+  if (desde) params.set('desde', desde)
+  if (hasta) params.set('hasta', hasta)
+  const qs = params.toString() ? `?${params.toString()}` : ''
+  const res = await fetch(`${API_BASE_URL}/fichajes/admin/balance-horas${qs}`, {
+    headers: authHeaders(),
+  })
+  if (!res.ok) throw new Error('Error al obtener el balance de horas')
+  return res.json()
+}
+
 export const descargarFichajesCsvRango = async ({ desde, hasta } = {}) => {
   const params = new URLSearchParams()
   if (desde) params.set('desde', desde)

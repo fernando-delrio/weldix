@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import {
   descargarFichajesCsvRango,
   forzarCierreJornada,
+  getBalanceHoras,
   getKioskLink,
   getResumenExtras,
 } from '../services/fichajeService'
@@ -429,6 +430,101 @@ const ResumenExtrasPanel = ({ desde, hasta }) => {
   )
 }
 
+const BalanceRow = ({ row }) => {
+  const positivo = row.saldo >= 0
+  return (
+    <tr className="border-b border-slate-800/60 last:border-0">
+      <td className="py-2.5 pl-3 pr-2 text-xs font-semibold text-slate-200">
+        {row.operario_nombre}
+      </td>
+      <td className="py-2.5 pr-2 text-center text-xs text-slate-400">{row.dias_laborables}</td>
+      <td className="py-2.5 pr-2 text-center text-xs text-slate-300">
+        {row.horas_esperadas.toFixed(1)}h
+      </td>
+      <td className="py-2.5 pr-2 text-center text-xs text-slate-300">
+        {row.horas_fichadas.toFixed(1)}h
+      </td>
+      <td
+        className={`py-2.5 pr-3 text-center text-xs font-bold ${positivo ? 'text-emerald-400' : 'text-rose-400'}`}
+      >
+        {positivo ? '+' : ''}
+        {row.saldo.toFixed(1)}h
+      </td>
+    </tr>
+  )
+}
+
+const BalanceHorasPanel = ({ desde, hasta }) => {
+  const [balance, setBalance] = useState([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    setIsLoading(true)
+    setError('')
+    getBalanceHoras({ desde, hasta })
+      .then(setBalance)
+      .catch((err) => setError(err.message))
+      .finally(() => setIsLoading(false))
+  }, [desde, hasta])
+
+  return (
+    <div className="rounded-xl border border-sky-700/30 bg-sky-500/5 p-4">
+      <p className="text-xs font-bold uppercase tracking-[0.14em] text-sky-400">
+        Balance de horas — saldo acumulado
+      </p>
+      <p className="mt-1 text-[0.7rem] leading-relaxed text-slate-500">
+        Horas fichadas menos las que debía trabajar (sin festivos ni ausencias aprobadas).{' '}
+        <span className="text-emerald-400">Verde</span> = a favor,{' '}
+        <span className="text-rose-400">rojo</span> = debe horas.
+      </p>
+
+      {isLoading && <p className="mt-3 text-xs text-slate-500">Calculando…</p>}
+      {error && <p className="mt-3 text-xs text-rose-400">{error}</p>}
+
+      {!isLoading && !error && (
+        <div className="mt-3 rounded-lg border border-slate-800/80 bg-slate-950/35">
+          <div className="max-h-[320px] overflow-y-auto">
+            <table className="w-full table-fixed">
+              <thead className="sticky top-0 z-10">
+                <tr className="border-b border-slate-800 bg-slate-950/95 backdrop-blur">
+                  <th className="w-[32%] py-2 pl-3 pr-2 text-left text-xs font-bold uppercase tracking-widest text-slate-500">
+                    Operario
+                  </th>
+                  <th className="w-[15%] py-2 pr-2 text-center text-xs font-bold uppercase tracking-widest text-slate-500">
+                    Días lab.
+                  </th>
+                  <th className="w-[17%] py-2 pr-2 text-center text-xs font-bold uppercase tracking-widest text-slate-500">
+                    Esperadas
+                  </th>
+                  <th className="w-[17%] py-2 pr-2 text-center text-xs font-bold uppercase tracking-widest text-slate-500">
+                    Fichadas
+                  </th>
+                  <th className="w-[19%] py-2 pr-3 text-center text-xs font-bold uppercase tracking-widest text-sky-400">
+                    Saldo
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {balance.map((row) => (
+                  <BalanceRow key={row.operario_id} row={row} />
+                ))}
+                {balance.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="py-8 text-center text-xs text-slate-500">
+                      Sin operarios en el rango seleccionado.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 const FichajesAdminSection = ({ operarios = [], onRefresh }) => {
   const [cierreFichaje, setCierreFichaje] = useState(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -437,6 +533,7 @@ const FichajesAdminSection = ({ operarios = [], onRefresh }) => {
   const [exportError, setExportError] = useState('')
   const [expandedByOperario, setExpandedByOperario] = useState({})
   const [showExtras, setShowExtras] = useState(false)
+  const [showBalance, setShowBalance] = useState(false)
   const [kioskUrl, setKioskUrl] = useState('')
   const [kioskLoading, setKioskLoading] = useState(false)
   const [kioskCopied, setKioskCopied] = useState(false)
@@ -582,6 +679,14 @@ const FichajesAdminSection = ({ operarios = [], onRefresh }) => {
           {showExtras ? 'Ocultar extras' : 'Ver horas extras'}
         </WeldixButton>
         <WeldixButton
+          variant={showBalance ? 'primary' : 'secondary'}
+          size="sm"
+          onClick={() => setShowBalance((v) => !v)}
+        >
+          <i className="bx bx-wallet mr-1" aria-hidden="true" />
+          {showBalance ? 'Ocultar balance' : 'Ver balance de horas'}
+        </WeldixButton>
+        <WeldixButton
           variant="secondary"
           size="sm"
           onClick={handleKioskLink}
@@ -619,6 +724,8 @@ const FichajesAdminSection = ({ operarios = [], onRefresh }) => {
       )}
 
       {showExtras && <ResumenExtrasPanel desde={desde || undefined} hasta={hasta || undefined} />}
+
+      {showBalance && <BalanceHorasPanel desde={desde || undefined} hasta={hasta || undefined} />}
 
       {sortedOperarios.length === 0 && (
         <div className={`${cardBase} p-4`}>

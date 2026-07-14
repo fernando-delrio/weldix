@@ -247,6 +247,124 @@ def get_resumen_extras(
     return sorted(result, key=lambda x: (x["operario_nombre"] or "").lower())
 
 
+_LETRAS_SEMANA = ["L", "M", "X", "J", "V", "S", "D"]  # weekday() 0..6
+
+
+def _dias_laborables_en_rango(
+    desde: date,
+    hasta: date,
+    dias_laborables: str,
+    festivos: set,
+    ausencias: set,
+) -> int:
+    """Cuenta días laborables reales: según el patrón del operario, sin festivos ni ausencias."""
+    total = 0
+    dia = desde
+    while dia <= hasta:
+        letra = _LETRAS_SEMANA[dia.weekday()]
+        if letra in dias_laborables and dia not in festivos and dia not in ausencias:
+            total += 1
+        dia += timedelta(days=1)
+    return total
+
+
+def get_balance_horas(
+    db: Session,
+    tenant_id: int | None = None,
+    desde: date | None = None,
+    hasta: date | None = None,
+) -> list[dict]:
+    """
+    Saldo de horas por operario en el rango: horas fichadas − horas que debía trabajar.
+    Horas esperadas = días laborables (según su configuración, sin festivos ni ausencias
+    aprobadas) × horas de jornada. Positivo = a favor; negativo = debe horas.
+    """
+    from backend.features.auth.model import User
+    from backend.features.rrhh.model import (
+        ConfiguracionLaboral,
+        Festivo,
+        SolicitudAusencia,
+    )
+
+    today = date.today()
+    desde = desde or today.replace(day=1)
+    # No contamos días futuros como horas "debidas".
+    hasta = min(hasta or today, today)
+
+    operarios = (
+        db.query(User)
+        .filter(User.tenant_id == tenant_id, User.role == "operario")
+        .all()
+    )
+
+    festivos = {
+        row[0]
+        for row in db.query(Festivo.fecha)
+        .filter(Festivo.fecha >= desde, Festivo.fecha <= hasta)
+        .all()
+    }
+
+    configs = {
+        c.operario_id: c
+        for c in db.query(ConfiguracionLaboral)
+        .filter(ConfiguracionLaboral.tenant_id == tenant_id)
+        .all()
+    }
+
+    ausencias_por_op: dict[int, set] = defaultdict(set)
+    aprobadas = (
+        db.query(SolicitudAusencia)
+        .filter(
+            SolicitudAusencia.tenant_id == tenant_id,
+            SolicitudAusencia.estado == "aprobada",
+            SolicitudAusencia.fecha_inicio <= hasta,
+            SolicitudAusencia.fecha_fin >= desde,
+        )
+        .all()
+    )
+    for aus in aprobadas:
+        dia = max(aus.fecha_inicio, desde)
+        fin = min(aus.fecha_fin, hasta)
+        while dia <= fin:
+            ausencias_por_op[aus.operario_id].add(dia)
+            dia += timedelta(days=1)
+
+    horas_por_op: dict[int, float] = defaultdict(float)
+    fichajes = (
+        db.query(Fichaje)
+        .filter(Fichaje.tenant_id == tenant_id, Fichaje.horas.isnot(None))
+        .all()
+    )
+    for f in fichajes:
+        inicio = f.inicio
+        fecha = inicio.date() if hasattr(inicio, "date") else inicio
+        if desde <= fecha <= hasta:
+            horas_por_op[f.operario_id] += float(f.horas)
+
+    result = []
+    for op in operarios:
+        cfg = configs.get(op.id)
+        horas_jornada = float(cfg.horas_jornada) if cfg else 8.0
+        dias_lab = cfg.dias_laborables if cfg else "LMXJV"
+        dias = _dias_laborables_en_rango(
+            desde, hasta, dias_lab, festivos, ausencias_por_op.get(op.id, set())
+        )
+        esperadas = round(dias * horas_jornada, 2)
+        fichadas = round(horas_por_op.get(op.id, 0.0), 2)
+        result.append(
+            {
+                "operario_id": op.id,
+                "operario_nombre": op.full_name or op.email,
+                "dias_laborables": dias,
+                "horas_esperadas": esperadas,
+                "horas_fichadas": fichadas,
+                "saldo": round(fichadas - esperadas, 2),
+            }
+        )
+
+    return sorted(result, key=lambda x: (x["operario_nombre"] or "").lower())
+
+
 def build_fichajes_csv_rango(
     db: Session,
     tenant_id: int | None = None,

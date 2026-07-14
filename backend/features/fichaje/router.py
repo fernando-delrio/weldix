@@ -13,7 +13,12 @@ from backend.features.auth.dependencies import (
 from backend.features.auth.model import User
 
 from . import service
-from .schemas import FichajeResponse, ForzarCierreRequest, ResumenExtrasResponse
+from .schemas import (
+    BalanceHorasResponse,
+    FichajeResponse,
+    ForzarCierreRequest,
+    ResumenExtrasResponse,
+)
 
 router = APIRouter(
     prefix="/fichajes",
@@ -88,6 +93,21 @@ def resumen_extras(
     current_user: User = Depends(require_role("admin")),
 ):
     return service.get_resumen_extras(
+        db,
+        tenant_id=current_user.tenant_id,
+        desde=desde,
+        hasta=hasta,
+    )
+
+
+@router.get("/admin/balance-horas", response_model=list[BalanceHorasResponse])
+def balance_horas(
+    desde: date | None = Query(default=None),
+    hasta: date | None = Query(default=None),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("admin")),
+):
+    return service.get_balance_horas(
         db,
         tenant_id=current_user.tenant_id,
         desde=desde,

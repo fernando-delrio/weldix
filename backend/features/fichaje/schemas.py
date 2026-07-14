@@ -60,3 +60,18 @@ class ResumenExtrasResponse(BaseModel):
     total_horas: float
     horas_ordinarias: float
     horas_extra: float
+
+
+class BalanceHorasResponse(BaseModel):
+    """Saldo de horas por operario: fichadas − esperadas en el rango.
+
+    Positivo = horas a favor del operario; negativo = horas que debe.
+    Horas esperadas = días laborables reales (sin festivos ni ausencias) × jornada.
+    """
+
+    operario_id: int
+    operario_nombre: str
+    dias_laborables: int
+    horas_esperadas: float
+    horas_fichadas: float
+    saldo: float
