@@ -149,118 +149,125 @@ export const HeroSection = ({ t, isDark }) => (
       />
     </div>
 
-    <div className="relative z-10 flex-1 space-y-7 lg:max-w-2xl">
-      {/* Badge — animado con Framer Motion (reemplaza GSAP hero-badge) */}
-      <MotionDiv
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        className={cx('inline-flex items-center gap-2 rounded-full border px-4 py-1.5', t.pill)}
-      >
-        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-current" />
-        <span className="text-[11px] font-medium uppercase tracking-[0.1em]">
-          Talleres de soldadura · calderería · metal
-        </span>
-      </MotionDiv>
+    <div className="mx-auto flex w-full max-w-6xl flex-col lg:flex-row lg:items-center lg:gap-20">
+      <div className="relative z-10 flex-1 space-y-7 lg:max-w-2xl">
+        {/* Badge — animado con Framer Motion (reemplaza GSAP hero-badge) */}
+        <MotionDiv
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          className={cx('inline-flex items-center gap-2 rounded-full border px-4 py-1.5', t.pill)}
+        >
+          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-current" />
+          <span className="text-[11px] font-medium uppercase tracking-[0.1em]">
+            Talleres de soldadura · calderería · metal
+          </span>
+        </MotionDiv>
 
-      {/* Headline — WordReveal reemplaza los data-gsap="hero-line" */}
-      <div className="space-y-4">
-        <h1 className="font-display text-[3.4rem] font-extrabold leading-[1.02] tracking-[-0.03em] sm:text-[4.6rem] lg:text-[5.4rem]">
-          <WordReveal text="¿Sigues con" className={cx('block', t.headline)} initialDelay={0} />
-          <WordReveal
-            text="papel y Excel"
-            className={cx('block', t.headlineAccent)}
-            initialDelay={0.3}
-          />
-          <WordReveal text="en tu taller?" className={cx('block', t.headline)} initialDelay={0.6} />
-        </h1>
-        <div data-gsap="hero-bar" className={cx('h-[2px] w-16 rounded-full', t.accentBg)} />
+        {/* Headline — WordReveal reemplaza los data-gsap="hero-line" */}
+        <div className="space-y-4">
+          <h1 className="font-display text-[3.4rem] font-extrabold leading-[1.02] tracking-[-0.03em] sm:text-[4.6rem] lg:text-[5.4rem]">
+            <WordReveal text="¿Sigues con" className={cx('block', t.headline)} initialDelay={0} />
+            <WordReveal
+              text="papel y Excel"
+              className={cx('block', t.headlineAccent)}
+              initialDelay={0.3}
+            />
+            <WordReveal
+              text="en tu taller?"
+              className={cx('block', t.headline)}
+              initialDelay={0.6}
+            />
+          </h1>
+          <div data-gsap="hero-bar" className={cx('h-[2px] w-16 rounded-full', t.accentBg)} />
+        </div>
+
+        <p data-gsap="hero-sub" className={cx('max-w-lg text-[1.05rem] leading-relaxed', t.muted)}>
+          Cada hora perdida con papeleo es dinero que no cobras. Weldix digitaliza tu taller en 5
+          minutos — sin instalar nada.
+        </p>
+
+        {/* CTAs envueltos en MagneticWrap */}
+        <div className="flex flex-wrap gap-3">
+          <MagneticWrap strength={0.3}>
+            <Link
+              to="/registro"
+              data-gsap="hero-cta"
+              className={cx(
+                'flex items-center gap-2 rounded-xl px-7 py-3.5 text-sm font-bold tracking-wide shadow-lg transition',
+                t.btnPrimary
+              )}
+            >
+              <i className="bx bx-rocket text-base" />
+              Probar 15 días gratis
+            </Link>
+          </MagneticWrap>
+          <MagneticWrap strength={0.25}>
+            <a
+              href="mailto:hola@weldix.app?subject=Quiero%20saber%20más%20sobre%20Weldix"
+              data-gsap="hero-cta"
+              className={cx(
+                'flex items-center gap-2 rounded-xl px-7 py-3.5 text-sm font-medium tracking-wide transition',
+                t.btnGhost
+              )}
+            >
+              <i className="bx bx-envelope text-base" />
+              Email
+            </a>
+          </MagneticWrap>
+        </div>
+
+        <p className={cx('text-[0.62rem] font-semibold uppercase tracking-[0.18em]', t.faint)}>
+          Sin compromiso · Sin tarjeta · Sin instalación
+        </p>
       </div>
 
-      <p data-gsap="hero-sub" className={cx('max-w-lg text-[1.05rem] leading-relaxed', t.muted)}>
-        Cada hora perdida con papeleo es dinero que no cobras. Weldix digitaliza tu taller en 5
-        minutos — sin instalar nada.
-      </p>
-
-      {/* CTAs envueltos en MagneticWrap */}
-      <div className="flex flex-wrap gap-3">
-        <MagneticWrap strength={0.3}>
-          <Link
-            to="/registro"
-            data-gsap="hero-cta"
-            className={cx(
-              'flex items-center gap-2 rounded-xl px-7 py-3.5 text-sm font-bold tracking-wide shadow-lg transition',
-              t.btnPrimary
-            )}
-          >
-            <i className="bx bx-rocket text-base" />
-            Probar 15 días gratis
-          </Link>
-        </MagneticWrap>
-        <MagneticWrap strength={0.25}>
-          <a
-            href="mailto:hola@weldix.app?subject=Quiero%20saber%20más%20sobre%20Weldix"
-            data-gsap="hero-cta"
-            className={cx(
-              'flex items-center gap-2 rounded-xl px-7 py-3.5 text-sm font-medium tracking-wide transition',
-              t.btnGhost
-            )}
-          >
-            <i className="bx bx-envelope text-base" />
-            Email
-          </a>
-        </MagneticWrap>
-      </div>
-
-      <p className={cx('text-[0.62rem] font-semibold uppercase tracking-[0.18em]', t.faint)}>
-        Sin compromiso · Sin tarjeta · Sin instalación
-      </p>
-
-      {/* Stats grid */}
+      {/* Right — mockup */}
       <div
-        data-gsap="hero-stats"
+        data-gsap="hero-mockup"
+        className="relative z-10 mt-14 w-full max-w-md lg:mt-0 lg:max-w-xl"
+      >
+        <DemoPreview t={t} isDark={isDark} />
+        <div
+          className={cx(
+            'mt-2 flex items-center gap-2 font-mono text-[0.52rem] uppercase tracking-widest',
+            t.monoMuted
+          )}
+        >
+          <span className={cx('h-px flex-1', t.divider)} />
+          preview · taller demo
+          <span className={cx('h-px flex-1', t.divider)} />
+        </div>
+      </div>
+    </div>
+
+    {/* Métricas — banda única, centrada y del mismo tamaño que antes */}
+    <div data-gsap="hero-stats" className="relative z-10 mx-auto mt-16 w-full max-w-4xl">
+      <div
         className={cx(
-          'grid grid-cols-4 divide-x border',
-          t.divider,
+          'grid grid-cols-2 divide-x divide-y overflow-hidden rounded-2xl border sm:grid-cols-4 sm:divide-y-0',
+          t.card,
           isDark ? 'divide-slate-800' : 'divide-stone-200'
         )}
       >
         {[
-          { v: '< 5 min', l: 'setup' },
-          { v: '0 €', l: 'tarjeta' },
+          { v: '< 5 min', l: 'para empezar' },
+          { v: '0 €', l: 'sin tarjeta' },
           { v: '15 días', l: 'gratis' },
-          { v: '100%', l: 'cloud' },
+          { v: '100%', l: 'en la nube' },
         ].map(({ v, l }) => (
-          <div key={l} className="p-3 text-center">
-            <div className={cx('text-sm font-black', t.accent)}>{v}</div>
+          <div key={l} className="px-4 py-8 text-center">
+            <div className={cx('text-3xl font-black sm:text-4xl', t.accent)}>{v}</div>
             <div
               className={cx(
-                'mt-0.5 text-[0.48rem] font-semibold uppercase tracking-[0.14em]',
-                t.faint
+                'mt-1.5 text-[0.7rem] font-semibold uppercase tracking-[0.14em]',
+                t.muted
               )}
             >
               {l}
             </div>
           </div>
         ))}
-      </div>
-    </div>
-
-    {/* Right — mockup */}
-    <div
-      data-gsap="hero-mockup"
-      className="relative z-10 mt-14 w-full max-w-md lg:mt-0 lg:max-w-xl"
-    >
-      <DemoPreview t={t} isDark={isDark} />
-      <div
-        className={cx(
-          'mt-2 flex items-center gap-2 font-mono text-[0.52rem] uppercase tracking-widest',
-          t.monoMuted
-        )}
-      >
-        <span className={cx('h-px flex-1', t.divider)} />
-        preview · taller demo
-        <span className={cx('h-px flex-1', t.divider)} />
       </div>
     </div>
   </section>
