@@ -6,8 +6,8 @@ import { useTheme } from '../../core/lib/ThemeContext'
 const MotionDiv = motion.div
 import { cx } from '../../core/lib/cx'
 import { useLandingAnimations } from '../hooks/useLandingAnimations'
-import useTilt from '../hooks/useTilt'
 import DemoPreview from './DemoPreview'
+import FeaturesShowcase from './FeaturesShowcase'
 import ScrollProgress from './ScrollProgress'
 import CountUp from './CountUp'
 import MagneticWrap from './MagneticWrap'
@@ -112,52 +112,6 @@ const TRUST_METRICS = [
   { v: '< 5 min', l: 'para empezar a usar', icon: 'bx bx-rocket' },
   { v: '0 €', l: 'tarjeta requerida', icon: 'bx bx-credit-card' },
   { v: '15 días', l: 'prueba completamente gratis', icon: 'bx bx-gift' },
-]
-
-const FEATURES = [
-  {
-    n: '01',
-    icon: 'bx bx-list-check',
-    title: 'Órdenes de Trabajo',
-    desc: 'Crea OTs con código automático ORD-YYYY-NNN, asigna operarios y sigue el estado en tiempo real desde cualquier pantalla.',
-  },
-  {
-    n: '02',
-    icon: 'bx bx-time-five',
-    title: 'Control de Fichaje',
-    desc: 'Registro de jornada desde web, móvil o tablet. Cumplimiento del Real Decreto-ley 8/2019 sin esfuerzo extra.',
-  },
-  {
-    n: '03',
-    icon: 'bx bx-package',
-    title: 'Gestión de Stock',
-    desc: 'Inventario en tiempo real con alertas de mínimo. Cada OT descuenta automáticamente del stock del taller.',
-  },
-  {
-    n: '04',
-    icon: 'bx bx-receipt',
-    title: 'Albaranes con IA',
-    desc: 'Fotografía el albarán del proveedor. La IA extrae los materiales y los incorpora al stock automáticamente — sin teclear nada.',
-    highlight: true,
-  },
-  {
-    n: '05',
-    icon: 'bxs bxs-file-pdf',
-    title: 'Nóminas Digitales',
-    desc: 'Sube las nóminas al sistema. Cada operario las descarga desde su perfil, sin WhatsApp, sin emails, sin papel.',
-  },
-  {
-    n: '06',
-    icon: 'bx bx-group',
-    title: 'RRHH Integrado',
-    desc: 'Vacaciones, ausencias, EPIs, certificados y turnos — todo conectado con el fichaje de cada operario.',
-  },
-  {
-    n: '07',
-    icon: 'bx bx-bot',
-    title: 'IA Especializada',
-    desc: 'Asistente con contexto real de tus OTs y stock. Solo sabe de tu taller — respuestas precisas, sin hallucinar.',
-  },
 ]
 
 const TIMELINE_STEPS = [
@@ -564,115 +518,6 @@ const TrustMetricsBar = ({ t, isDark }) => (
 )
 
 // ─── feature card con tilt 3D ─────────────────────────────────────────────────
-
-const FeatureCard = ({ n, icon, title, desc, highlight, t }) => {
-  const { ref, onMouseMove, onMouseLeave } = useTilt(6)
-
-  return (
-    <article
-      ref={ref}
-      onMouseMove={onMouseMove}
-      onMouseLeave={onMouseLeave}
-      data-gsap="feature-card"
-      style={{ transformStyle: 'preserve-3d', willChange: 'transform' }}
-      className={cx(
-        'group relative border-b border-r p-7 transition-colors duration-200 last:border-r-0',
-        highlight ? t.planPopular : t.card,
-        t.cardHover
-      )}
-    >
-      {highlight && (
-        <span
-          className={cx(
-            'absolute right-3 top-3 rounded-sm px-2 py-0.5 text-[0.48rem] font-black uppercase tracking-widest',
-            t.accentBg,
-            t.accentBgText
-          )}
-        >
-          Nuevo
-        </span>
-      )}
-      <div className="flex items-start gap-4">
-        <div
-          className={cx(
-            'flex h-10 w-10 shrink-0 items-center justify-center border text-xl',
-            t.accentTint,
-            t.accentBorder,
-            t.accent
-          )}
-        >
-          <i className={icon} />
-        </div>
-        <div className="space-y-2">
-          <div className="flex items-baseline gap-2">
-            <span
-              className={cx('font-mono text-[0.52rem] font-black tracking-widest', t.monoMuted)}
-            >
-              {n}
-            </span>
-            <h3 className="text-sm font-black uppercase tracking-wide">{title}</h3>
-          </div>
-          <p className={cx('text-xs leading-relaxed', t.muted)}>{desc}</p>
-        </div>
-      </div>
-      <div
-        className={cx(
-          'absolute bottom-0 right-0 h-5 w-5 border-b-2 border-r-2 opacity-0 transition-opacity group-hover:opacity-100',
-          t.accentBorder
-        )}
-      />
-    </article>
-  )
-}
-
-// ─── features ─────────────────────────────────────────────────────────────────
-
-const FeaturesSection = ({ t }) => (
-  <section id="modulos" className="scroll-mt-24 px-6 py-24">
-    <div className="mx-auto max-w-6xl">
-      <div
-        className={cx(
-          'mb-12 flex flex-col justify-between gap-4 border-b pb-8 sm:flex-row sm:items-end',
-          t.divider
-        )}
-      >
-        <div>
-          <p className={cx('mb-3 text-[11px] font-medium uppercase tracking-[0.12em]', t.accent)}>
-            Módulos
-          </p>
-          <h2
-            className={cx(
-              'font-display text-3xl font-extrabold tracking-tight sm:text-4xl',
-              t.headline
-            )}
-          >
-            Todo lo que necesita
-            <br />
-            tu taller
-          </h2>
-        </div>
-        <p className={cx('hidden text-right text-xs leading-relaxed sm:block', t.muted)}>
-          Una plataforma completa.
-          <br />
-          Sin papel. Sin instalaciones.
-        </p>
-      </div>
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3">
-        {FEATURES.map(({ n, icon, title, desc, highlight }) => (
-          <FeatureCard
-            key={n}
-            n={n}
-            icon={icon}
-            title={title}
-            desc={desc}
-            highlight={highlight}
-            t={t}
-          />
-        ))}
-      </div>
-    </div>
-  </section>
-)
 
 // ─── timeline — inspirado en Deel ────────────────────────────────────────────
 
@@ -1203,7 +1048,7 @@ const LandingPage = () => {
         <HeroSection t={t} isDark={isDark} />
         <PainSection t={t} />
         <TrustMetricsBar t={t} isDark={isDark} />
-        <FeaturesSection t={t} />
+        <FeaturesShowcase t={t} />
         <RoiSection t={t} />
         <TimelineSection t={t} />
         <TestimonialsSection t={t} />
