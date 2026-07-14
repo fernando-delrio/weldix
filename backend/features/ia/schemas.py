@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class MensajeHistorial(BaseModel):
@@ -15,3 +15,10 @@ class ConsultaRequest(BaseModel):
 
 class ConsultaResponse(BaseModel):
     respuesta: str
+
+
+class LandingChatRequest(BaseModel):
+    """Chat público del landing — solo mensaje + historial, sin contexto de taller."""
+
+    mensaje: str = Field(min_length=1, max_length=500)
+    historial: list[MensajeHistorial] | None = None

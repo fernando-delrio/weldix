@@ -20,8 +20,9 @@ backend/weldix.db
 doc/
 backend/docs/
 
-# Claude Code — instrucciones locales privadas
+# Claude Code — instrucciones y config locales privadas
 CLAUDE.md
+.claude/settings.local.json
 
 # Frontend artifacts
 frontend/node_modules/
