@@ -7,7 +7,8 @@ import { useAuthSession } from './modules/auth/hooks/useAuthSession'
 
 // Eager — críticos para el primer render
 import LoginPage from './modules/auth/components/LoginPage'
-import LandingPage from './modules/landing/components/LandingPage'
+import LandingLayout from './modules/landing/components/LandingLayout'
+import HomePage from './modules/landing/components/HomePage'
 
 // Lazy — se cargan cuando el usuario navega a esa ruta
 const AdminDashboardPage = lazy(() => import('./modules/admin/components/AdminDashboardPage'))
@@ -26,6 +27,10 @@ const SeguimientoPage = lazy(() => import('./modules/seguimiento/components/Segu
 const KioskoPage = lazy(() => import('./modules/kiosko/components/KioskoPage'))
 const ForgotPasswordPage = lazy(() => import('./modules/auth/components/ForgotPasswordPage'))
 const ResetPasswordPage = lazy(() => import('./modules/auth/components/ResetPasswordPage'))
+const FuncionalidadesPage = lazy(() => import('./modules/landing/components/FuncionalidadesPage'))
+const ComoFuncionaPage = lazy(() => import('./modules/landing/components/ComoFuncionaPage'))
+const PreciosPage = lazy(() => import('./modules/landing/components/PreciosPage'))
+const FaqsPage = lazy(() => import('./modules/landing/components/FaqsPage'))
 
 const Splash = ({ text }) => (
   <main className="grid min-h-screen place-items-center bg-slate-950 text-slate-300">
@@ -51,7 +56,13 @@ const AppRoutes = () => {
       <AuthSessionProvider>
         <Suspense fallback={<Splash text="Cargando..." />}>
           <Routes>
-            <Route path="/" element={<LandingPage />} />
+            <Route element={<LandingLayout />}>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/funcionalidades" element={<FuncionalidadesPage />} />
+              <Route path="/como-funciona" element={<ComoFuncionaPage />} />
+              <Route path="/precios" element={<PreciosPage />} />
+              <Route path="/faqs" element={<FaqsPage />} />
+            </Route>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/registro" element={<RegisterWorkspacePage />} />
             <Route path="/privacidad" element={<PrivacidadPage />} />

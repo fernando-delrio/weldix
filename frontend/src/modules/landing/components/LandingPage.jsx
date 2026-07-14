@@ -1,100 +1,13 @@
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { useTheme } from '../../core/lib/ThemeContext'
 
 // Alias en JS puro → ESLint detecta el uso de `motion` fuera de JSX
 const MotionDiv = motion.div
 import { cx } from '../../core/lib/cx'
-import { useLandingAnimations } from '../hooks/useLandingAnimations'
 import DemoPreview from './DemoPreview'
-import FeaturesShowcase from './FeaturesShowcase'
-import ScrollProgress from './ScrollProgress'
-import CountUp from './CountUp'
 import MagneticWrap from './MagneticWrap'
 import WordReveal from './WordReveal'
 import RotatingBadge from './RotatingBadge'
-import SocialProofToast from './SocialProofToast'
-
-// ─── sistema de tema ──────────────────────────────────────────────────────────
-
-const T = {
-  dark: {
-    page: 'bg-[#070b0f] text-slate-100',
-    headline: 'text-white',
-    headlineAccent: 'text-amber-400',
-    nav: 'border-slate-800/80 bg-[#070b0f]/95',
-    navText: 'text-slate-400 hover:text-slate-100',
-    card: 'border-slate-800 bg-[#0d1520]',
-    cardHover: 'hover:border-amber-500/50 hover:bg-[#0f1926]',
-    pill: 'border-amber-500/30 bg-amber-500/10 text-amber-400',
-    accent: 'text-amber-400',
-    accentBg: 'bg-amber-500',
-    accentBgText: 'text-black',
-    accentBorder: 'border-amber-500/40',
-    accentTint: 'bg-amber-500/10',
-    muted: 'text-slate-400',
-    faint: 'text-slate-600',
-    divider: 'border-slate-800',
-    sectionAlt: 'bg-[#090e15]',
-    btnPrimary: 'bg-amber-500 text-black hover:bg-amber-400 shadow-amber-500/20',
-    btnGhost: 'border border-slate-700 text-slate-300 hover:bg-slate-800',
-    footerBg: 'bg-[#040608]',
-    monoMuted: 'text-slate-600',
-    gridColor: 'rgba(255,255,255,0.022)',
-    glowLeft: 'rgba(245,158,11,0.10)',
-    toggleBg: 'bg-slate-800 text-amber-400 hover:bg-slate-700',
-    planPopular: 'border-amber-500/60 bg-[#0f1926]',
-    planNormal: 'border-slate-800 bg-[#0d1520]',
-    planPopLine: 'bg-amber-500',
-    testimonial: 'border-slate-800 bg-[#0d1520]',
-    quoteColor: 'text-amber-400/60',
-    timelineLine: 'bg-slate-800',
-    timelineDot: 'bg-amber-500 border-amber-500',
-    timelineDotInner: 'bg-[#070b0f]',
-    painBg: 'bg-[#090e15]',
-    painBorder: 'border-rose-500/20',
-    painText: 'text-rose-400',
-  },
-  light: {
-    // Paleta sincronizada con el app (index.css data-theme='light'):
-    // fondo #f1f5f9, cards #ffffff, texto #0f172a/#334155, bordes #e2e8f0
-    page: 'bg-[#f1f5f9] text-[#334155]',
-    headline: 'text-[#0f172a]',
-    headlineAccent: 'text-amber-600',
-    nav: 'border-[#e2e8f0] bg-white/95',
-    navText: 'text-[#475569] hover:text-[#0f172a]',
-    card: 'border-[#e2e8f0] bg-white',
-    cardHover: 'hover:border-amber-500/50 hover:bg-[#f8fafc]',
-    pill: 'border-amber-500/40 bg-amber-50 text-amber-700',
-    accent: 'text-amber-600',
-    accentBg: 'bg-amber-600',
-    accentBgText: 'text-white',
-    accentBorder: 'border-amber-500/40',
-    accentTint: 'bg-amber-50',
-    muted: 'text-[#475569]',
-    faint: 'text-[#64748b]',
-    divider: 'border-[#e2e8f0]',
-    sectionAlt: 'bg-[#f8fafc]',
-    btnPrimary: 'bg-amber-600 text-white hover:bg-amber-700 shadow-amber-600/20',
-    btnGhost: 'border border-[#e2e8f0] text-[#334155] hover:bg-[#f1f5f9]',
-    footerBg: 'bg-white',
-    monoMuted: 'text-[#94a3b8]',
-    gridColor: 'rgba(15,23,42,0.04)',
-    glowLeft: 'rgba(217,119,6,0.06)',
-    toggleBg: 'bg-[#f1f5f9] text-amber-600 hover:bg-[#e2e8f0]',
-    planPopular: 'border-amber-500/60 bg-amber-50',
-    planNormal: 'border-[#e2e8f0] bg-white',
-    planPopLine: 'bg-amber-600',
-    testimonial: 'border-[#e2e8f0] bg-white',
-    quoteColor: 'text-amber-600/40',
-    timelineLine: 'bg-[#e2e8f0]',
-    timelineDot: 'bg-amber-600 border-amber-600',
-    timelineDotInner: 'bg-[#f1f5f9]',
-    painBg: 'bg-[#f8fafc]',
-    painBorder: 'border-rose-200',
-    painText: 'text-rose-600',
-  },
-}
 
 // ─── datos ────────────────────────────────────────────────────────────────────
 
@@ -141,23 +54,6 @@ const TIMELINE_STEPS = [
   },
 ]
 
-const TESTIMONIALS = [
-  {
-    quote:
-      'Antes tardaba media hora al final del día en apuntar las horas y las OTs. Ahora lo hago en tiempo real desde el móvil y el jefe lo ve al instante. Es una pasada.',
-    name: 'Miguel Ángel R.',
-    role: 'Soldador oficial — Taller Metálicas Norte',
-    initials: 'MR',
-  },
-  {
-    quote:
-      'La inspección de trabajo nos pidió el registro de jornada y en 30 segundos lo tuvimos exportado. Con el Excel anterior hubiera tardado dos días. Ya no hay vuelta atrás.',
-    name: 'Carlos F.',
-    role: 'Dueño — Calderería y Montajes CF',
-    initials: 'CF',
-  },
-]
-
 // Precios actualizados — base + por operario
 const PRECIO_BASE = 49
 const PRECIO_POR_OPERARIO = 17
@@ -185,7 +81,7 @@ const NAV_ITEMS = [
   { label: 'Precios', targetId: 'precios' },
 ]
 
-const ThemeToggle = ({ isDark, onToggle, t }) => (
+export const ThemeToggle = ({ isDark, onToggle, t }) => (
   <button
     type="button"
     onClick={onToggle}
@@ -226,92 +122,12 @@ const ThemeToggle = ({ isDark, onToggle, t }) => (
   </button>
 )
 
-// ─── navbar ───────────────────────────────────────────────────────────────────
-
-const scrollToLandingSection = (event, targetId) => {
-  const section = document.getElementById(targetId)
-
-  if (!section) return
-
-  event.preventDefault()
-  section.scrollIntoView({ behavior: 'smooth', block: 'start' })
-}
-
-const NavBar = ({ isDark, onToggle, t }) => (
-  <nav
-    style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 9999 }}
-    className={cx(
-      'flex items-center justify-between border-b px-6 py-3 transition-colors duration-300',
-      isDark ? 'border-slate-800 bg-[#070b0f]' : 'border-[#e2e8f0] bg-white'
-    )}
-  >
-    <div className="flex items-center gap-3">
-      <img src="/weldix-icon.svg" alt="Weldix" className="h-7 w-7 shrink-0 object-contain" />
-      <div>
-        <p className="font-display text-base font-bold tracking-tight">Weldix</p>
-        <p className={cx('text-[0.55rem] font-medium uppercase tracking-[0.18em]', t.monoMuted)}>
-          gestión industrial
-        </p>
-      </div>
-    </div>
-
-    <div className="hidden items-center gap-8 md:flex">
-      {NAV_ITEMS.map(({ label, targetId }) => (
-        <a
-          key={targetId}
-          href={`#${targetId}`}
-          onClick={(event) => scrollToLandingSection(event, targetId)}
-          className={cx(
-            'text-[0.7rem] font-semibold uppercase tracking-[0.14em] transition',
-            t.navText
-          )}
-        >
-          {label}
-        </a>
-      ))}
-    </div>
-
-    <div className="flex items-center gap-2">
-      <ThemeToggle isDark={isDark} onToggle={onToggle} t={t} />
-      <a
-        href="mailto:hola@weldix.app?subject=Contacto%20Weldix"
-        className={cx(
-          'hidden items-center gap-1.5 px-3 py-1.5 text-[0.7rem] font-semibold uppercase tracking-wider transition sm:flex',
-          t.navText
-        )}
-      >
-        <i className="bx bx-envelope text-sm" />
-        Contacto
-      </a>
-      <Link
-        to="/login"
-        className={cx(
-          'hidden px-3 py-1.5 text-[0.7rem] font-semibold uppercase tracking-wider transition sm:block',
-          t.navText
-        )}
-      >
-        Acceder
-      </Link>
-      <Link
-        to="/registro"
-        className={cx(
-          'flex items-center gap-1.5 rounded-lg px-4 py-2 text-[0.7rem] font-bold tracking-wide shadow-lg transition',
-          t.btnPrimary
-        )}
-      >
-        <i className="bx bx-rocket text-sm" />
-        Crear taller
-      </Link>
-    </div>
-  </nav>
-)
-
 // ─── hero — pain first ────────────────────────────────────────────────────────
 
-const HeroSection = ({ t, isDark }) => (
+export const HeroSection = ({ t, isDark }) => (
   <section
     data-gsap="hero-section"
-    className="relative flex min-h-screen flex-col justify-center overflow-hidden px-6 pb-24 pt-28 lg:flex-row lg:items-center lg:gap-20"
+    className="relative flex min-h-screen flex-col justify-center overflow-hidden px-6 pb-16 pt-28"
   >
     {/* Gradiente animado — vivo, cambia de posición suavemente */}
     <div
@@ -452,7 +268,7 @@ const HeroSection = ({ t, isDark }) => (
 
 // ─── pain points ──────────────────────────────────────────────────────────────
 
-const PainSection = ({ t }) => (
+export const PainSection = ({ t }) => (
   <section
     className={cx('border-y px-6 py-16 transition-colors duration-300', t.divider, t.painBg)}
   >
@@ -486,7 +302,7 @@ const PainSection = ({ t }) => (
 
 // ─── trust metrics ────────────────────────────────────────────────────────────
 
-const TrustMetricsBar = ({ t, isDark }) => (
+export const TrustMetricsBar = ({ t, isDark }) => (
   <section
     className={cx('border-b px-6 py-12 transition-colors duration-300', t.divider, t.sectionAlt)}
   >
@@ -517,11 +333,9 @@ const TrustMetricsBar = ({ t, isDark }) => (
   </section>
 )
 
-// ─── feature card con tilt 3D ─────────────────────────────────────────────────
-
 // ─── timeline — inspirado en Deel ────────────────────────────────────────────
 
-const TimelineSection = ({ t }) => (
+export const TimelineSection = ({ t }) => (
   <section
     id="como-funciona"
     data-gsap="timeline-section"
@@ -617,194 +431,9 @@ const TimelineSection = ({ t }) => (
   </section>
 )
 
-// ─── testimonios — inspirado en Woffu ────────────────────────────────────────
-
-const TestimonialsSection = ({ t }) => (
-  <section className="px-6 py-24">
-    <div className="mx-auto max-w-6xl">
-      <div className={cx('mb-12 border-b pb-8', t.divider)}>
-        <p className={cx('mb-3 text-[11px] font-medium uppercase tracking-[0.12em]', t.accent)}>
-          Testimonios
-        </p>
-        <h2
-          className={cx(
-            'font-display text-3xl font-extrabold tracking-tight sm:text-4xl',
-            t.headline
-          )}
-        >
-          Lo que dicen
-          <br />
-          los talleres
-        </h2>
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-2">
-        {TESTIMONIALS.map(({ quote, name, role, initials }) => (
-          <blockquote
-            key={name}
-            data-gsap="testimonial"
-            className={cx(
-              'relative rounded-2xl border p-8 transition-colors duration-200',
-              t.testimonial
-            )}
-          >
-            {/* Comillas decorativas */}
-            <span
-              className={cx(
-                'absolute right-6 top-4 font-serif text-6xl leading-none',
-                t.quoteColor
-              )}
-            >
-              "
-            </span>
-
-            <p className={cx('relative z-10 mb-6 text-sm leading-relaxed', t.muted)}>"{quote}"</p>
-
-            <footer className="flex items-center gap-3">
-              <div
-                className={cx(
-                  'flex h-10 w-10 shrink-0 items-center justify-center rounded-sm border text-xs font-black',
-                  t.accentTint,
-                  t.accentBorder,
-                  t.accent
-                )}
-              >
-                {initials}
-              </div>
-              <div>
-                <p className="text-sm font-bold">{name}</p>
-                <p
-                  className={cx('text-[0.65rem] font-semibold uppercase tracking-[0.1em]', t.faint)}
-                >
-                  {role}
-                </p>
-              </div>
-            </footer>
-          </blockquote>
-        ))}
-      </div>
-
-      {/* ROI metric */}
-      <div data-gsap="roi-metric" className={cx('mt-8 rounded-2xl border p-6 text-center', t.card)}>
-        <p className={cx('text-3xl font-black', t.accent)}>1.125€/mes ahorrados</p>
-        <p className={cx('mt-1 text-sm', t.muted)}>
-          de media por taller con 5 operarios en los primeros 30 días de uso
-        </p>
-      </div>
-    </div>
-  </section>
-)
-
-// ─── ROI — cuánto ahorra el taller ───────────────────────────────────────────
-
-const ROI_ITEMS = [
-  {
-    icon: 'bx bx-time-five',
-    title: 'Fichaje digital',
-    savingNum: 560,
-    savingSuffix: '€/mes',
-    desc: '5 operarios × 15 min/día de papeleo eliminado = 27 h/mes × 20€/h',
-  },
-  {
-    icon: 'bx bx-receipt',
-    title: 'Albaranes con IA',
-    savingNum: 270,
-    savingSuffix: '€/mes',
-    desc: '8 h/mes de transcripción eliminadas + errores de stock evitados',
-  },
-  {
-    icon: 'bx bx-list-check',
-    title: 'OTs digitales',
-    savingNum: 295,
-    savingSuffix: '€/mes',
-    desc: '13 h/mes de gestión en papel eliminadas + llamadas al taller reducidas',
-  },
-]
-
-const RoiSection = ({ t }) => (
-  <section
-    className={cx('border-y px-6 py-20 transition-colors duration-300', t.divider, t.sectionAlt)}
-  >
-    <div className="mx-auto max-w-6xl">
-      <div className={cx('mb-12 border-b pb-8', t.divider)}>
-        <p className={cx('mb-3 text-[11px] font-medium uppercase tracking-[0.12em]', t.accent)}>
-          ROI real
-        </p>
-        <h2
-          className={cx(
-            'font-display text-3xl font-extrabold tracking-tight sm:text-4xl',
-            t.headline
-          )}
-        >
-          Un taller de 5 operarios ahorra <span className={t.accent}>más de 1.100€ al mes</span>{' '}
-          <span className="font-light opacity-30">con Weldix.</span>
-        </h2>
-        <p className={cx('mt-3 max-w-lg text-sm leading-relaxed', t.muted)}>
-          Weldix no es un gasto — es una inversión que se paga sola el primer día del mes. Aquí el
-          desglose real.
-        </p>
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-3">
-        {ROI_ITEMS.map(({ icon, title, savingNum, savingSuffix, desc }) => (
-          <div key={title} className={cx('rounded-2xl border p-6 transition-colors', t.card)}>
-            <i className={cx(icon, 'mb-3 text-2xl', t.accent)} />
-            <p className={cx('text-2xl font-black', t.accent)}>
-              <CountUp end={savingNum} suffix={savingSuffix} duration={1.8} />
-            </p>
-            <p className="mt-1 text-sm font-black uppercase tracking-wide">{title}</p>
-            <p className={cx('mt-2 text-xs leading-relaxed', t.muted)}>{desc}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Comparativa precio vs ahorro */}
-      <div className={cx('mt-8 grid gap-3 border p-6 sm:grid-cols-3', t.card)}>
-        <div className="text-center">
-          <p className={cx('text-[0.6rem] font-bold uppercase tracking-widest', t.muted)}>
-            Coste Weldix
-          </p>
-          <p className={cx('text-3xl font-black', t.accent)}>
-            <CountUp end={134} suffix="€" duration={1.5} />
-            <span className={cx('text-sm font-normal', t.muted)}>/mes</span>
-          </p>
-          <p className={cx('text-xs', t.muted)}>49€ base + 5 ops × 17€</p>
-        </div>
-        <div className="flex items-center justify-center">
-          <div
-            className={cx(
-              'rounded-full border px-4 py-2 text-xs font-black uppercase tracking-widest',
-              t.accentBorder,
-              t.accent
-            )}
-          >
-            vs
-          </div>
-        </div>
-        <div className="text-center">
-          <p className={cx('text-[0.6rem] font-bold uppercase tracking-widest', t.muted)}>
-            Ahorro real
-          </p>
-          <p className="text-3xl font-black text-emerald-400">
-            <CountUp end={1125} suffix="€" duration={2} format={(n) => n.toLocaleString('es-ES')} />
-            <span className={cx('text-sm font-normal', t.muted)}>/mes</span>
-          </p>
-          <p className={cx('text-xs', t.muted)}>
-            ROI:{' '}
-            <strong className="text-emerald-400">
-              <CountUp end={8} suffix="x" duration={1.2} />
-            </strong>{' '}
-            — se paga en el primer día
-          </p>
-        </div>
-      </div>
-    </div>
-  </section>
-)
-
 // ─── precios ──────────────────────────────────────────────────────────────────
 
-const PricingSection = ({ t }) => (
+export const PricingSection = ({ t }) => (
   <section
     id="precios"
     className={cx('scroll-mt-24 px-6 py-24 transition-colors duration-300', t.sectionAlt)}
@@ -941,7 +570,7 @@ const PricingSection = ({ t }) => (
 
 // ─── cta final ────────────────────────────────────────────────────────────────
 
-const CtaSection = ({ t }) => (
+export const CtaSection = ({ t }) => (
   <section
     data-gsap="cta-section"
     className={cx('border-y px-6 py-28 text-center transition-colors duration-300', t.divider)}
@@ -987,7 +616,7 @@ const CtaSection = ({ t }) => (
 
 // ─── footer ───────────────────────────────────────────────────────────────────
 
-const LandingFooter = ({ t }) => (
+export const LandingFooter = ({ t }) => (
   <footer
     className={cx('border-t px-6 py-8 transition-colors duration-300', t.footerBg, t.divider)}
   >
@@ -1027,37 +656,3 @@ const LandingFooter = ({ t }) => (
     </div>
   </footer>
 )
-
-// ─── página principal ─────────────────────────────────────────────────────────
-
-const LandingPage = () => {
-  const { isDark, toggleTheme } = useTheme()
-  const t = isDark ? T.dark : T.light
-
-  // Hook de animaciones GSAP - lee data-gsap del DOM, aplica tweens + ScrollTriggers.
-  // No retorna nada: efecto de lado puro (SOC - el componente pinta, el hook anima).
-  useLandingAnimations()
-
-  return (
-    <>
-      {/* ScrollProgress y SocialProofToast fuera del wrapper — sin transforms de GSAP */}
-      <ScrollProgress />
-      <NavBar isDark={isDark} onToggle={toggleTheme} t={t} />
-      <SocialProofToast isDark={isDark} />
-      <div className={cx('min-h-screen transition-colors duration-300', t.page)}>
-        <HeroSection t={t} isDark={isDark} />
-        <PainSection t={t} />
-        <TrustMetricsBar t={t} isDark={isDark} />
-        <FeaturesShowcase t={t} />
-        <RoiSection t={t} />
-        <TimelineSection t={t} />
-        <TestimonialsSection t={t} />
-        <PricingSection t={t} />
-        <CtaSection t={t} />
-        <LandingFooter t={t} />
-      </div>
-    </>
-  )
-}
-
-export default LandingPage

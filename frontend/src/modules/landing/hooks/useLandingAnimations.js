@@ -12,7 +12,7 @@
  *   ctx.revert() mata todos los ScrollTriggers del contexto.
  *   Sin esto hay memory leaks y animaciones fantasma en HMR de dev.
  */
-import { useEffect, useRef } from 'react'
+import { useLayoutEffect, useRef } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
@@ -260,7 +260,11 @@ const animateCtaFinal = () => {
 export const useLandingAnimations = () => {
   const ctx = useRef(null)
 
-  useEffect(() => {
+  // useLayoutEffect (no useEffect): corre SÍNCRONO antes del primer paint del
+  // navegador. Así GSAP aplica el estado inicial (opacity:0, offsets) antes de
+  // que el elemento sea visible → elimina el FOUC (el "pop" que aparecía y se
+  // recolocaba). Con useEffect, GSAP se ejecutaba tras el primer frame pintado.
+  useLayoutEffect(() => {
     ctx.current = gsap.context(() => {
       animateHero()
       animatePainCards()
