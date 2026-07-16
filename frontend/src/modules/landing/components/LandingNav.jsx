@@ -58,6 +58,16 @@ const LandingNav = ({ t, isDark, onToggle }) => (
         Contacto
       </a>
       <Link
+        to="/demo"
+        className={cx(
+          'hidden items-center gap-1.5 px-3 py-1.5 text-[0.7rem] font-semibold uppercase tracking-wider transition sm:flex',
+          t.navText
+        )}
+      >
+        <i className="bx bx-play-circle text-sm" />
+        Ver demo
+      </Link>
+      <Link
         to="/login"
         className={cx(
           'hidden px-3 py-1.5 text-[0.7rem] font-semibold uppercase tracking-wider transition sm:block',

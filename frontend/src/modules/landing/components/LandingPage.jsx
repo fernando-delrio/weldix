@@ -203,17 +203,17 @@ export const HeroSection = ({ t, isDark }) => (
             </Link>
           </MagneticWrap>
           <MagneticWrap strength={0.25}>
-            <a
-              href="mailto:hola@weldix.app?subject=Quiero%20saber%20más%20sobre%20Weldix"
+            <Link
+              to="/demo"
               data-gsap="hero-cta"
               className={cx(
-                'flex items-center gap-2 rounded-xl px-7 py-3.5 text-sm font-medium tracking-wide transition',
+                'flex items-center gap-2 rounded-xl px-7 py-3.5 text-sm font-bold tracking-wide shadow-lg transition',
                 t.btnGhost
               )}
             >
-              <i className="bx bx-envelope text-base" />
-              Email
-            </a>
+              <i className="bx bx-play-circle text-base" />
+              Ver demo
+            </Link>
           </MagneticWrap>
         </div>
 

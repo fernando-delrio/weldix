@@ -27,6 +27,7 @@ const SeguimientoPage = lazy(() => import('./modules/seguimiento/components/Segu
 const KioskoPage = lazy(() => import('./modules/kiosko/components/KioskoPage'))
 const ForgotPasswordPage = lazy(() => import('./modules/auth/components/ForgotPasswordPage'))
 const ResetPasswordPage = lazy(() => import('./modules/auth/components/ResetPasswordPage'))
+const DemoEntryPage = lazy(() => import('./modules/demo/components/DemoEntryPage'))
 const FuncionalidadesPage = lazy(() => import('./modules/landing/components/FuncionalidadesPage'))
 const ComoFuncionaPage = lazy(() => import('./modules/landing/components/ComoFuncionaPage'))
 const PreciosPage = lazy(() => import('./modules/landing/components/PreciosPage'))
@@ -73,6 +74,7 @@ const AppRoutes = () => {
             <Route path="/kiosko/:token" element={<KioskoPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/demo" element={<DemoEntryPage />} />
 
             <Route element={<ProtectedRoute />}>
               <Route path="/app/inicio" element={<WorkerDashboardPage />} />

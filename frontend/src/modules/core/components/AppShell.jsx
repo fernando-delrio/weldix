@@ -127,6 +127,7 @@ const Sidebar = ({
               key={item.key}
               to={item.to}
               title={item.label}
+              data-tour={`nav-${item.key}`}
               className={cx(
                 'relative flex rounded-lg transition overflow-hidden',
                 // md: icono + etiqueta apilados, centrados, target ≥56px

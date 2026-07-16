@@ -37,6 +37,7 @@ from .service import (
     get_trial_status,
     regenerate_pin,
     request_password_reset,
+    start_demo_session,
     update_profile,
 )
 
@@ -150,6 +151,21 @@ def login(body: LoginRequest, db: Session = Depends(get_db)):
         return TokenResponse(**data)
     except ValueError as exc:
         raise HTTPException(status_code=401, detail=str(exc))
+
+
+@router.post("/demo", response_model=TokenResponse)
+def demo_login(request: Request, rol: str = "admin", db: Session = Depends(get_db)):
+    """Acceso de invitado a un taller demo con datos de ejemplo, sin registro.
+
+    Query param `rol`: "operario" entra como operario; cualquier otro valor, como jefe (admin).
+    """
+    client_ip = request.client.host if request.client else "unknown"
+    try:
+        check_rate_limit(f"demo:{client_ip}", max_hits=10, window_minutes=60)
+    except ValueError as exc:
+        raise HTTPException(status_code=429, detail=str(exc))
+    role = "operario" if rol == "operario" else "admin"
+    return TokenResponse(**start_demo_session(db, role=role))
 
 
 @router.get("/me", response_model=MeResponse)

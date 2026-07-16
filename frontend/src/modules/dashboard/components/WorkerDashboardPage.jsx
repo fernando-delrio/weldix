@@ -5,6 +5,7 @@ import OnboardingWizard from '../../core/components/OnboardingWizard'
 import PanelCard from '../../core/components/PanelCard'
 import WeldixButton from '../../core/components/WeldixButton'
 import useOnboarding from '../../core/hooks/useOnboarding'
+import { useDemoTour } from '../../core/hooks/useDemoTour'
 import { useAuthSession } from '../../auth/hooks/useAuthSession'
 import { useWorkerDashboard } from '../hooks/useWorkerDashboard'
 import { useIaContext } from '../../ia/lib/IaContext'
@@ -122,6 +123,11 @@ const WorkerDashboardPage = () => {
   const isAdmin = profile?.role === 'admin'
   const { setPageContext } = useIaContext()
 
+  // Tour guiado de la demo (solo si la demo lo pidió; cada rol lee su propia bandera).
+  const dashboardReady = !isLoading && Boolean(dashboard)
+  useDemoTour('operario', dashboardReady && !isAdmin)
+  useDemoTour('admin', dashboardReady && isAdmin)
+
   // Inyectar contexto del dashboard en la IA cuando cargan los datos
   useEffect(() => {
     if (!dashboard) return
@@ -174,7 +180,10 @@ const WorkerDashboardPage = () => {
 
         {!isLoading && dashboard && (
           <>
-            <section className="rounded-xl border border-white/[0.07] bg-gradient-to-br from-amber-900/20 via-slate-900/60 to-slate-900/80 p-4">
+            <section
+              data-tour="op-welcome"
+              className="rounded-xl border border-white/[0.07] bg-gradient-to-br from-amber-900/20 via-slate-900/60 to-slate-900/80 p-4"
+            >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-start gap-3">
                   {/* Avatar con iniciales del operario */}
@@ -201,11 +210,15 @@ const WorkerDashboardPage = () => {
                 {adminNewJobButton({ isAdmin, onOpen: () => setShowModal(true) })}
               </div>
               {/* Fichaje de jornada — solo visible para operarios */}
-              {!isAdmin && <JornadaButton />}
+              {!isAdmin && (
+                <div data-tour="op-fichaje">
+                  <JornadaButton />
+                </div>
+              )}
             </section>
 
             {!isAdmin && (
-              <section className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
+              <section data-tour="op-metrics" className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
                 {dashboard.metrics.map((metric) => (
                   <MetricCard key={metric.key} item={metric} />
                 ))}
@@ -213,7 +226,7 @@ const WorkerDashboardPage = () => {
             )}
 
             {!isAdmin && (
-              <section>
+              <section data-tour="op-ot">
                 <SectionHeader title="Trabajo activo" />
                 {activeJobSection({
                   activeJob: dashboard.activeJob,

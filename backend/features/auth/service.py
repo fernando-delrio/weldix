@@ -113,6 +113,86 @@ def create_workspace(
     return tenant, admin
 
 
+DEMO_TENANT_SLUG = "demo"
+DEMO_ADMIN_EMAIL = "demo@weldix.app"
+DEMO_OPERARIO_EMAIL = "demo-operario@weldix.app"
+
+
+def _get_or_create_demo_user(
+    db: Session,
+    tenant_id: int,
+    email: str,
+    full_name: str,
+    role: str,
+    worker_number: int | None = None,
+) -> User:
+    user = (
+        db.query(User)
+        .filter(User.tenant_id == tenant_id, User.email == email)
+        .first()
+    )
+    if user is None:
+        user = User(
+            tenant_id=tenant_id,
+            email=email,
+            full_name=full_name,
+            role=role,
+            worker_number=worker_number,
+            password_hash=hash_password(secrets.token_urlsafe(24)),
+            pin=generate_unique_pin(db, tenant_id),
+            onboarding_done=True,
+        )
+        db.add(user)
+        db.flush()
+    return user
+
+
+def start_demo_session(db: Session, role: str = "admin") -> dict:
+    """Acceso de invitado: crea o reutiliza el taller demo (con un usuario jefe y uno
+    operario), resetea sus datos de ejemplo y devuelve un token para el rol pedido.
+    """
+    # Import local para evitar cualquier ciclo de importación con el módulo admin.
+    from backend.features.admin.demo_cleanup import clear_demo_data
+
+    tenant = db.query(Tenant).filter(Tenant.slug == DEMO_TENANT_SLUG).first()
+    if tenant is None:
+        tenant = Tenant(
+            nombre="Taller Demo",
+            slug=DEMO_TENANT_SLUG,
+            plan="trial",
+            # Trial largo: la demo nunca debe chocar con el muro de pago.
+            trial_expires_at=_now() + timedelta(days=3650),
+        )
+        db.add(tenant)
+        db.flush()
+
+    admin = _get_or_create_demo_user(
+        db, tenant.id, DEMO_ADMIN_EMAIL, "Invitado (Jefe)", "admin"  # type: ignore[arg-type]
+    )
+    operario = _get_or_create_demo_user(
+        db, tenant.id, DEMO_OPERARIO_EMAIL, "Invitado (Operario)", "operario", worker_number=1  # type: ignore[arg-type]
+    )
+
+    # Cada visita arranca con los datos demo frescos (evita que se acumule basura).
+    clear_demo_data(db, tenant.id)  # type: ignore[arg-type]
+    seed_workspace_demo_data(db, tenant.id)  # type: ignore[arg-type]
+    db.commit()
+
+    user = operario if role == "operario" else admin
+    db.refresh(user)
+
+    return {
+        "access_token": create_access_token(
+            subject=str(user.id),
+            extra={"role": user.role, "email": user.email},
+        ),
+        "token_type": "bearer",
+        "role": user.role,
+        "user_id": user.id,
+        "email": user.email,
+    }
+
+
 def create_user(
     db: Session,
     email: str,
