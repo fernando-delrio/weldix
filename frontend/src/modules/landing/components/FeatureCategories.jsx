@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 
 import { cx } from '../../core/lib/cx'
+import { SpotlightCard } from './SpotlightCard'
 
 // Funcionalidades agrupadas por categoría (estilo Jornada). Datos: doc/funcionalidades.md.
 const CATEGORIES = [
@@ -107,9 +108,7 @@ const CATEGORIES = [
 ]
 
 const FeatureCard = ({ card, t }) => (
-  <div
-    className={cx('flex flex-col rounded-2xl border p-6 transition-colors', t.card, t.cardHover)}
-  >
+  <SpotlightCard className={cx('rounded-2xl border p-6 transition-colors', t.card, t.cardHover)}>
     <div className={cx('mb-4 flex h-11 w-11 items-center justify-center rounded-xl', t.accentTint)}>
       <i className={cx(card.icon, 'text-2xl', t.accent)} aria-hidden="true" />
     </div>
@@ -125,7 +124,7 @@ const FeatureCard = ({ card, t }) => (
       Prueba 15 días
       <i className="bx bx-right-arrow-alt text-base" aria-hidden="true" />
     </Link>
-  </div>
+  </SpotlightCard>
 )
 
 const FeatureCategories = ({ t }) => (

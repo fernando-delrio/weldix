@@ -3,6 +3,7 @@ import { describe, it, expect } from 'vitest'
 import { http, HttpResponse } from 'msw'
 import { server } from '../../../tests/mocks/server'
 import { MOCK_MATERIALS } from '../../../tests/mocks/handlers/stock.handlers'
+import { API_BASE_URL } from '../../core/lib/api'
 import { useStockPage } from './useStockPage'
 
 // ── useStockPage ─────────────────────────────────────────────────────────────
@@ -30,7 +31,7 @@ describe('useStockPage', () => {
   it('expone el error cuando el servidor falla', async () => {
     // Sobreescribe el handler solo para este test
     server.use(
-      http.get('http://localhost:8000/stock', () => {
+      http.get(`${API_BASE_URL}/stock`, () => {
         return HttpResponse.json({ detail: 'Error interno' }, { status: 500 })
       })
     )
