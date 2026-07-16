@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useState } from 'react'
-import { getMisJornadas } from '../services/fichajeService'
+import { useState } from 'react'
+
+import { useFichajeCalendar } from '../hooks/useFichajeCalendar'
 
 const DIAS_SEMANA = ['L', 'M', 'X', 'J', 'V', 'S', 'D']
 const MESES = [
@@ -22,22 +23,6 @@ const fmtHoras = (h) => {
   const mins = Math.round((h - hrs) * 60)
   return hrs > 0 ? `${hrs}h ${mins}min` : `${mins}min`
 }
-
-// Agrupa los fichajes en un mapa { "YYYY-MM-DD": { horas, abierto } }
-// Usa fecha LOCAL para que el día cuadre con lo que ve el operario
-const buildDayMap = (fichajes) =>
-  fichajes.reduce((acc, f) => {
-    const d = new Date(f.inicio)
-    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-    const prev = acc[key] ?? { horas: 0, abierto: false }
-    return {
-      ...acc,
-      [key]: {
-        horas: prev.horas + (f.fin !== null ? (f.horas ?? 0) : 0),
-        abierto: prev.abierto || f.fin === null,
-      },
-    }
-  }, {})
 
 // Primer día de la semana del mes (0=lun … 6=dom, ajustado para que lunes sea índice 0)
 const primerDiaSemana = (year, month) => {
@@ -93,30 +78,14 @@ const DiaCelda = ({ dia, datos, isHoy }) => {
 }
 
 // ── Componente principal ───────────────────────────────────────────────────────
+// Solo pinta. Los datos de servidor (dayMap/isLoading/error) vienen del hook.
+// El estado de UI (mes/año que se está viendo) es local y se queda aquí.
 const FichajeCalendar = () => {
   const hoy = new Date()
   const [year, setYear] = useState(hoy.getFullYear())
   const [month, setMonth] = useState(hoy.getMonth())
-  const [dayMap, setDayMap] = useState({})
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState(null)
 
-  const cargar = useCallback(async () => {
-    setIsLoading(true)
-    setError(null)
-    try {
-      const data = await getMisJornadas()
-      setDayMap(buildDayMap(data))
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    cargar()
-  }, [cargar])
+  const { dayMap, isLoading, error } = useFichajeCalendar()
 
   const irMesAnterior = () => {
     const d = new Date(year, month - 1, 1)
