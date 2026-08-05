@@ -51,7 +51,9 @@ class CreateJobRequest(BaseModel):
 
 class UpdateEstadoRequest(BaseModel):
     estado: str
-    progreso: int = Field(ge=0, le=100)
+    # Opcional: un arrastre en el Kanban solo cambia el estado. Si no llega
+    # progreso, el trabajo conserva el que ya tenía (no se resetea a 0).
+    progreso: int | None = Field(default=None, ge=0, le=100)
 
 
 class UpdateJobRequest(BaseModel):

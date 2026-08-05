@@ -2,7 +2,7 @@ import secrets
 from datetime import date
 
 from sqlalchemy import or_
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from backend.core.webhooks import fire_webhook
 from backend.features.historial.service import add_event
@@ -27,7 +27,9 @@ def _generate_code(db: Session, tenant_id: int | None = None) -> str:
 
 
 def get_all_jobs(db: Session, tenant_id: int | None = None) -> list[Job]:
-    q = db.query(Job)
+    # joinedload del operario: sin él, pintar el nombre del operario en cada fila
+    # del listado dispara una query por trabajo (N+1). Con él, una sola query con JOIN.
+    q = db.query(Job).options(joinedload(Job.operario))
     if tenant_id is not None:
         q = q.filter(Job.tenant_id == tenant_id)
     return q.order_by(Job.created_at.desc()).all()
@@ -36,7 +38,7 @@ def get_all_jobs(db: Session, tenant_id: int | None = None) -> list[Job]:
 def get_jobs_for_user(
     db: Session, user_id: int, tenant_id: int | None = None
 ) -> list[Job]:
-    q = db.query(Job).filter(Job.operario_id == user_id)
+    q = db.query(Job).options(joinedload(Job.operario)).filter(Job.operario_id == user_id)
     if tenant_id is not None:
         q = q.filter(Job.tenant_id == tenant_id)
     return q.order_by(Job.created_at.desc()).all()
@@ -104,7 +106,7 @@ def update_estado(
     db: Session,
     job_id: int,
     estado: str,
-    progreso: int,
+    progreso: int | None = None,
     current_user_id: int | None = None,
     current_user_role: str = "operario",
     current_user_name: str = "Operario",
@@ -122,7 +124,9 @@ def update_estado(
     if _is_starting_job(job.estado, estado) and not job.operario_id and current_user_id:
         job.operario_id = current_user_id
     job.estado = estado
-    job.progreso = _clamp_progress(progreso)
+    # Solo actualizamos el progreso si el llamante lo envía (el Kanban no lo hace).
+    if progreso is not None:
+        job.progreso = _clamp_progress(progreso)
     add_event(
         db,
         job.id,
@@ -197,7 +201,7 @@ def search_jobs(
 ) -> list[Job]:
     """Búsqueda rápida — ILIKE en título, cliente y código OT. Limitado a 10 resultados."""
     term = f"%{q.strip()}%"
-    query = db.query(Job).filter(
+    query = db.query(Job).options(joinedload(Job.operario)).filter(
         or_(
             Job.titulo.ilike(term),
             Job.cliente.ilike(term),

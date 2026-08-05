@@ -12,6 +12,9 @@ class AdminJobItem(BaseModel):
     operario_id: int | None
     operario_name: str | None
     fecha_inicio: str | None
+    # Sin este campo, Pydantic lo descartaba de la respuesta y el gráfico
+    # "OTs creadas por mes" del panel salía siempre a 0.
+    created_at: str | None
 
 
 class AdminUserItem(BaseModel):
