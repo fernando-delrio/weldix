@@ -13,14 +13,39 @@
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=flat&logo=react&logoColor=black)](https://react.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-06B6D4?style=flat&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 [![PWA](https://img.shields.io/badge/PWA-offline--ready-5A0FC8?style=flat&logo=pwa&logoColor=white)](#)
-[![Mistral AI](https://img.shields.io/badge/Mistral-AI-orange?style=flat&logo=data:image/svg+xml;base64,PHN2Zy8+)](#)
+[![Mistral AI](https://img.shields.io/badge/Mistral_AI-tool_calling-orange?style=flat)](#)
 [![Stripe](https://img.shields.io/badge/Stripe-pagos-635BFF?style=flat&logo=stripe&logoColor=white)](#)
-[![CI](https://img.shields.io/github/actions/workflow/status/1855-git/weldix/test.yml?label=CI&style=flat)](https://github.com/1855-git/weldix/actions)
+[![CI](https://img.shields.io/github/actions/workflow/status/fernando-delrio/weldix/test.yml?label=CI&style=flat)](https://github.com/fernando-delrio/weldix/actions)
 [![License](https://img.shields.io/badge/licencia-Propietaria-red?style=flat)](#licencia)
 
-[**Demo en vivo**](https://weldix.app) · [**Solicitar acceso**](mailto:hola@weldix.app) · [**Stack técnico**](#stack-completo)
+[**Demo en vivo**](https://weldix-frontend.onrender.com) · [**Solicitar acceso**](mailto:hola@weldix.app) · [**Stack técnico**](#stack-completo)
+
+<!-- TODO(dominio): cuando weldix.es apunte a Render, cambia la URL de "Demo en vivo" a https://weldix.es -->
 
 </div>
+
+<div align="center">
+
+<img src="docs/screenshots/chat-ia.png" alt="El asistente IA de Weldix respondiendo con datos reales del taller: stock bajo mínimo y órdenes de trabajo en proceso" width="88%" />
+
+<sub>El asistente IA responde sobre el <b>stock y las órdenes reales</b> del taller — filtrado por rol y por taller, no un chatbot genérico.</sub>
+
+</div>
+
+---
+
+## ▶️ Demo en vídeo (2-3 min)
+
+El asistente IA respondiendo con **datos reales del taller** — stock, órdenes de trabajo, mantenimiento y vacaciones, en lenguaje natural.
+
+<!-- TODO: sustituir por la miniatura + enlace de YouTube al grabar la demo -->
+[![Ver la demo de Weldix](https://img.shields.io/badge/▶_Ver_la_demo-YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://youtube.com/watch?v=TU_VIDEO_ID)
+
+---
+
+## Índice
+
+[El problema](#el-problema) · [Qué hace](#qué-hace) · [El asistente IA](#-el-asistente-ia-del-taller) · [Capturas](#capturas) · [Arquitectura](#arquitectura) · [Arranque](#arranque-en-5-minutos) · [Stack completo](#stack-completo) · [Por qué este stack](#por-qué-este-stack-y-no-otro) · [Seguridad](#seguridad) · [Hoja de ruta](#hoja-de-ruta)
 
 ---
 
@@ -55,6 +80,33 @@ En la mayoría de talleres de soldadura y calderería, la gestión sigue igual q
 
 ---
 
+## 🤖 El asistente IA del taller
+
+No es un chatbot genérico. Responde con los **datos reales del taller, en tiempo real**, y es **consciente del rol y del taller** de quien pregunta.
+
+**Cómo funciona (RAG de contexto):** antes de enviar la pregunta a Mistral, Weldix construye un contexto dinámico con los datos relevantes del usuario — stock, órdenes de trabajo, fichajes, equipos, vacaciones, nóminas — **filtrado por su `tenant_id` y su rol**. El modelo no adivina: responde sobre datos reales, y solo ve lo de SU taller.
+
+| Pregunta (rol) | La IA consulta… |
+|---|---|
+| *"¿Qué materiales están bajo mínimo?"* (admin) | el stock real del taller |
+| *"¿Cuántas OTs hay en proceso?"* (admin) | las órdenes de trabajo |
+| *"¿Algún equipo con el mantenimiento vencido?"* (admin) | el GMAO |
+| *"¿Cuántas vacaciones me quedan?"* (operario) | su saldo de vacaciones |
+| *"¿Cuántas horas llevo esta semana?"* (operario) | sus fichajes |
+
+**Aislamiento:** el contexto se filtra por `tenant_id` y por rol — un taller nunca ve datos de otro, y un operario solo ve lo suyo. La privacidad se garantiza en el dato que se le pasa al modelo, no solo en la UI.
+
+---
+
+## Capturas
+
+| Tablero Kanban de OTs | Panel de análisis del taller |
+|:---:|:---:|
+| [![Vista Kanban con las órdenes de trabajo repartidas por estado](docs/screenshots/kanban.png)](docs/screenshots/kanban.png) | [![Dashboard con donut de estados y OTs creadas por mes](docs/screenshots/dashboard.png)](docs/screenshots/dashboard.png) |
+| Arrastra las OTs entre estados (drag & drop) | Métricas globales del taller en tiempo real |
+
+---
+
 ## Flujo de una orden de trabajo
 
 ```
@@ -69,27 +121,44 @@ Cada transición queda registrada en el historial con timestamp y usuario. El je
 
 ## Arquitectura
 
-```
-React 19 + Vite          →  SPA modular por feature (auth / jobs / fichaje / stock / rrhh / ia / …)
-FastAPI + SQLAlchemy      →  API REST + ORM con soporte SQLite (dev) y PostgreSQL (prod)
-Alembic                  →  Migraciones versionadas con rollback
-JWT HS256                →  Auth con roles admin / operario
-Tenant isolation         →  Cada tabla filtra por tenant_id — aislamiento completo
-WebSocket                →  Campana de avisos en tiempo real por tenant (alertas)
-Resend                   →  Emails transaccionales: bienvenida, trial, reset de contraseña
-n8n (self-hosted)        →  Automatizaciones opcionales: webhooks por estado, WhatsApp
-Stripe                   →  Suscripción + trial 15 días + gestión de plan en Tenant
-Mistral AI               →  LLM con contexto dinámico del taller en cada consulta
+```mermaid
+flowchart TD
+    subgraph Cliente["Navegador / Tablet — PWA"]
+        UI["React 19 + Vite + Tailwind<br/>SPA modular por feature"]
+    end
+    subgraph Backend["FastAPI"]
+        RT["Routers por feature"] --> SV["Services · lógica de negocio"]
+        SV --> MD["Modelos SQLAlchemy"]
+        AU["Auth JWT HS256 · roles admin/operario"]
+        WSk["WebSocket · avisos en vivo"]
+    end
+    DB[("PostgreSQL / SQLite<br/>aislado por tenant_id")]
+    subgraph Externos
+        MI["Mistral AI · contexto del taller"]
+        ST["Stripe · suscripción"]
+        RE["Resend · emails"]
+        N8["n8n · automatizaciones"]
+    end
+    UI -->|"REST + JWT"| RT
+    UI <-->|"tiempo real"| WSk
+    MD --> DB
+    SV --> MI
+    SV --> ST
+    SV --> RE
+    SV -.->|opcional| N8
 ```
 
+**Migraciones:** Alembic versiona el schema con `upgrade` / `downgrade`.
 **Principios:** Feature-based vertical slicing · Strategy Pattern · Guard Clauses · SOLID · DRY · KISS
 
 ---
 
 ## Arranque en 5 minutos
 
+[![Deploy to Render](https://img.shields.io/badge/Deploy_to-Render-46E3B7?style=flat&logo=render&logoColor=white)](https://render.com/deploy?repo=https://github.com/fernando-delrio/weldix)
+
 ```bash
-git clone https://github.com/1855-git/weldix.git && cd weldix
+git clone https://github.com/fernando-delrio/weldix.git && cd weldix
 cp .env.example .env            # añade SECRET_KEY y MISTRAL_API_KEY
 
 # Backend
