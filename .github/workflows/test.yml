@@ -63,6 +63,9 @@ jobs:
       - name: Lint (ESLint)
         run: cd frontend && npm run lint
 
+      - name: Run tests (Vitest)
+        run: cd frontend && npm run test:run
+
       - name: Build
         run: cd frontend && npm run build
         env:

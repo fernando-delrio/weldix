@@ -7,6 +7,7 @@ from sqlalchemy.pool import StaticPool
 
 # Importar modelos para que Base.metadata.create_all los registre.
 import backend.features.historial.model  # noqa: F401
+import backend.core.bootstrap  # noqa: F401 — registra TODAS las tablas (fixture `db`)
 from backend.core.database import Base, get_db
 from backend.features.auth import service as auth_service
 from backend.features.auth.dependencies import require_active_trial
@@ -174,3 +175,29 @@ def two_tenants_client():
     auth_service._login_state.clear()
     Base.metadata.drop_all(bind=engine)
     engine.dispose()
+
+
+# ─── Fixture de sesión de BD "pura" (sin HTTP) ────────────────────────────────
+# Portada desde backend/tests/conftest.py: para tests de servicio/modelo que no
+# pasan por el router (demo, fichaje, kiosko, utilidades de auth como PIN o
+# rate-limit). Aislada por test — SQLite en memoria + StaticPool propios, no
+# comparte engine con los fixtures de arriba.
+
+
+@pytest.fixture()
+def db():
+    """DB SQLite en memoria con TODAS las tablas del proyecto (via bootstrap)."""
+    engine = create_engine(
+        "sqlite://",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+    Base.metadata.create_all(bind=engine)
+    TestSession = sessionmaker(bind=engine, autoflush=False, autocommit=False)
+    session = TestSession()
+    try:
+        yield session
+    finally:
+        session.close()
+        Base.metadata.drop_all(bind=engine)
+        engine.dispose()
