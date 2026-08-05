@@ -26,9 +26,9 @@
 
 <div align="center">
 
-<img src="docs/screenshots/chat-ia.png" alt="El asistente IA de Weldix respondiendo con datos reales del taller: stock bajo mínimo y órdenes de trabajo en proceso" width="88%" />
+<img src="docs/screenshots/kanban.png" alt="Tablero Kanban de Weldix con las órdenes de trabajo repartidas por estado: pendiente, en proceso, control, listo y entregado" width="90%" />
 
-<sub>El asistente IA responde sobre el <b>stock y las órdenes reales</b> del taller — filtrado por rol y por taller, no un chatbot genérico.</sub>
+<sub>Tablero de órdenes de trabajo — arrastra cada OT entre estados. El jefe ve todo el taller de un vistazo.</sub>
 
 </div>
 
@@ -94,16 +94,29 @@ No es un chatbot genérico. Responde con los **datos reales del taller, en tiemp
 | *"¿Cuántas vacaciones me quedan?"* (operario) | su saldo de vacaciones |
 | *"¿Cuántas horas llevo esta semana?"* (operario) | sus fichajes |
 
+<div align="center">
+
+<img src="docs/screenshots/chat-ia.png" alt="El asistente IA de Weldix respondiendo: qué materiales están bajo mínimo y cuántas OTs hay en proceso, con datos reales del taller" width="82%" />
+
+<sub>Preguntas reales, respuestas con los datos del taller en tiempo real.</sub>
+
+</div>
+
 **Aislamiento:** el contexto se filtra por `tenant_id` y por rol — un taller nunca ve datos de otro, y un operario solo ve lo suyo. La privacidad se garantiza en el dato que se le pasa al modelo, no solo en la UI.
 
 ---
 
 ## Capturas
 
-| Tablero Kanban de OTs | Panel de análisis del taller |
-|:---:|:---:|
-| [![Vista Kanban con las órdenes de trabajo repartidas por estado](docs/screenshots/kanban.png)](docs/screenshots/kanban.png) | [![Dashboard con donut de estados y OTs creadas por mes](docs/screenshots/dashboard.png)](docs/screenshots/dashboard.png) |
-| Arrastra las OTs entre estados (drag & drop) | Métricas globales del taller en tiempo real |
+**El panel del jefe** — métricas globales del taller en tiempo real:
+
+<div align="center">
+
+<img src="docs/screenshots/dashboard.png" alt="Panel de análisis de Weldix: donut de trabajos por estado, carga activa por operario y OTs creadas por mes" width="90%" />
+
+<sub>Distribución de OTs por estado, carga activa por operario y evolución mensual de órdenes.</sub>
+
+</div>
 
 ---
 
