@@ -3,6 +3,7 @@ from pathlib import Path
 
 from fastapi import UploadFile
 from sqlalchemy.orm import Session, joinedload
+from starlette.concurrency import run_in_threadpool
 
 from backend.core.config import settings
 
@@ -148,8 +149,11 @@ async def subir_nomina(
         db.delete(existing)
         db.flush()
 
-    # Lectura inteligente del PDF con IA (best-effort — no rompe la subida si falla)
-    importes = extraer_importes_nomina(str(dest))
+    # Lectura inteligente del PDF con IA (best-effort — no rompe la subida si falla).
+    # Va en un threadpool: parsear el PDF (pypdf) y llamar a Mistral son operaciones
+    # BLOQUEANTES; si se ejecutaran directas en esta corrutina congelarían el event
+    # loop y ningún otro request del worker se atendería mientras tanto.
+    importes = await run_in_threadpool(extraer_importes_nomina, str(dest))
 
     nomina = Nomina(
         tenant_id=tenant_id,
