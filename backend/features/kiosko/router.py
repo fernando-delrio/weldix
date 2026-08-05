@@ -8,13 +8,14 @@ Router del Modo Kiosko.
 Regla de orden (CLAUDE.md §8.1): la ruta literal /generar-link se registra ANTES
 que /{token}, o FastAPI interpretaría "generar-link" como un token.
 """
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
 from backend.core.config import settings
 from backend.core.database import get_db
 from backend.features.auth.dependencies import require_role
 from backend.features.auth.model import User
+from backend.features.auth.service import check_rate_limit
 
 from . import service
 from .schemas import (
@@ -48,10 +49,28 @@ def kiosk_info(token: str, db: Session = Depends(get_db)):
 
 
 @router.post("/{token}/fichar", response_model=FicharKioskoResponse)
-def fichar(token: str, body: FicharKioskoRequest, db: Session = Depends(get_db)):
-    """Público: ficha por PIN. Toggle entrada/salida."""
+def fichar(
+    token: str,
+    body: FicharKioskoRequest,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    """Público: ficha por PIN. Toggle entrada/salida.
+
+    Anti fuerza bruta: el PIN es de 4 dígitos (10.000 combinaciones) y el endpoint
+    es público. Contamos solo los intentos FALLIDOS por token (la tablet) y
+    bloqueamos tras 15 en 5 minutos. Un fichaje correcto NO cuenta, así que los
+    operarios legítimos nunca tocan el límite; el que enumera PINs, sí.
+    """
     try:
         result = service.fichar_por_pin(db, token, body.pin)
     except ValueError as exc:
+        try:
+            check_rate_limit(f"kiosk-fail:{token}", max_hits=15, window_minutes=5)
+        except ValueError:
+            raise HTTPException(
+                status_code=429,
+                detail="Demasiados intentos fallidos. Espera unos minutos.",
+            )
         raise HTTPException(status_code=400, detail=str(exc))
     return FicharKioskoResponse(**result)
