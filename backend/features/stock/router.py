@@ -90,6 +90,10 @@ async def consume_material(
     current_user: User = Depends(get_current_user),
 ):
     try:
+        service.get_material_by_id(db, material_id, tenant_id=current_user.tenant_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+    try:
         material = service.consume_material(
             db, material_id, body.consumed, tenant_id=current_user.tenant_id
         )
