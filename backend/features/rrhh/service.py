@@ -138,9 +138,22 @@ def get_festivos(db: Session, year: int) -> list[Festivo]:
 
 
 def upsert_config(
-    db: Session, data: ConfiguracionLaboralRequest
+    db: Session, tenant_id: int | None, data: ConfiguracionLaboralRequest
 ) -> ConfiguracionLaboral:
-    """Crea o actualiza la configuración laboral de un operario."""
+    """Crea o actualiza la configuración laboral de un operario de SU taller.
+
+    Guard clause de aislamiento: valida que data.operario_id pertenezca al
+    mismo tenant que el admin que hace la petición — evita que un admin
+    reconfigure (jornada, vacaciones, turno) a un operario de otro taller.
+    """
+    operario = (
+        db.query(User)
+        .filter(User.id == data.operario_id, User.tenant_id == tenant_id)
+        .first()
+    )
+    if not operario:
+        raise ValueError(f"Operario {data.operario_id} no encontrado")
+
     config = (
         db.query(ConfiguracionLaboral)
         .filter(ConfiguracionLaboral.operario_id == data.operario_id)
@@ -152,7 +165,7 @@ def upsert_config(
         config.dias_laborables = data.dias_laborables
         config.turno = data.turno
     else:
-        config = ConfiguracionLaboral(**data.model_dump())
+        config = ConfiguracionLaboral(tenant_id=tenant_id, **data.model_dump())
         db.add(config)
 
     db.commit()
@@ -164,19 +177,31 @@ def upsert_config(
 
 
 def get_saldo_vacaciones(
-    db: Session, operario_id: int, year: int
+    db: Session, tenant_id: int | None, operario_id: int, year: int
 ) -> SaldoVacacionesResponse:
     """
     Calcula el saldo de vacaciones de un operario para el año dado.
     Solo cuenta días de tipo 'vacaciones'.
+
+    Guard clause de aislamiento (mismo patrón que jobs/fichaje): el
+    operario debe pertenecer al mismo tenant que quien consulta. Evita que
+    un admin vea el saldo de vacaciones de un operario de otro taller.
     """
+    operario = (
+        db.query(User)
+        .filter(User.id == operario_id, User.tenant_id == tenant_id)
+        .first()
+    )
+    if not operario:
+        raise ValueError(f"Operario {operario_id} no encontrado")
+
     config = _get_config_operario(db, operario_id)
-    operario = db.query(User).filter(User.id == operario_id).first()
 
     # Días aprobados este año
     aprobadas = (
         db.query(func.sum(SolicitudAusencia.dias_solicitados))
         .filter(
+            SolicitudAusencia.tenant_id == tenant_id,
             SolicitudAusencia.operario_id == operario_id,
             SolicitudAusencia.tipo == "vacaciones",
             SolicitudAusencia.estado == "aprobada",
@@ -190,6 +215,7 @@ def get_saldo_vacaciones(
     pendientes = (
         db.query(func.sum(SolicitudAusencia.dias_solicitados))
         .filter(
+            SolicitudAusencia.tenant_id == tenant_id,
             SolicitudAusencia.operario_id == operario_id,
             SolicitudAusencia.tipo == "vacaciones",
             SolicitudAusencia.estado == "pendiente",
@@ -216,7 +242,7 @@ def get_saldo_vacaciones(
 
 
 def crear_solicitud(
-    db: Session, operario_id: int, data: CrearSolicitudRequest
+    db: Session, operario_id: int, tenant_id: int | None, data: CrearSolicitudRequest
 ) -> SolicitudAusencia:
     """
     Crea una solicitud de ausencia con validaciones de negocio:
@@ -257,7 +283,7 @@ def crear_solicitud(
 
     # Guard: saldo de vacaciones
     if data.tipo == "vacaciones":
-        saldo = get_saldo_vacaciones(db, operario_id, data.fecha_inicio.year)
+        saldo = get_saldo_vacaciones(db, tenant_id, operario_id, data.fecha_inicio.year)
         if dias > saldo.dias_disponibles:
             raise ValueError(
                 f"No tienes suficientes días de vacaciones. "
@@ -265,6 +291,7 @@ def crear_solicitud(
             )
 
     solicitud = SolicitudAusencia(
+        tenant_id=tenant_id,
         operario_id=operario_id,
         tipo=data.tipo,
         fecha_inicio=data.fecha_inicio,
@@ -291,12 +318,13 @@ def get_solicitudes_operario(db: Session, operario_id: int) -> list[SolicitudAus
 
 def get_todas_solicitudes(
     db: Session,
+    tenant_id: int | None,
     estado: str | None = None,
     tipo: str | None = None,
     operario_id: int | None = None,
 ) -> list[SolicitudAusencia]:
-    """Admin: todas las solicitudes con filtros opcionales."""
-    q = db.query(SolicitudAusencia)
+    """Admin: todas las solicitudes de SU taller, con filtros opcionales."""
+    q = db.query(SolicitudAusencia).filter(SolicitudAusencia.tenant_id == tenant_id)
     if estado:
         q = q.filter(SolicitudAusencia.estado == estado)
     if tipo:
@@ -308,13 +336,23 @@ def get_todas_solicitudes(
 
 def revisar_solicitud(
     db: Session,
+    tenant_id: int | None,
     solicitud_id: int,
     admin_id: int,
     data: RevisarSolicitudRequest,
 ) -> SolicitudAusencia:
-    """Admin aprueba o rechaza una solicitud pendiente."""
+    """Admin aprueba o rechaza una solicitud pendiente de SU taller.
+
+    Guard clause de aislamiento: filtra por tenant_id además de por id —
+    evita que un admin revise la solicitud de un operario de otro taller.
+    """
     solicitud = (
-        db.query(SolicitudAusencia).filter(SolicitudAusencia.id == solicitud_id).first()
+        db.query(SolicitudAusencia)
+        .filter(
+            SolicitudAusencia.id == solicitud_id,
+            SolicitudAusencia.tenant_id == tenant_id,
+        )
+        .first()
     )
     if not solicitud:
         raise ValueError(f"Solicitud {solicitud_id} no encontrada")
@@ -391,7 +429,7 @@ def adjuntar_justificante(
 
 
 def get_calendario(
-    db: Session, year: int, month: int, current_user_id: int
+    db: Session, tenant_id: int | None, year: int, month: int, current_user_id: int
 ) -> list[EventoCalendarioResponse]:
     """
     Devuelve los eventos del mes: festivos + ausencias aprobadas.
@@ -423,10 +461,11 @@ def get_calendario(
             )
         )
 
-    # Ausencias aprobadas de todo el equipo (visibles para todos)
+    # Ausencias aprobadas de todo el equipo (visibles para todos, solo del propio taller)
     ausencias_equipo = (
         db.query(SolicitudAusencia)
         .filter(
+            SolicitudAusencia.tenant_id == tenant_id,
             SolicitudAusencia.estado == "aprobada",
             SolicitudAusencia.fecha_inicio <= ultimo_dia,
             SolicitudAusencia.fecha_fin >= primer_dia,
@@ -438,6 +477,7 @@ def get_calendario(
     ausencias_propias_pendientes = (
         db.query(SolicitudAusencia)
         .filter(
+            SolicitudAusencia.tenant_id == tenant_id,
             SolicitudAusencia.operario_id == current_user_id,
             SolicitudAusencia.estado == "pendiente",
             SolicitudAusencia.fecha_inicio <= ultimo_dia,
@@ -472,16 +512,26 @@ def get_calendario(
 # ─── Informe mensual ──────────────────────────────────────────────────────────
 
 
-def get_informe_mensual(db: Session, year: int, month: int) -> InformeMensualResponse:
+def get_informe_mensual(
+    db: Session, tenant_id: int | None, year: int, month: int
+) -> InformeMensualResponse:
     """
-    Admin: resumen del mes para todo el equipo.
+    Admin: resumen del mes para todo el equipo DE SU TALLER.
     - Días de ausencia aprobados y pendientes por operario
     - Horas fichadas en el mes
+
+    Guard clause de aislamiento: los operarios y sus ausencias/fichajes se
+    filtran por tenant_id — evita que el informe mensual de un admin
+    mezcle operarios de otros talleres.
     """
     primer_dia = date(year, month, 1)
     ultimo_dia = date(year, month, calendar.monthrange(year, month)[1])
 
-    operarios = db.query(User).filter(User.role == "operario").all()
+    operarios = (
+        db.query(User)
+        .filter(User.role == "operario", User.tenant_id == tenant_id)
+        .all()
+    )
     informe_operarios = []
 
     for op in operarios:
@@ -489,6 +539,7 @@ def get_informe_mensual(db: Session, year: int, month: int) -> InformeMensualRes
         aprobadas = (
             db.query(SolicitudAusencia)
             .filter(
+                SolicitudAusencia.tenant_id == tenant_id,
                 SolicitudAusencia.operario_id == op.id,
                 SolicitudAusencia.estado == "aprobada",
                 SolicitudAusencia.fecha_inicio <= ultimo_dia,
@@ -502,6 +553,7 @@ def get_informe_mensual(db: Session, year: int, month: int) -> InformeMensualRes
         pendientes = (
             db.query(SolicitudAusencia)
             .filter(
+                SolicitudAusencia.tenant_id == tenant_id,
                 SolicitudAusencia.operario_id == op.id,
                 SolicitudAusencia.estado == "pendiente",
                 SolicitudAusencia.fecha_inicio <= ultimo_dia,
@@ -515,6 +567,7 @@ def get_informe_mensual(db: Session, year: int, month: int) -> InformeMensualRes
         horas = (
             db.query(func.sum(Fichaje.horas))
             .filter(
+                Fichaje.tenant_id == tenant_id,
                 Fichaje.operario_id == op.id,
                 Fichaje.horas.isnot(None),
                 func.date(Fichaje.inicio) >= primer_dia,

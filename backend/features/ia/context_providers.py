@@ -24,7 +24,7 @@ def build_user_context(db: Session, user: User) -> str:
 
     if user.role == "operario":
         try:
-            saldo = rrhh_service.get_saldo_vacaciones(db, user.id, date.today().year)
+            saldo = rrhh_service.get_saldo_vacaciones(db, user.tenant_id, user.id, date.today().year)
             lines.append(
                 f"Vacaciones {saldo.year}: {saldo.dias_disponibles} dias disponibles "
                 f"de {saldo.dias_totales} totales "

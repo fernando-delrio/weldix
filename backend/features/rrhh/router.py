@@ -15,6 +15,7 @@ from backend.features.auth.dependencies import (
 from backend.features.auth.model import User
 
 from . import service
+from .model import AccidenteLaboral
 from .schemas import (
     TIPOS_AUSENCIA,
     TIPOS_CERTIFICADO,
@@ -97,10 +98,13 @@ def get_festivos(
 def upsert_config(
     body: ConfiguracionLaboralRequest,
     db: Session = Depends(get_db),
-    _: User = Depends(require_role("admin")),
+    current_user: User = Depends(require_role("admin")),
 ):
-    """Admin: crea o actualiza la configuración laboral de un operario."""
-    config = service.upsert_config(db, body)
+    """Admin: crea o actualiza la configuración laboral de un operario de su taller."""
+    try:
+        config = service.upsert_config(db, current_user.tenant_id, body)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
     return config
 
 
@@ -114,7 +118,7 @@ def mi_saldo(
     current_user: User = Depends(get_current_user),
 ):
     """El operario consulta su propio saldo de vacaciones."""
-    return service.get_saldo_vacaciones(db, current_user.id, year)
+    return service.get_saldo_vacaciones(db, current_user.tenant_id, current_user.id, year)
 
 
 @router.get("/saldo/{operario_id}", response_model=SaldoVacacionesResponse)
@@ -122,10 +126,13 @@ def saldo_operario(
     operario_id: int,
     year: int = Query(default=date.today().year),
     db: Session = Depends(get_db),
-    _: User = Depends(require_role("admin")),
+    current_user: User = Depends(require_role("admin")),
 ):
-    """Admin: saldo de vacaciones de un operario concreto."""
-    return service.get_saldo_vacaciones(db, operario_id, year)
+    """Admin: saldo de vacaciones de un operario de su propio taller."""
+    try:
+        return service.get_saldo_vacaciones(db, current_user.tenant_id, operario_id, year)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
 
 
 # ─── Solicitudes — operario ───────────────────────────────────────────────────
@@ -139,7 +146,7 @@ def crear_solicitud(
 ):
     """El operario crea una solicitud de ausencia."""
     try:
-        solicitud = service.crear_solicitud(db, current_user.id, body)
+        solicitud = service.crear_solicitud(db, current_user.id, current_user.tenant_id, body)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
     return SolicitudAusenciaResponse.from_orm(solicitud)
@@ -240,10 +247,12 @@ def todas_las_solicitudes(
     tipo: str | None = Query(default=None),
     operario_id: int | None = Query(default=None),
     db: Session = Depends(get_db),
-    _: User = Depends(require_role("admin")),
+    current_user: User = Depends(require_role("admin")),
 ):
-    """Admin: todas las solicitudes con filtros opcionales."""
-    solicitudes = service.get_todas_solicitudes(db, estado, tipo, operario_id)
+    """Admin: todas las solicitudes de SU taller, con filtros opcionales."""
+    solicitudes = service.get_todas_solicitudes(
+        db, current_user.tenant_id, estado, tipo, operario_id
+    )
     return [SolicitudAusenciaResponse.from_orm(s) for s in solicitudes]
 
 
@@ -256,9 +265,11 @@ def revisar_solicitud(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_role("admin")),
 ):
-    """Admin: aprueba o rechaza una solicitud pendiente."""
+    """Admin: aprueba o rechaza una solicitud pendiente de su taller."""
     try:
-        solicitud = service.revisar_solicitud(db, solicitud_id, current_user.id, body)
+        solicitud = service.revisar_solicitud(
+            db, current_user.tenant_id, solicitud_id, current_user.id, body
+        )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
     return SolicitudAusenciaResponse.from_orm(solicitud)
@@ -274,8 +285,8 @@ def get_calendario(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Eventos del mes: festivos nacionales + ausencias del equipo."""
-    return service.get_calendario(db, year, month, current_user.id)
+    """Eventos del mes: festivos nacionales + ausencias del equipo de su taller."""
+    return service.get_calendario(db, current_user.tenant_id, year, month, current_user.id)
 
 
 # ─── Informe mensual — admin ──────────────────────────────────────────────────
@@ -286,10 +297,10 @@ def informe_mensual(
     year: int = Query(default=date.today().year),
     month: int = Query(default=date.today().month, ge=1, le=12),
     db: Session = Depends(get_db),
-    _: User = Depends(require_role("admin")),
+    current_user: User = Depends(require_role("admin")),
 ):
-    """Admin: resumen mensual del equipo — ausencias + horas fichadas."""
-    return service.get_informe_mensual(db, year, month)
+    """Admin: resumen mensual del equipo de su taller — ausencias + horas fichadas."""
+    return service.get_informe_mensual(db, current_user.tenant_id, year, month)
 
 
 # ── Lookups ──────────────────────────────────────────────────────────────────

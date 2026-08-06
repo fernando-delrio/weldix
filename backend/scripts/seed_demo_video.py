@@ -129,7 +129,7 @@ def run() -> None:
 
         db.commit()
 
-        saldo = get_saldo_vacaciones(db, laura.id, year)
+        saldo = get_saldo_vacaciones(db, tenant.id, laura.id, year)
         # Prints en ASCII: la consola de Windows (cp1252) no encodea simbolos como el check.
         print("[OK] Taller de demo creado:", TALLER)
         print("  Jefe :  jefe@estructurasnorte.com  /  jefe1234")
