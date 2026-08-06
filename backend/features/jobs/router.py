@@ -142,9 +142,12 @@ def get_share_token(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_role("admin")),
 ):
-    token = service.get_or_create_public_token(
-        db, job_id, tenant_id=current_user.tenant_id  # type: ignore[arg-type]
-    )
+    try:
+        token = service.get_or_create_public_token(
+            db, job_id, tenant_id=current_user.tenant_id  # type: ignore[arg-type]
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
     return {"token": token}
 
 

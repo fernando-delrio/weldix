@@ -102,6 +102,23 @@ def _is_starting_job(current_estado: str, new_estado: str) -> bool:
     return current_estado == "pendiente" and new_estado == "en_proceso"
 
 
+# Strategy Pattern (OCP) — mismo criterio que frontend/modules/core/lib/statusConfig.js
+# (campo `next` de STATUS_CONFIG). Cada estado solo puede avanzar al siguiente de la
+# cadena; 'entregado' es terminal y no tiene salida. Añadir un estado nuevo es una
+# línea aquí, no un if/elif nuevo — igual que en el frontend.
+_NEXT_ESTADO = {
+    "pendiente": "en_proceso",
+    "en_proceso": "control",
+    "control": "listo",
+    "listo": "entregado",
+    "entregado": None,
+}
+
+
+def _is_valid_transition(current_estado: str, new_estado: str) -> bool:
+    return _NEXT_ESTADO.get(current_estado) == new_estado
+
+
 def update_estado(
     db: Session,
     job_id: int,
@@ -120,6 +137,16 @@ def update_estado(
         and job.operario_id != current_user_id
     ):
         raise PermissionError("No tienes permiso para modificar este trabajo")
+    # Guard clause: solo se permite avanzar al siguiente estado de la cadena.
+    # 'entregado' es terminal — nunca puede volver a un estado anterior ni saltar etapas.
+    current_estado = str(job.estado)
+    if not _is_valid_transition(current_estado, estado):
+        siguiente = _NEXT_ESTADO.get(current_estado)
+        detalle_siguiente = f"'{siguiente}'" if siguiente else "ninguna: es un estado final"
+        raise ValueError(
+            f"No se puede cambiar de '{current_estado}' a '{estado}'. "
+            f"Transición siguiente válida: {detalle_siguiente}"
+        )
     # Auto-asignar operario al iniciar: si no tenía asignado, queda bloqueado a quien lo inicia
     if _is_starting_job(job.estado, estado) and not job.operario_id and current_user_id:
         job.operario_id = current_user_id
