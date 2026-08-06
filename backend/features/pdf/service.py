@@ -37,9 +37,15 @@ def _safe(text: str | None, max_chars: int = 999) -> str:
     Helvetica solo soporta latin-1 (U+0000–U+00FF). Caracteres fuera de ese
     rango como el em dash U+2014 causan UnicodeEncodeError en fpdf2. Esta
     función reemplaza los más comunes por equivalentes ASCII y descarta el resto.
+
+    El valor por defecto (texto vacío/None) es "-" y NO el em dash "—": esta
+    función existe precisamente para garantizar salida siempre segura para
+    latin-1, así que su propio fallback no puede devolver un carácter que ella
+    misma prohíbe (bug real: antes devolvía "—" sin sanear, rompiendo cualquier
+    llamador que confiara en `_safe()` — ver ERRORES_APRENDIDOS.md).
     """
     if not text:
-        return "—"
+        return "-"
     for char, replacement in _UNICODE_MAP.items():
         text = text.replace(char, replacement)
     return text[:max_chars].encode('latin-1', 'replace').decode('latin-1')
@@ -144,7 +150,7 @@ class _WeldixPDF(FPDF):
         self.ln(2)
         self.set_font("Helvetica", "", 7.5)
         self.set_text_color(*_C_MUTED)
-        self.cell(0, 4, f"Pág. {self.page_no()} — Documento generado por Weldix", align="C")
+        self.cell(0, 4, _safe(f"Pág. {self.page_no()} — Documento generado por Weldix"), align="C")
 
     # ── Helpers de estilo ──────────────────────────────────────────────────────
 
@@ -248,9 +254,9 @@ def _draw_info_grid(pdf: _WeldixPDF, job: Job, operario_nombre: str | None):
     x0 = pdf.l_margin
 
     fields = [
-        ("Operario asignado", operario_nombre or "—"),
-        ("Fecha de inicio", _fmt_date(job.fecha_inicio)),
-        ("Creado el", _fmt_date(job.created_at)),
+        ("Operario asignado", _safe(operario_nombre or "—")),
+        ("Fecha de inicio", _safe(_fmt_date(job.fecha_inicio))),
+        ("Creado el", _safe(_fmt_date(job.created_at))),
     ]
 
     for i, (label, value) in enumerate(fields):
