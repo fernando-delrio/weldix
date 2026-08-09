@@ -244,3 +244,34 @@ petición. Cuando un endpoint acepta el id de "otra entidad" (aquí, el
 operario destinatario) como parámetro, ese id es tan de confiar como
 cualquier otro dato de entrada — hay que verificar su pertenencia antes
 de usarlo para crear o modificar algo.
+
+---
+
+### 2026-08-07 — [Backend: Trabajos / Control de calidad sin revisión]
+
+**❌ Error:**
+En `backend/features/jobs/service.py::update_estado`, la transición
+`control -> listo` no tenía ninguna restricción de rol distinta del resto
+de transiciones. El propio operario que hizo el trabajo podía pasarlo de
+`control` a `listo` él mismo, sin que ningún admin/encargado lo revisara
+— el "control de calidad" del taller no lo garantizaba nadie.
+
+**✅ Corrección:**
+Se añadió `_requires_admin_approval(current_estado, new_estado)` — un
+guard clause específico para la transición `control -> listo` que exige
+`current_user_role == "admin"`, igual de simple que el resto de checks de
+rol ya usados en jobs. Si un operario lo intenta, `update_estado` lanza
+`PermissionError`, que el router ya traducía a 403 (no hubo que tocar el
+router). Cobertura en `tests/features/jobs/test_jobs_router.py`
+(`test_operario_cannot_approve_own_job_from_control_to_listo` y
+`test_admin_can_approve_job_from_control_to_listo`).
+
+**🎓 Concepto aprendido:**
+No toda regla de permisos es "admin sí, operario no" de forma uniforme en
+todo el ciclo de vida de un recurso. Aquí el operario SÍ puede tocar su
+propio trabajo en la mayoría de transiciones (iniciarlo, entregarlo a
+control), pero una transición concreta necesita una regla de rol distinta
+al resto — el guard clause se escribió como una función con nombre que
+describe la regla de negocio (`_requires_admin_approval`), no como una
+condición genérica más, para que quede claro que es una excepción
+deliberada y no un descuido.
