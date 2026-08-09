@@ -1,5 +1,13 @@
 import { toneFor } from '../../core/lib/tones'
 
+const urgentBadge = ({ urgent }) =>
+  urgent && (
+    <span className="mt-2 flex w-fit items-center gap-1 rounded-full border border-rose-500/40 bg-rose-500/15 px-2 py-0.5 text-xs font-bold text-rose-300">
+      <i className="bx bx-error-circle" aria-hidden="true" />
+      Urgente
+    </span>
+  )
+
 const startButton = ({ onStart, canStart }) =>
   onStart && (
     <button
@@ -34,6 +42,9 @@ const TodayJobItem = ({ job, onStart, canStart }) => {
           {job.status}
         </span>
       </div>
+
+      {urgentBadge(job)}
+
       <p className="mt-2 text-xs font-semibold uppercase tracking-[0.10em] text-slate-500">
         {job.due}
       </p>

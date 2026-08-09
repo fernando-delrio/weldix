@@ -11,6 +11,8 @@ import {
 } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
 
+import RechazarJobModal from './RechazarJobModal'
+
 // ── Configuración de columnas ─────────────────────────────────────────────────
 const COLUMNS = [
   { id: 'pendiente', label: 'Pendiente', color: '#f59e0b', dot: 'bg-amber-400' },
@@ -28,6 +30,10 @@ const SHORT_LABEL = {
   listo: 'Listo',
   entregado: 'Entregado',
 }
+
+// Los trabajos urgentes (rechazados en control) aparecen primero en su columna.
+const sortUrgentFirst = (jobsInColumn) =>
+  [...jobsInColumn].sort((a, b) => (b.urgente ? 1 : 0) - (a.urgente ? 1 : 0))
 
 // ── Tarjeta arrastrable ───────────────────────────────────────────────────────
 const KanbanCard = ({ job, isDragging = false }) => {
@@ -57,6 +63,12 @@ const KanbanCard = ({ job, isDragging = false }) => {
         {job.titulo}
       </p>
       {job.cliente && <p className="mt-1 text-xs text-slate-500 truncate">{job.cliente}</p>}
+      {job.urgente && (
+        <div className="mt-1.5 flex items-center gap-1 rounded-full border border-rose-500/40 bg-rose-500/15 px-2 py-0.5 text-xs font-bold text-rose-300">
+          <i className="bx bx-error-circle" aria-hidden="true" />
+          Urgente
+        </div>
+      )}
       {job.operario_name && (
         <div className="mt-1.5 flex items-center gap-1">
           <i className="bx bx-user text-xs text-slate-600" />
@@ -121,8 +133,9 @@ const KanbanColumn = ({ col, jobs, activeId }) => {
 }
 
 // ── Tablero principal ─────────────────────────────────────────────────────────
-const KanbanView = ({ jobs, onMoveJob }) => {
+const KanbanView = ({ jobs, onMoveJob, onRejectJob }) => {
   const [activeJob, setActiveJob] = useState(null)
+  const [rejectingJob, setRejectingJob] = useState(null)
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -130,7 +143,7 @@ const KanbanView = ({ jobs, onMoveJob }) => {
   )
 
   const byEstado = COLUMNS.reduce((acc, col) => {
-    acc[col.id] = jobs.filter((j) => j.estado === col.id)
+    acc[col.id] = sortUrgentFirst(jobs.filter((j) => j.estado === col.id))
     return acc
   }, {})
 
@@ -138,27 +151,43 @@ const KanbanView = ({ jobs, onMoveJob }) => {
     setActiveJob(jobs.find((j) => j.id === active.id) ?? null)
   }
 
+  const isRejectionMove = (fromEstado, toEstado) =>
+    fromEstado === 'control' && toEstado === 'pendiente'
+
   const handleDragEnd = ({ active, over }) => {
     setActiveJob(null)
     if (!over) return
     const fromEstado = active.data.current?.fromEstado
     const toEstado = over.id
     if (fromEstado === toEstado) return
+    if (isRejectionMove(fromEstado, toEstado)) {
+      setRejectingJob(jobs.find((j) => j.id === active.id) ?? null)
+      return
+    }
     onMoveJob(active.id, toEstado)
   }
 
-  return (
-    <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      <div className="grid grid-cols-5 gap-3 pb-3">
-        {COLUMNS.map((col) => (
-          <KanbanColumn key={col.id} col={col} jobs={byEstado[col.id]} activeId={activeJob?.id} />
-        ))}
-      </div>
+  const closeRejectModal = () => setRejectingJob(null)
+  const confirmReject = (motivo) => onRejectJob(rejectingJob.id, motivo)
 
-      <DragOverlay dropAnimation={null}>
-        {activeJob ? <DragGhost job={activeJob} /> : null}
-      </DragOverlay>
-    </DndContext>
+  return (
+    <>
+      <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+        <div className="grid grid-cols-5 gap-3 pb-3">
+          {COLUMNS.map((col) => (
+            <KanbanColumn key={col.id} col={col} jobs={byEstado[col.id]} activeId={activeJob?.id} />
+          ))}
+        </div>
+
+        <DragOverlay dropAnimation={null}>
+          {activeJob ? <DragGhost job={activeJob} /> : null}
+        </DragOverlay>
+      </DndContext>
+
+      {rejectingJob && (
+        <RechazarJobModal job={rejectingJob} onClose={closeRejectModal} onConfirm={confirmReject} />
+      )}
+    </>
   )
 }
 

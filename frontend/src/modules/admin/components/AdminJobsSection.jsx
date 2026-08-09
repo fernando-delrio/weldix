@@ -94,7 +94,7 @@ const viewToggle = ({ view, onToggle }) => (
 
 // ── Componente ───────────────────────────────────────────────────────────────
 const AdminJobsSection = () => {
-  const { dashboard, isLoading, removeJob, changeJobStatus } = useAdminDashboard()
+  const { dashboard, isLoading, removeJob, changeJobStatus, rejectJob } = useAdminDashboard()
   const [activeFilter, setActiveFilter] = useState('Todos')
   const [view, setView] = useState('list')
   if (isLoading || !dashboard) return null
@@ -102,6 +102,7 @@ const AdminJobsSection = () => {
   const filteredJobs = applyFilter(dashboard.jobs, activeFilter)
 
   const handleMoveJob = (jobId, toEstado) => changeJobStatus(jobId, toEstado)
+  const handleRejectJob = (jobId, motivo) => rejectJob(jobId, motivo)
 
   return (
     <section className="space-y-3">
@@ -135,7 +136,9 @@ const AdminJobsSection = () => {
         </>
       )}
 
-      {view === 'kanban' && <KanbanView jobs={dashboard.jobs} onMoveJob={handleMoveJob} />}
+      {view === 'kanban' && (
+        <KanbanView jobs={dashboard.jobs} onMoveJob={handleMoveJob} onRejectJob={handleRejectJob} />
+      )}
     </section>
   )
 }

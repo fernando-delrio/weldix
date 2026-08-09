@@ -68,6 +68,24 @@ const descriptionSection = ({ description }) =>
     </section>
   )
 
+const urgentBadge = ({ urgent }) =>
+  urgent && (
+    <span className="mt-2 flex w-fit items-center gap-1 rounded-full border border-rose-500/40 bg-rose-500/15 px-2 py-0.5 text-xs font-bold text-rose-300">
+      <i className="bx bx-error-circle" aria-hidden="true" />
+      Urgente
+    </span>
+  )
+
+const rejectionNotice = ({ motivoRechazo }) =>
+  motivoRechazo && (
+    <section className={`${cardBase} border-rose-700/40 bg-rose-950/20`}>
+      <h2 className="text-xs font-bold uppercase tracking-[0.16em] text-rose-400">
+        Motivo del rechazo
+      </h2>
+      <p className="mt-3 text-sm leading-relaxed text-rose-200">{motivoRechazo}</p>
+    </section>
+  )
+
 const advanceButton = ({ canAdvance, isAdvancing, advance, job }) => {
   const { nextLabel } = getStatusConfig(job.statusKey)
   return (
@@ -134,6 +152,7 @@ const jobContent = (state, onDownloadPdf, isDownloading, onShare, isCopied, canS
             >
               {job.status}
             </span>
+            {urgentBadge(job)}
             <div className="flex items-center gap-1.5">
               {canShare && (
                 <WeldixButton
@@ -165,6 +184,8 @@ const jobContent = (state, onDownloadPdf, isDownloading, onShare, isCopied, canS
         </div>
         {progressBar(job)}
       </section>
+
+      {rejectionNotice(job)}
 
       {/* Info — fechas y metadatos */}
       <section className={cardBase}>
