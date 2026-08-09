@@ -102,3 +102,37 @@ def test_admin_dashboard_users_list_never_includes_other_tenants_operario(admin_
     # ASSERT
     emails = [u["email"] for u in response.json()["users"]]
     assert "op-a@taller-a.dev" not in emails
+
+
+def test_admin_dashboard_exposes_urgente_and_motivo_rechazo(admin_client):
+    """Regresión del bug de 2026-08-05: un campo que el service devuelve
+    pero que no está declarado en el response_model se elimina en
+    silencio. Ver ERRORES_APRENDIDOS.md."""
+    # ARRANGE
+    ctx = admin_client
+    client = ctx["client"]
+    token = ctx["token_admin_a"]
+    job = _create_job(client, token).json()
+    client.patch(
+        f"/trabajos/{job['id']}/estado",
+        json={"estado": "en_proceso"},
+        headers=_auth_header(token),
+    )
+    client.patch(
+        f"/trabajos/{job['id']}/estado",
+        json={"estado": "control"},
+        headers=_auth_header(token),
+    )
+    client.post(
+        f"/trabajos/{job['id']}/rechazar",
+        json={"motivo": "Falta rematar"},
+        headers=_auth_header(token),
+    )
+
+    # ACT
+    response = client.get("/admin/dashboard", headers=_auth_header(token))
+
+    # ASSERT
+    dashboard_job = next(j for j in response.json()["jobs"] if j["id"] == job["id"])
+    assert dashboard_job["urgente"] is True
+    assert dashboard_job["motivo_rechazo"] == "Falta rematar"

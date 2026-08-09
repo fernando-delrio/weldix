@@ -37,6 +37,8 @@ def _job_item(job: Job, users_by_id: dict) -> dict:
         "operario_name": _operario_name(users_by_id, job.operario_id),
         "fecha_inicio": str(job.fecha_inicio) if job.fecha_inicio else None,
         "created_at": job.created_at.isoformat() if job.created_at else None,
+        "urgente": job.urgente,
+        "motivo_rechazo": job.motivo_rechazo,
     }
 
 

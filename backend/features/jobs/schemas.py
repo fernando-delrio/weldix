@@ -26,6 +26,8 @@ class JobResponse(BaseModel):
     fecha_inicio: date | None
     progreso: int
     descripcion: str | None
+    urgente: bool
+    motivo_rechazo: str | None
     created_at: datetime
     tone: str = ""
 
@@ -54,6 +56,10 @@ class UpdateEstadoRequest(BaseModel):
     # Opcional: un arrastre en el Kanban solo cambia el estado. Si no llega
     # progreso, el trabajo conserva el que ya tenía (no se resetea a 0).
     progreso: int | None = Field(default=None, ge=0, le=100)
+
+
+class RechazarJobRequest(BaseModel):
+    motivo: str = Field(min_length=1)
 
 
 class UpdateJobRequest(BaseModel):

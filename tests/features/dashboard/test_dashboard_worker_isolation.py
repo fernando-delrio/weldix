@@ -124,6 +124,41 @@ def test_worker_dashboard_today_jobs_never_includes_other_operarios_jobs(dashboa
     assert "Pendiente de op2" not in titles
 
 
+# ─── Flag de urgente tras rechazo ──────────────────────────────────────────
+
+
+def test_worker_dashboard_shows_urgente_flag_after_rejection(dashboard_client):
+    # ARRANGE — admin crea un trabajo para op1, lo lleva hasta 'control' y lo rechaza
+    ctx = dashboard_client
+    client = ctx["client"]
+    job = _create_job(
+        client,
+        ctx["token_admin_a"],
+        titulo="Soldadura con acabado defectuoso",
+        operario_id=ctx["op1_a_id"],
+    ).json()
+    _start_job(client, ctx["token_admin_a"], job["id"])
+    client.patch(
+        f"/trabajos/{job['id']}/estado",
+        json={"estado": "control"},
+        headers=_auth_header(ctx["token_admin_a"]),
+    )
+    client.post(
+        f"/trabajos/{job['id']}/rechazar",
+        json={"motivo": "Falta pulir el cordon de soldadura"},
+        headers=_auth_header(ctx["token_admin_a"]),
+    )
+
+    # ACT — op1 consulta su propio dashboard
+    response = client.get("/dashboard/worker", headers=_auth_header(ctx["token_op1_a"]))
+
+    # ASSERT — el trabajo vuelve a estar pendiente, ahora marcado como urgente
+    today_jobs = response.json()["today_jobs"]
+    rejected_job = next(j for j in today_jobs if j["id"] == job["id"])
+    assert rejected_job["urgente"] is True
+    assert rejected_job["motivo_rechazo"] == "Falta pulir el cordon de soldadura"
+
+
 # ─── Aislamiento entre tenants ─────────────────────────────────────────────
 
 

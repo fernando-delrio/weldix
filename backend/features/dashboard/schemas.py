@@ -38,6 +38,8 @@ class TodayJobSchema(BaseModel):
     due: str
     status: str
     tone: str
+    urgente: bool = False
+    motivo_rechazo: str | None = None
 
 
 class WorkerDashboardResponse(BaseModel):

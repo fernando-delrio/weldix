@@ -229,3 +229,37 @@ def test_delete_attempt_from_other_tenant_does_not_remove_it(two_tenants_client)
 
     # ASSERT
     assert still_there.status_code == 200
+
+
+# ─── Rechazo ──────────────────────────────────────────────────────────────
+
+
+def _job_in_control(client, admin_token):
+    job = _create_job(client, admin_token).json()
+    client.patch(
+        f"/trabajos/{job['id']}/estado",
+        json={"estado": "en_proceso"},
+        headers=_auth_header(admin_token),
+    )
+    client.patch(
+        f"/trabajos/{job['id']}/estado",
+        json={"estado": "control"},
+        headers=_auth_header(admin_token),
+    )
+    return job
+
+
+def test_reject_job_of_other_tenant_returns_404(two_tenants_client):
+    # ARRANGE
+    client, token_a, token_b = two_tenants_client
+    job_a = _job_in_control(client, token_a)
+
+    # ACT — B intenta rechazar el trabajo de A
+    response = client.post(
+        f"/trabajos/{job_a['id']}/rechazar",
+        json={"motivo": "Intento cross-tenant"},
+        headers=_auth_header(token_b),
+    )
+
+    # ASSERT
+    assert response.status_code == 404

@@ -15,6 +15,7 @@ from backend.features.auth.model import Tenant
 from backend.features.auth.router import router as auth_router
 from backend.features.billing.router import router as billing_router
 from backend.features.fotos.router import router as fotos_router
+from backend.features.historial.router import router as historial_router
 from backend.features.jobs.router import router as jobs_router
 
 
@@ -71,8 +72,14 @@ def client():
 
 @pytest.fixture()
 def jobs_client():
-    """Fixture de jobs — monta auth + jobs routers."""
-    app, engine = _make_test_app([auth_router, jobs_router])
+    """Fixture de jobs — monta auth + jobs + historial routers.
+
+    Incluye historial_router porque el flujo de rechazo (control -> pendiente)
+    registra un evento (`trabajo_rechazado`) que los tests verifican leyendo
+    `GET /trabajos/{id}/historial` — sin este router montado, esa ruta no
+    existe y el test de historial no puede comprobar el efecto de lado real.
+    """
+    app, engine = _make_test_app([auth_router, jobs_router, historial_router])
     with TestClient(app) as test_client:
         yield test_client
     app.dependency_overrides.clear()
