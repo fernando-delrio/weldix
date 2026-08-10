@@ -232,19 +232,17 @@ def rechazar_job(
 def update_job(
     db: Session, job_id: int, data: UpdateJobRequest, tenant_id: int | None = None
 ) -> Job:
+    """Actualización parcial: solo toca los campos que el llamante envió
+    (mismo criterio que antes con los `is not None` — un campo ausente y uno
+    enviado como null se tratan igual, no se pisa nada). Añadir un campo
+    actualizable nuevo a UpdateJobRequest no requiere tocar esta función,
+    salvo que necesite una transformación especial como `progreso`."""
     job = get_job_by_id(db, job_id, tenant_id)
-    if data.titulo is not None:
-        job.titulo = data.titulo
-    if data.cliente is not None:
-        job.cliente = data.cliente
-    if data.operario_id is not None:
-        job.operario_id = data.operario_id
-    if data.fecha_inicio is not None:
-        job.fecha_inicio = data.fecha_inicio
-    if data.progreso is not None:
-        job.progreso = _clamp_progress(data.progreso)
-    if data.descripcion is not None:
-        job.descripcion = data.descripcion
+    updates = data.model_dump(exclude_none=True)
+    if "progreso" in updates:
+        updates["progreso"] = _clamp_progress(updates["progreso"])
+    for field, value in updates.items():
+        setattr(job, field, value)
     db.commit()
     db.refresh(job)
     return job
