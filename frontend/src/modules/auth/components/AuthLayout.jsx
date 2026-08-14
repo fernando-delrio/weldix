@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { authTw, cx } from '../utils/tw'
 import Particles from '../../../components/Particles/Particles'
 import CountUp from '../../../components/CountUp/CountUp'
+import WordReveal from '../../core/components/WordReveal'
 
 const modeButtonClass = (currentMode, targetMode) =>
   cx(
@@ -44,11 +45,13 @@ const AuthLayout = ({ mode, title, subtitle, feedback, error, children }) => {
 
             <div className={authTw.heroCopyBox}>
               <h2 className={authTw.heroHeadline}>
-                Control total
-                <br />
-                de tu taller.
-                <br />
-                <span className={authTw.heroAccent}>Sin papel.</span>
+                <WordReveal text="Control total" className="block" initialDelay={0} />
+                <WordReveal text="de tu taller." className="block" initialDelay={0.3} />
+                <WordReveal
+                  text="Sin papel."
+                  className={cx('block', authTw.heroAccent)}
+                  initialDelay={0.6}
+                />
               </h2>
               <p className={authTw.heroParagraph}>
                 Gestiona trabajos, materiales y equipos desde una sola plataforma para soldadura y

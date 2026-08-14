@@ -586,3 +586,206 @@ def test_job_valid_forward_transition_still_works(jobs_client):
     # ASSERT
     assert response.status_code == 200
     assert response.json()["estado"] == "en_proceso"
+
+
+# ─── Control de calidad — control -> listo solo lo aprueba un admin ───────────
+# El operario que hizo el trabajo entrega a 'control'; a partir de ahí, solo un
+# admin/encargado puede darlo por bueno ('listo') o devolverlo. Sin este guard,
+# el propio operario podía autoaprobarse — ver ERRORES_APRENDIDOS.md.
+
+
+def test_operario_cannot_approve_own_job_from_control_to_listo(jobs_client):
+    # ARRANGE — el operario lleva su propio trabajo hasta 'control'
+    admin_token = _admin_token(jobs_client)
+    _create_operario(jobs_client, admin_token, "qc@weldix.dev", "Operario QC")
+    operario_token = _login(jobs_client, "qc@weldix.dev", "Operario123!").json()[
+        "access_token"
+    ]
+    job = _create_job(jobs_client, admin_token).json()
+    jobs_client.patch(
+        f"/trabajos/{job['id']}/estado",
+        json={"estado": "en_proceso"},
+        headers=_auth_header(operario_token),
+    )
+    jobs_client.patch(
+        f"/trabajos/{job['id']}/estado",
+        json={"estado": "control"},
+        headers=_auth_header(operario_token),
+    )
+
+    # ACT — el mismo operario intenta aprobarse a sí mismo
+    response = jobs_client.patch(
+        f"/trabajos/{job['id']}/estado",
+        json={"estado": "listo"},
+        headers=_auth_header(operario_token),
+    )
+
+    # ASSERT
+    assert response.status_code == 403
+
+
+def test_admin_can_approve_job_from_control_to_listo(jobs_client):
+    # ARRANGE — un trabajo ya en 'control'
+    token = _admin_token(jobs_client)
+    job = _create_job(jobs_client, token).json()
+    jobs_client.patch(
+        f"/trabajos/{job['id']}/estado",
+        json={"estado": "en_proceso"},
+        headers=_auth_header(token),
+    )
+    jobs_client.patch(
+        f"/trabajos/{job['id']}/estado",
+        json={"estado": "control"},
+        headers=_auth_header(token),
+    )
+
+    # ACT — el admin lo aprueba
+    response = jobs_client.patch(
+        f"/trabajos/{job['id']}/estado",
+        json={"estado": "listo"},
+        headers=_auth_header(token),
+    )
+
+    # ASSERT
+    assert response.status_code == 200
+    assert response.json()["estado"] == "listo"
+
+
+# ─── Rechazo — POST /{job_id}/rechazar ────────────────────────────────────────
+
+
+def _job_in_control(client, admin_token):
+    job = _create_job(client, admin_token).json()
+    client.patch(
+        f"/trabajos/{job['id']}/estado",
+        json={"estado": "en_proceso"},
+        headers=_auth_header(admin_token),
+    )
+    client.patch(
+        f"/trabajos/{job['id']}/estado",
+        json={"estado": "control"},
+        headers=_auth_header(admin_token),
+    )
+    return job
+
+
+def test_admin_can_reject_job_from_control_to_pendiente(jobs_client):
+    # ARRANGE
+    token = _admin_token(jobs_client)
+    job = _job_in_control(jobs_client, token)
+
+    # ACT
+    response = jobs_client.post(
+        f"/trabajos/{job['id']}/rechazar",
+        json={"motivo": "Falta terminar el cordón de soldadura"},
+        headers=_auth_header(token),
+    )
+
+    # ASSERT
+    assert response.status_code == 200
+    body = response.json()
+    assert body["estado"] == "pendiente"
+    assert body["urgente"] is True
+    assert body["motivo_rechazo"] == "Falta terminar el cordón de soldadura"
+
+
+def test_reject_job_without_motivo_returns_422(jobs_client):
+    # ARRANGE
+    token = _admin_token(jobs_client)
+    job = _job_in_control(jobs_client, token)
+
+    # ACT
+    response = jobs_client.post(
+        f"/trabajos/{job['id']}/rechazar",
+        json={"motivo": ""},
+        headers=_auth_header(token),
+    )
+
+    # ASSERT
+    assert response.status_code == 422
+
+
+def test_reject_job_not_in_control_returns_404(jobs_client):
+    """Solo se puede rechazar un trabajo que está en 'control' — uno recién
+    creado (en 'pendiente') no puede rechazarse."""
+    # ARRANGE
+    token = _admin_token(jobs_client)
+    job = _create_job(jobs_client, token).json()
+
+    # ACT
+    response = jobs_client.post(
+        f"/trabajos/{job['id']}/rechazar",
+        json={"motivo": "Motivo cualquiera"},
+        headers=_auth_header(token),
+    )
+
+    # ASSERT
+    assert response.status_code == 404
+
+
+def test_operario_cannot_reject_job(jobs_client):
+    # ARRANGE
+    admin_token = _admin_token(jobs_client)
+    _create_operario(jobs_client, admin_token, "rejecter@weldix.dev", "Rejecter")
+    operario_token = _login(jobs_client, "rejecter@weldix.dev", "Operario123!").json()[
+        "access_token"
+    ]
+    job = _job_in_control(jobs_client, admin_token)
+
+    # ACT
+    response = jobs_client.post(
+        f"/trabajos/{job['id']}/rechazar",
+        json={"motivo": "Intento no autorizado"},
+        headers=_auth_header(operario_token),
+    )
+
+    # ASSERT
+    assert response.status_code == 403
+
+
+def test_reject_job_logs_historial_event(jobs_client):
+    # ARRANGE
+    token = _admin_token(jobs_client)
+    job = _job_in_control(jobs_client, token)
+
+    # ACT
+    jobs_client.post(
+        f"/trabajos/{job['id']}/rechazar",
+        json={"motivo": "Falta pulir la soldadura"},
+        headers=_auth_header(token),
+    )
+    historial = jobs_client.get(
+        f"/trabajos/{job['id']}/historial", headers=_auth_header(token)
+    ).json()
+
+    # ASSERT
+    assert any(
+        e["tipo"] == "trabajo_rechazado" and "Falta pulir" in e["descripcion"]
+        for e in historial
+    )
+
+
+def test_restarting_job_clears_urgente_and_motivo(jobs_client):
+    """El aviso de urgente es para 'hay que retomar esto ya', no un
+    registro permanente — eso ya vive en el historial."""
+    # ARRANGE — un trabajo rechazado, ahora 'pendiente' y urgente
+    token = _admin_token(jobs_client)
+    job = _job_in_control(jobs_client, token)
+    jobs_client.post(
+        f"/trabajos/{job['id']}/rechazar",
+        json={"motivo": "Necesita retoque"},
+        headers=_auth_header(token),
+    )
+
+    # ACT — se retoma el trabajo
+    response = jobs_client.patch(
+        f"/trabajos/{job['id']}/estado",
+        json={"estado": "en_proceso"},
+        headers=_auth_header(token),
+    )
+
+    # ASSERT
+    assert response.status_code == 200
+    body = response.json()
+    assert body["urgente"] is False
+    assert body["motivo_rechazo"] is None

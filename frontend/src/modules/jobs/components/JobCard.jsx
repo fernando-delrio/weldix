@@ -11,6 +11,14 @@ const STATUS_ACCENT = {
   entregado: 'border-l-slate-600/50',
 }
 
+const urgentBadge = ({ urgent }) =>
+  urgent && (
+    <span className="mt-2 flex w-fit items-center gap-1 rounded-full border border-rose-500/40 bg-rose-500/15 px-2 py-0.5 text-xs font-bold text-rose-300">
+      <i className="bx bx-error-circle" aria-hidden="true" />
+      Urgente
+    </span>
+  )
+
 const JobCard = ({ job }) => {
   const tone = toneFor(job.tone)
   const accentClass = STATUS_ACCENT[job.statusKey] ?? STATUS_ACCENT.pendiente
@@ -34,6 +42,8 @@ const JobCard = ({ job }) => {
             {job.status}
           </span>
         </div>
+
+        {urgentBadge(job)}
 
         <div className="mt-3 flex items-center justify-between text-xs font-semibold uppercase tracking-[0.10em] text-slate-500">
           <span>{job.type}</span>

@@ -21,6 +21,8 @@ const sanitizeTodayJob = (job, index) => ({
   due: job?.due || '-',
   status: getStatusConfig(job?.status).label,
   tone: job?.tone || 'neutral',
+  urgent: Boolean(job?.urgente),
+  motivoRechazo: job?.motivo_rechazo ?? null,
 })
 
 const sanitizeStockItem = (item, index) => ({

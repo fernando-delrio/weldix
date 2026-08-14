@@ -96,6 +96,8 @@ def _build_today_job(job: Job) -> dict:
         "due": due_label,
         "status": job.estado,
         "tone": _ESTADO_TONE.get(job.estado, "neutral"),
+        "urgente": job.urgente,
+        "motivo_rechazo": job.motivo_rechazo,
     }
 
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { cx } from '../../core/lib/cx'
+import { cx } from '../lib/cx'
 
 const S = {
   text: 'text-zinc-300',

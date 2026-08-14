@@ -11,6 +11,7 @@ from backend.features.auth.model import User
 
 from . import service
 from .schemas import HorasOTResponse, IniciarRegistroRequest, RegistroHorasResponse
+from .service import JobNotFoundError
 
 router = APIRouter(
     tags=["registro-horas"],
@@ -28,7 +29,14 @@ def iniciar_registro(
 ):
     """El operario empieza a trabajar en una OT — abre el contador de tiempo."""
     try:
-        r = service.iniciar_registro(db, body.job_id, current_user.id)
+        r = service.iniciar_registro(
+            db, body.job_id, current_user.id, tenant_id=current_user.tenant_id
+        )
+    except JobNotFoundError as exc:
+        # Debe capturarse antes que ValueError: es su subclase, y el mismo
+        # 404 con el que jobs/router.py ya responde cuando una OT no existe
+        # o no pertenece al tenant del llamante.
+        raise HTTPException(status_code=404, detail=str(exc))
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
     return RegistroHorasResponse.from_orm(r)
@@ -66,10 +74,15 @@ def get_registro_activo(
 def horas_ot(
     job_id: int,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
     """Resumen de horas de una OT: total + desglose por operario."""
-    resumen = service.get_resumen_horas_ot(db, job_id)
+    try:
+        resumen = service.get_resumen_horas_ot(
+            db, job_id, tenant_id=current_user.tenant_id
+        )
+    except JobNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
     return HorasOTResponse(
         job_id=resumen["job_id"],
         job_code=resumen["job_code"],

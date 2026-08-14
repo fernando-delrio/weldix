@@ -17,6 +17,7 @@ from . import service
 from .schemas import (
     CreateJobRequest,
     JobResponse,
+    RechazarJobRequest,
     UpdateEstadoRequest,
     UpdateJobRequest,
 )
@@ -119,6 +120,26 @@ async def update_estado(
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
     await push_alerts(db, cast(int, current_user.tenant_id))
+    return JobResponse.from_orm_job(job)
+
+
+@router.post("/{job_id}/rechazar", response_model=JobResponse)
+def rechazar_job(
+    job_id: int,
+    body: RechazarJobRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role("admin")),
+):
+    try:
+        job = service.rechazar_job(
+            db,
+            job_id,
+            body.motivo,
+            tenant_id=current_user.tenant_id,
+            current_user_name=current_user.full_name,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
     return JobResponse.from_orm_job(job)
 
 

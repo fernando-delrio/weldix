@@ -15,6 +15,8 @@ class AdminJobItem(BaseModel):
     # Sin este campo, Pydantic lo descartaba de la respuesta y el gráfico
     # "OTs creadas por mes" del panel salía siempre a 0.
     created_at: str | None
+    urgente: bool
+    motivo_rechazo: str | None
 
 
 class AdminUserItem(BaseModel):

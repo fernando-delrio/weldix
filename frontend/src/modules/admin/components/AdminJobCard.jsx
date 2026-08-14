@@ -29,6 +29,13 @@ const statusBadge = ({ estadoLabel, toneClasses }) => (
   </span>
 )
 
+const urgenteBadge = ({ urgente }) =>
+  urgente && (
+    <span className="rounded-full border border-rose-500/40 bg-rose-500/15 px-2.5 py-0.5 text-xs font-bold text-rose-300">
+      <i className="bx bx-error-circle" aria-hidden="true" /> Urgente
+    </span>
+  )
+
 const operarioTag = ({ operario_name }) => (
   <div className="mt-3 flex items-center gap-2">
     <span className="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Operario</span>
@@ -66,12 +73,17 @@ const AdminJobCard = ({ job, onDelete }) => {
         <div className="flex flex-wrap items-center gap-2">
           {codeTag(job)}
           {statusBadge(job)}
+          {urgenteBadge(job)}
         </div>
         {deleteButton({ onDelete: () => onDelete(job.id) })}
       </div>
 
       <p className="mt-2 text-sm font-semibold text-slate-100">{job.titulo}</p>
       <p className="text-sm text-slate-400">{job.cliente}</p>
+
+      {job.motivo_rechazo && (
+        <p className="mt-1 text-xs text-rose-400">Motivo: {job.motivo_rechazo}</p>
+      )}
 
       {job.fecha_inicio && (
         <p className="mt-1 text-xs text-slate-500">Entrega: {job.fecha_inicio}</p>

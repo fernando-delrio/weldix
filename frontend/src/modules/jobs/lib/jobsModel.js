@@ -34,6 +34,8 @@ export const sanitizeJob = (job, index) => ({
   status: getStatusConfig(job?.estado).label,
   tone: job?.tone || 'neutral',
   progress: Math.max(0, Math.min(Number(job?.progreso) || 0, 100)),
+  urgent: Boolean(job?.urgente),
+  motivoRechazo: job?.motivo_rechazo ?? null,
 })
 
 // Modelo extendido para la página de detalle — incluye campos no necesarios en el listado

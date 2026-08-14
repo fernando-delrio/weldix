@@ -8,6 +8,12 @@
  * Por que un hook separado:
  *   SOC - el componente pinta, el hook orquesta. La animacion no contamina el JSX.
  *
+ * Por que cada animate* comprueba su propio selector antes de animar:
+ *   Este hook lo llaman varias paginas (Home, FuncionalidadesPage,
+ *   ComoFuncionaPage, PreciosPage...) y cada una monta solo un subconjunto de
+ *   secciones. Sin el guard, GSAP intenta animar selectores que no existen en
+ *   la pagina actual y llena la consola de "target not found" en cada visita.
+ *
  * Cleanup obligatorio:
  *   ctx.revert() mata todos los ScrollTriggers del contexto.
  *   Sin esto hay memory leaks y animaciones fantasma en HMR de dev.
@@ -18,6 +24,8 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
 gsap.registerPlugin(ScrollTrigger)
 
+const existsInDom = (selector) => document.querySelector(selector) !== null
+
 // ---- Hero: badge y hero-line gestionados por Framer Motion (WordReveal) ----
 // Solo animamos los elementos que NO tienen Framer Motion:
 //   hero-bar, hero-sub, hero-cta, hero-stats, hero-mockup.
@@ -25,6 +33,8 @@ gsap.registerPlugin(ScrollTrigger)
 // cuando la barra decorativa aparece, encadenando ambas librerías sin conflicto.
 
 const animateHero = () => {
+  if (!existsInDom('[data-gsap="hero-section"]')) return
+
   const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })
 
   // Linea decorativa amber — espera al word reveal parcial
@@ -59,6 +69,8 @@ const animateHero = () => {
 // ---- Pain points: stagger de tarjetas --------------------------------------
 
 const animatePainCards = () => {
+  if (!existsInDom('[data-gsap="pain-card"]')) return
+
   ScrollTrigger.batch('[data-gsap="pain-card"]', {
     onEnter: (els) => {
       gsap.from(els, {
@@ -77,6 +89,8 @@ const animatePainCards = () => {
 // ---- Trust metrics: scale bounce al entrar ---------------------------------
 
 const animateTrustMetrics = () => {
+  if (!existsInDom('[data-gsap="trust-item"]')) return
+
   ScrollTrigger.batch('[data-gsap="trust-item"]', {
     onEnter: (els) => {
       gsap.from(els, {
@@ -97,8 +111,11 @@ const animateTrustMetrics = () => {
 // todas las tarjetas —incluso las de la columna derecha— parten de opacity:0
 // y llegan a su estado natural. clearProps elimina los estilos inline de GSAP
 // tras la animación para que el hover funcione correctamente.
+// Solo vive en FuncionalidadesPage (FeaturesShowcase.jsx, id="modulos").
 
 const animateFeatures = () => {
+  if (!existsInDom('[data-gsap="feature-card"]') || !existsInDom('#modulos')) return
+
   gsap.from('[data-gsap="feature-card"]', {
     y: 40,
     opacity: 0,
@@ -120,6 +137,8 @@ const animateFeatures = () => {
 // mientras baja por la pagina.
 
 const animateTimeline = () => {
+  if (!existsInDom('[data-gsap="timeline-section"]')) return
+
   // La línea de progreso entra de golpe al scroll (sin scrub para no romper fixed)
   gsap.from('[data-gsap="timeline-progress"]', {
     scaleX: 0,
@@ -148,39 +167,11 @@ const animateTimeline = () => {
   })
 }
 
-// ---- Testimonials ----------------------------------------------------------
-
-const animateTestimonials = () => {
-  ScrollTrigger.batch('[data-gsap="testimonial"]', {
-    onEnter: (els) => {
-      gsap.from(els, {
-        y: 35,
-        opacity: 0,
-        duration: 0.7,
-        stagger: 0.15,
-        ease: 'power3.out',
-      })
-    },
-    once: true,
-    start: 'top 80%',
-  })
-
-  gsap.from('[data-gsap="roi-metric"]', {
-    scale: 0.9,
-    opacity: 0,
-    duration: 0.65,
-    ease: 'back.out(1.7)',
-    scrollTrigger: {
-      trigger: '[data-gsap="roi-metric"]',
-      start: 'top 85%',
-      once: true,
-    },
-  })
-}
-
 // ---- Pricing ---------------------------------------------------------------
 
 const animatePricing = () => {
+  if (!existsInDom('[data-gsap="plan-card"]')) return
+
   ScrollTrigger.batch('[data-gsap="plan-card"]', {
     onEnter: (els) => {
       gsap.from(els, {
@@ -202,6 +193,8 @@ const animatePricing = () => {
 // El glow llama la atencion sin ser molesto: 3 pulsos y se detiene.
 
 const animateCtaFinal = () => {
+  if (!existsInDom('[data-gsap="cta-section"]')) return
+
   const tl = gsap.timeline({
     scrollTrigger: {
       trigger: '[data-gsap="cta-section"]',
@@ -215,26 +208,15 @@ const animateCtaFinal = () => {
     opacity: 0,
     duration: 0.8,
     ease: 'power3.out',
-  })
-    .from(
-      '[data-gsap="cta-sub"]',
-      {
-        y: 20,
-        opacity: 0,
-        duration: 0.5,
-      },
-      '-=0.4'
-    )
-    .from(
-      '[data-gsap="cta-buttons"]',
-      {
-        y: 20,
-        opacity: 0,
-        duration: 0.5,
-        stagger: 0.1,
-      },
-      '-=0.3'
-    )
+  }).from(
+    '[data-gsap="cta-sub"]',
+    {
+      y: 20,
+      opacity: 0,
+      duration: 0.5,
+    },
+    '-=0.4'
+  )
 
   gsap.fromTo(
     '[data-gsap="cta-primary"]',
@@ -271,7 +253,6 @@ export const useLandingAnimations = () => {
       animateTrustMetrics()
       animateFeatures()
       animateTimeline()
-      animateTestimonials()
       animatePricing()
       animateCtaFinal()
     })

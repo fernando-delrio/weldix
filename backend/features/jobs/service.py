@@ -119,6 +119,13 @@ def _is_valid_transition(current_estado: str, new_estado: str) -> bool:
     return _NEXT_ESTADO.get(current_estado) == new_estado
 
 
+def _requires_admin_approval(current_estado: str, new_estado: str) -> bool:
+    """El paso de control de calidad (control -> listo) es cosa del admin/
+    encargado, nunca del operario que hizo el trabajo — si no, nadie más
+    revisa el trabajo antes de darlo por bueno."""
+    return current_estado == "control" and new_estado == "listo"
+
+
 def update_estado(
     db: Session,
     job_id: int,
@@ -137,9 +144,15 @@ def update_estado(
         and job.operario_id != current_user_id
     ):
         raise PermissionError("No tienes permiso para modificar este trabajo")
+    current_estado = str(job.estado)
+    # Control de calidad: pasar de 'control' a 'listo' solo lo puede hacer un
+    # admin — el operario que hizo el trabajo no puede autoaprobarse.
+    if current_user_role != "admin" and _requires_admin_approval(current_estado, estado):
+        raise PermissionError(
+            "Solo un admin puede pasar un trabajo de control a listo"
+        )
     # Guard clause: solo se permite avanzar al siguiente estado de la cadena.
     # 'entregado' es terminal — nunca puede volver a un estado anterior ni saltar etapas.
-    current_estado = str(job.estado)
     if not _is_valid_transition(current_estado, estado):
         siguiente = _NEXT_ESTADO.get(current_estado)
         detalle_siguiente = f"'{siguiente}'" if siguiente else "ninguna: es un estado final"
@@ -150,6 +163,9 @@ def update_estado(
     # Auto-asignar operario al iniciar: si no tenía asignado, queda bloqueado a quien lo inicia
     if _is_starting_job(job.estado, estado) and not job.operario_id and current_user_id:
         job.operario_id = current_user_id
+    if _is_starting_job(job.estado, estado):
+        job.urgente = False
+        job.motivo_rechazo = None
     job.estado = estado
     # Solo actualizamos el progreso si el llamante lo envía (el Kanban no lo hace).
     if progreso is not None:
@@ -180,22 +196,53 @@ def update_estado(
     return job
 
 
+def rechazar_job(
+    db: Session,
+    job_id: int,
+    motivo: str,
+    tenant_id: int | None = None,
+    current_user_name: str = "Admin",
+) -> Job:
+    """Devuelve un trabajo de 'control' a 'pendiente' por una incidencia de
+    calidad. Solo válido desde 'control' — a diferencia de update_estado,
+    esta es la única transición hacia atrás permitida, y solo la ejecuta
+    un admin (garantizado por el router con require_role("admin"))."""
+    job = get_job_by_id(db, job_id, tenant_id)
+    if job.estado != "control":
+        raise ValueError(
+            f"Solo se puede rechazar un trabajo que está en 'control' "
+            f"(este está en '{job.estado}')"
+        )
+    job.estado = "pendiente"
+    job.urgente = True
+    job.motivo_rechazo = motivo
+    add_event(
+        db,
+        job.id,
+        "trabajo_rechazado",
+        f"Rechazado: {motivo}",
+        current_user_name,
+        tenant_id=tenant_id,
+    )
+    db.commit()
+    db.refresh(job)
+    return job
+
+
 def update_job(
     db: Session, job_id: int, data: UpdateJobRequest, tenant_id: int | None = None
 ) -> Job:
+    """Actualización parcial: solo toca los campos que el llamante envió
+    (mismo criterio que antes con los `is not None` — un campo ausente y uno
+    enviado como null se tratan igual, no se pisa nada). Añadir un campo
+    actualizable nuevo a UpdateJobRequest no requiere tocar esta función,
+    salvo que necesite una transformación especial como `progreso`."""
     job = get_job_by_id(db, job_id, tenant_id)
-    if data.titulo is not None:
-        job.titulo = data.titulo
-    if data.cliente is not None:
-        job.cliente = data.cliente
-    if data.operario_id is not None:
-        job.operario_id = data.operario_id
-    if data.fecha_inicio is not None:
-        job.fecha_inicio = data.fecha_inicio
-    if data.progreso is not None:
-        job.progreso = _clamp_progress(data.progreso)
-    if data.descripcion is not None:
-        job.descripcion = data.descripcion
+    updates = data.model_dump(exclude_none=True)
+    if "progreso" in updates:
+        updates["progreso"] = _clamp_progress(updates["progreso"])
+    for field, value in updates.items():
+        setattr(job, field, value)
     db.commit()
     db.refresh(job)
     return job

@@ -8,6 +8,7 @@ import {
   deleteJob as apiDeleteJob,
   getAdminDashboard,
   regenerateUserPin as apiRegenerateUserPin,
+  rejectJob as apiRejectJob,
   resetUserPassword as apiResetUserPassword,
 } from '../services/adminService'
 
@@ -64,6 +65,14 @@ export const useAdminDashboard = () => {
     [refresh]
   )
 
+  const rejectJob = useCallback(
+    async (jobId, motivo) => {
+      await apiRejectJob(jobId, motivo)
+      await refresh()
+    },
+    [refresh]
+  )
+
   const createUser = useCallback(
     async (data) => {
       await apiCreateUser(data)
@@ -101,6 +110,7 @@ export const useAdminDashboard = () => {
     removeJob,
     createUser,
     changeJobStatus,
+    rejectJob,
     resetUserPassword,
     regenerateUserPin,
   }

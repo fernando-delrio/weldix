@@ -10,6 +10,7 @@ from backend.features.auth.model import User
 
 from . import service
 from .schemas import NominaResponse
+from .service import OperarioNotFoundError
 
 router = APIRouter(
     prefix="/nominas",
@@ -41,6 +42,11 @@ async def upload_nomina(
             month=month,
             file=file,
         )
+    except OperarioNotFoundError as exc:
+        # Debe capturarse antes que ValueError: es su subclase, y el mismo
+        # 404 con el que rrhh/router.py ya responde cuando un operario no
+        # existe o no pertenece al tenant del admin que hace la peticion.
+        raise HTTPException(status_code=404, detail=str(exc))
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
     return NominaResponse.from_orm_nomina(nomina)

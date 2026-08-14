@@ -87,6 +87,10 @@ def update_estado(
     current_user: User = Depends(require_role("admin")),
 ):
     try:
+        service.get_equipo_by_id(db, equipo_id, tenant_id=current_user.tenant_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+    try:
         return service.update_estado_equipo(
             db, equipo_id, body.estado, tenant_id=current_user.tenant_id
         )

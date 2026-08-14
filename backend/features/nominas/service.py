@@ -6,8 +6,24 @@ from sqlalchemy.orm import Session, joinedload
 from starlette.concurrency import run_in_threadpool
 
 from backend.core.config import settings
+from backend.features.auth.model import User
 
 from .model import Nomina
+
+
+class OperarioNotFoundError(ValueError):
+    """
+    El operario_id no existe o no pertenece al tenant del admin que sube la
+    nomina.
+
+    Subclase de ValueError (no un tipo nuevo sin relacion) para que cualquier
+    `except ValueError` existente siga funcionando sin cambios. El router la
+    captura primero y explicitamente para devolver 404 en vez del 400 que usa
+    el resto de errores de validacion de este modulo (mes fuera de rango, PDF
+    invalido...) - mismo patron que JobNotFoundError en
+    registro_horas/service.py.
+    """
+
 
 MEDIA_DIR = Path(settings.media_base_dir) / "nominas"
 MAX_PDF_BYTES = 10 * 1024 * 1024  # 10 MB
@@ -101,6 +117,18 @@ async def subir_nomina(
         raise ValueError("El mes debe estar entre 1 y 12")
     if year < 2000 or year > 2100:
         raise ValueError("Año fuera de rango")
+
+    # Guard clause de aislamiento: el operario_id debe pertenecer al mismo
+    # tenant que el admin que sube la nómina (mismo patrón que
+    # rrhh/service.py::upsert_config) — evita que un admin adjunte una nómina
+    # a un operario de otro taller.
+    operario = (
+        db.query(User)
+        .filter(User.id == operario_id, User.tenant_id == tenant_id)
+        .first()
+    )
+    if not operario:
+        raise OperarioNotFoundError(f"Operario {operario_id} no encontrado")
 
     if file.content_type not in TIPOS_PERMITIDOS:
         raise ValueError("Solo se permiten archivos PDF")

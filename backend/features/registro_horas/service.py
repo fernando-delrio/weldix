@@ -8,6 +8,19 @@ from backend.features.fichaje.model import Fichaje
 from .model import RegistroHoras
 
 
+class JobNotFoundError(ValueError):
+    """
+    La OT no existe o no pertenece al tenant del llamante.
+
+    Subclase de ValueError (no un tipo nuevo sin relación) para que cualquier
+    `except ValueError` existente siga funcionando sin cambios. El router la
+    captura primero y explícitamente para devolver 404 en vez del 400 que
+    usa el resto de errores de negocio de este módulo (jornada no iniciada,
+    registro ya abierto...) — mismo patrón que PermissionError vs ValueError
+    en `finalizar_registro`.
+    """
+
+
 def _now_utc() -> datetime:
     return datetime.now(timezone.utc)
 
@@ -18,11 +31,36 @@ def _duracion_horas(inicio: datetime, fin: datetime) -> float:
     return round((fin - inicio).total_seconds() / 3600, 2)
 
 
+def _get_job_in_tenant(db: Session, job_id: int, tenant_id: int | None):
+    """Devuelve la OT si existe y pertenece al tenant; si no, JobNotFoundError.
+
+    Evita que un operario de OTRO taller registre u observe horas de una OT
+    ajena adivinando su job_id — el mismo tipo de fuga (IDOR cross-tenant)
+    que ya se corrigió en fichaje/service.py y rrhh/service.py.
+    """
+    from backend.features.jobs.model import Job
+
+    q = db.query(Job).filter(Job.id == job_id)
+    if tenant_id is not None:
+        q = q.filter(Job.tenant_id == tenant_id)
+    job = q.first()
+    if not job:
+        raise JobNotFoundError(f"Trabajo {job_id} no encontrado")
+    return job
+
+
 # ── Consultas ─────────────────────────────────────────────────────────────────
 
 
 def get_registro_activo(db: Session, operario_id: int) -> RegistroHoras | None:
-    """Registro abierto del operario (sin fin), si existe."""
+    """
+    Registro abierto del operario (sin fin), si existe.
+
+    No necesita tenant_id: operario_id siempre llega desde current_user.id
+    (el propio usuario autenticado, nunca un id externo elegido por el
+    llamante), así que no hay superficie de IDOR aquí — a diferencia de
+    iniciar_registro y get_resumen_horas_ot, que reciben un job_id externo.
+    """
     return (
         db.query(RegistroHoras)
         .filter(RegistroHoras.operario_id == operario_id, RegistroHoras.fin.is_(None))
@@ -52,13 +90,18 @@ def get_registros_operario(db: Session, operario_id: int) -> list[RegistroHoras]
 # ── Mutaciones ────────────────────────────────────────────────────────────────
 
 
-def iniciar_registro(db: Session, job_id: int, operario_id: int) -> RegistroHoras:
+def iniciar_registro(
+    db: Session, job_id: int, operario_id: int, tenant_id: int | None = None
+) -> RegistroHoras:
     """
     Abre un nuevo registro de horas en una OT.
     Reglas de negocio:
-      1. El operario debe tener una jornada laboral activa (fichaje abierto).
-      2. No puede tener dos registros abiertos a la vez.
+      1. La OT debe existir y pertenecer al taller del operario.
+      2. El operario debe tener una jornada laboral activa (fichaje abierto).
+      3. No puede tener dos registros abiertos a la vez.
     """
+    _get_job_in_tenant(db, job_id, tenant_id)
+
     jornada = (
         db.query(Fichaje)
         .filter(
@@ -79,7 +122,9 @@ def iniciar_registro(db: Session, job_id: int, operario_id: int) -> RegistroHora
             f"Ya tienes un registro abierto en la OT {ot}. Ciérralo antes de iniciar uno nuevo."
         )
 
-    registro = RegistroHoras(job_id=job_id, operario_id=operario_id, inicio=_now_utc())
+    registro = RegistroHoras(
+        tenant_id=tenant_id, job_id=job_id, operario_id=operario_id, inicio=_now_utc()
+    )
     db.add(registro)
     db.commit()
     db.refresh(registro)
@@ -89,7 +134,15 @@ def iniciar_registro(db: Session, job_id: int, operario_id: int) -> RegistroHora
 def finalizar_registro(
     db: Session, registro_id: int, operario_id: int
 ) -> RegistroHoras:
-    """Cierra el registro y calcula las horas."""
+    """
+    Cierra el registro y calcula las horas.
+
+    No necesita tenant_id: `registro.operario_id != operario_id` ya bloquea
+    el cruce entre talleres, porque los ids de usuario son globales y
+    únicos en toda la tabla `users` — ningún usuario de otro tenant puede
+    coincidir con el operario_id del registro salvo que sea la misma
+    cuenta. Ver ERRORES_APRENDIDOS.md para el detalle de este análisis.
+    """
     registro = db.query(RegistroHoras).filter(RegistroHoras.id == registro_id).first()
     if not registro:
         raise ValueError(f"Registro {registro_id} no encontrado")
@@ -109,15 +162,21 @@ def finalizar_registro(
 # ── Resumen por OT ────────────────────────────────────────────────────────────
 
 
-def get_resumen_horas_ot(db: Session, job_id: int) -> dict:
+def get_resumen_horas_ot(
+    db: Session, job_id: int, tenant_id: int | None = None
+) -> dict:
     """
     Agrega horas por operario en una OT.
     Solo cuenta registros cerrados (con horas calculadas).
     Devuelve el total global y el desglose por operario.
-    """
-    from backend.features.jobs.model import Job
 
-    job = db.query(Job).filter(Job.id == job_id).first()
+    Valida que la OT pertenezca al tenant antes de calcular nada — sin este
+    guard, cualquier usuario autenticado de OTRO taller podía leer el
+    resumen de horas (código, título, horas y nombres de operarios) de una
+    OT que no era suya, solo conociendo su job_id (IDOR cross-tenant, ver
+    ERRORES_APRENDIDOS.md).
+    """
+    job = _get_job_in_tenant(db, job_id, tenant_id)
 
     registros = get_registros_para_ot(db, job_id)
 

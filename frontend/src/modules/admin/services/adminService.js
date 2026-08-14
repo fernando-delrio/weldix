@@ -82,6 +82,16 @@ export const changeJobStatus = async (jobId, estado) => {
   return res.json()
 }
 
+export const rejectJob = async (jobId, motivo) => {
+  const res = await fetch(`${API_BASE_URL}/trabajos/${jobId}/rechazar`, {
+    method: 'POST',
+    headers: jsonHeaders(),
+    body: JSON.stringify({ motivo }),
+  })
+  if (!res.ok) throw new Error('Error al rechazar el trabajo')
+  return res.json()
+}
+
 export const deleteDemoData = async () => {
   const res = await fetch(`${API_BASE_URL}/admin/demo-data`, {
     method: 'DELETE',

@@ -4,10 +4,10 @@ import { motion } from 'framer-motion'
 // Alias en JS puro → ESLint detecta el uso de `motion` fuera de JSX
 const MotionDiv = motion.div
 import { cx } from '../../core/lib/cx'
-import DemoPreview from './DemoPreview'
+import DemoPreview from '../../core/components/DemoPreview'
 import MagneticWrap from './MagneticWrap'
-import WordReveal from './WordReveal'
-import RotatingBadge from './RotatingBadge'
+import WordReveal from '../../core/components/WordReveal'
+import RotatingBadge from '../../core/components/RotatingBadge'
 
 // ─── datos ────────────────────────────────────────────────────────────────────
 
@@ -74,12 +74,6 @@ const PLAN_EXAMPLES = [
 ]
 
 // ─── theme toggle ─────────────────────────────────────────────────────────────
-
-const NAV_ITEMS = [
-  { label: 'Módulos', targetId: 'modulos' },
-  { label: 'Cómo funciona', targetId: 'como-funciona' },
-  { label: 'Precios', targetId: 'precios' },
-]
 
 export const ThemeToggle = ({ isDark, onToggle, t }) => (
   <button
@@ -630,9 +624,9 @@ export const LandingFooter = ({ t }) => (
     <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 sm:flex-row">
       <div className="flex items-center gap-2">
         <img
-          src="/weldix-icon.svg"
+          src="/weldix-logo.svg"
           alt="Weldix"
-          className="h-5 w-5 shrink-0 opacity-40 object-contain"
+          className="h-6 w-6 shrink-0 opacity-40 object-contain"
         />
         <span className={cx('font-display text-sm font-bold tracking-tight', t.monoMuted)}>
           Weldix

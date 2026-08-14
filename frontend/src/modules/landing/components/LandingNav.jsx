@@ -19,7 +19,7 @@ const LandingNav = ({ t, isDark, onToggle }) => (
     )}
   >
     <Link to="/" className="flex items-center gap-3">
-      <img src="/weldix-icon.svg" alt="Weldix" className="h-7 w-7 shrink-0 object-contain" />
+      <img src="/weldix-logo.svg" alt="Weldix" className="h-9 w-9 shrink-0 object-contain" />
       <div>
         <p className="font-display text-base font-bold tracking-tight">Weldix</p>
         <p className={cx('text-[0.55rem] font-medium uppercase tracking-[0.18em]', t.monoMuted)}>
