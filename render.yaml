@@ -6,6 +6,10 @@
 #
 # 1. Variables marcadas sync: false → configurar en el Dashboard antes del deploy:
 #
+#    DATABASE_URL            connection string de un Postgres EXTERNO (Neon, Supabase...)
+#                             — el Postgres free de Render caduca a los ~30 días y se
+#                             borra si no se paga (nos pasó el 2026-08); por eso ya no
+#                             se gestiona como recurso del blueprint (ver abajo)
 #    SEED_ADMIN_EMAIL        tu-email@dominio.com
 #    SEED_ADMIN_PASSWORD     contraseña-segura-del-primer-admin
 #    SEED_ADMIN_FULL_NAME    "Tu Nombre"
@@ -48,10 +52,6 @@ services:
         value: production
       - key: AUTO_CREATE_TABLES
         value: "false"
-      - key: DATABASE_URL
-        fromDatabase:
-          name: weldix-db
-          property: connectionString
       - key: MEDIA_BASE_DIR
         value: media
       - key: FORCE_HTTPS
@@ -64,6 +64,8 @@ services:
         generateValue: true     # Render genera una clave aleatoria segura
 
       # Configurar manualmente en el Dashboard antes del primer deploy
+      - key: DATABASE_URL
+        sync: false
       - key: SEED_ADMIN_EMAIL
         sync: false
       - key: SEED_ADMIN_PASSWORD
@@ -125,9 +127,7 @@ services:
       - key: VITE_API_URL
         sync: false
 
-# ── Base de datos PostgreSQL ──────────────────────────────────────────────────
-databases:
-  - name: weldix-db
-    databaseName: weldix
-    user: weldix
-    plan: free             # 1GB gratis, ampliar a starter ($7/mo) cuando crezca
+# El Postgres ya no vive aquí como recurso del blueprint — el free tier de Render
+# caduca a los ~30 días y borra los datos si no se paga (nos pasó el 2026-08-10).
+# Ahora es un Postgres externo (Neon u otro) referenciado solo por DATABASE_URL
+# (sync: false, arriba). Sin expiración, sin sorpresas.

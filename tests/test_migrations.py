@@ -17,6 +17,42 @@ def _alembic_config() -> Config:
     return Config("alembic.ini")
 
 
+def test_full_chain_upgrades_cleanly_on_a_truly_fresh_database():
+    # ARRANGE — base de datos vacía de verdad, sin ninguna tabla previa.
+    # Este es el escenario real que rompió en producción (Neon/Render nuevos):
+    # el baseline crea el esquema con el modelo Job ACTUAL (ya con urgente y
+    # motivo_rechazo), y la migración 20260807_0002 intentaba añadir esas
+    # mismas columnas otra vez -> "column already exists". El test de abajo
+    # (test_add_urgente_and_motivo_rechazo_upgrade_and_downgrade) no lo detectaba
+    # porque monta a mano un esquema sintético "pre-migración" en vez de dejar
+    # correr el baseline real.
+    fd, db_path = tempfile.mkstemp(suffix=".db")
+    os.close(fd)
+    os.remove(db_path)  # el propio alembic upgrade debe crear el archivo
+
+    original_database_url = settings.database_url
+    settings.database_url = f"sqlite:///{db_path}"
+    try:
+        cfg = _alembic_config()
+        command.upgrade(cfg, "head")
+
+        engine = create_engine(f"sqlite:///{db_path}")
+        inspector = inspect(engine)
+        columns = {c["name"] for c in inspector.get_columns("jobs")}
+        assert "urgente" in columns
+        assert "motivo_rechazo" in columns
+        engine.dispose()
+    finally:
+        settings.database_url = original_database_url
+        import time
+
+        time.sleep(0.1)
+        try:
+            os.remove(db_path)
+        except (PermissionError, FileNotFoundError):
+            pass
+
+
 def test_add_urgente_and_motivo_rechazo_upgrade_and_downgrade():
     # ARRANGE — base de datos limpia en el estado anterior a esta migración
     fd, db_path = tempfile.mkstemp(suffix=".db")
