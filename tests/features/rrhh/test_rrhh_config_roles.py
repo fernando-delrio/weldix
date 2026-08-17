@@ -7,11 +7,20 @@ Configuración laboral, resumen de horas y lookups — permisos y roles.
 - Los lookups (tipos de ausencia, EPI, certificado, permiso especial) son de
   solo lectura para cualquier usuario autenticado.
 """
-from datetime import date
+from datetime import date, timedelta
 
 
 def _auth(token: str) -> dict:
     return {"Authorization": f"Bearer {token}"}
+
+
+def _proximo_dia_laborable() -> date:
+    """La config por defecto es 'LMXJV' (lunes a viernes) -- crear_solicitud
+    rechaza un rango sin días laborables. date.today() vale entre semana, pero
+    hace que el test falle solo los fines de semana (nos pasó en CI)."""
+    hoy = date.today()
+    dias_hasta_lunes = {5: 2, 6: 1}  # sábado -> +2, domingo -> +1
+    return hoy + timedelta(days=dias_hasta_lunes.get(hoy.weekday(), 0))
 
 
 # ─── Configuración laboral — admin only ──────────────────────────────────────
@@ -103,7 +112,7 @@ def test_operario_no_puede_consultar_horas_de_otro_usuario(rrhh_client):
     # ARRANGE — necesitamos el id del admin; lo obtenemos creando una solicitud
     # con su token y leyendo el operario_id de la respuesta.
     ctx = rrhh_client
-    inicio = date.today().isoformat()
+    inicio = _proximo_dia_laborable().isoformat()
     solicitud_admin = ctx["client"].post(
         "/rrhh/solicitudes",
         json={"tipo": "asuntos_propios", "fecha_inicio": inicio, "fecha_fin": inicio},
