@@ -56,7 +56,7 @@ class Settings(BaseSettings):
 
     # Resend — emails transaccionales (https://resend.com)
     resend_api_key: str | None = None
-    email_from: str = "Weldix <hola@weldix.app>"
+    email_from: str = "Weldix <hola@weldix.es>"
 
     # n8n — automatizaciones (webhooks, WhatsApp, email cliente, etc.)
     # Formato: http://localhost:5678/webhook/weldix
@@ -66,6 +66,10 @@ class Settings(BaseSettings):
     # Super-admin interno — panel del founder para ver todos los workspaces
     # Poner en .env: SUPERADMIN_KEY=una-clave-secreta-larga
     superadmin_key: str | None = None
+
+    # Sentry — tracking de errores en producción (https://sentry.io)
+    # Si está vacío, no se inicializa (igual que n8n_webhook_url)
+    sentry_dsn: str | None = None
 
 
 settings = Settings()

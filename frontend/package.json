@@ -27,6 +27,7 @@
 		"@fontsource/bricolage-grotesque": "^5.2.10",
 		"@fontsource/inter": "^5.2.8",
 		"@fontsource/rajdhani": "^5.2.7",
+		"@sentry/react": "^10.70.0",
 		"@tailwindcss/vite": "^4.1.18",
 		"blendy": "^0.0.1",
 		"boxicons": "^2.1.4",

@@ -17,6 +17,7 @@ from datetime import datetime, timezone
 import stripe
 
 from backend.core.config import settings
+from backend.core.webhooks import fire_webhook
 from backend.features.auth.model import Tenant
 
 
@@ -206,6 +207,13 @@ def _on_subscription_deleted(subscription: dict, db) -> None:
     tenant.subscription_status = "canceled"
     db.commit()
 
+    # Aviso interno (Discord vía n8n) -- un cliente que cancela merece un
+    # contacto personal, no solo un cambio de estado silencioso en la BD.
+    fire_webhook(
+        "suscripcion_cancelada",
+        {"tenant_id": tenant.id, "tenant_nombre": tenant.nombre},
+    )
+
 
 def _on_payment_failed(invoice: dict, db) -> None:
     customer_id = invoice.get("customer")
@@ -215,3 +223,8 @@ def _on_payment_failed(invoice: dict, db) -> None:
 
     tenant.subscription_status = "past_due"
     db.commit()
+
+    fire_webhook(
+        "pago_fallido",
+        {"tenant_id": tenant.id, "tenant_nombre": tenant.nombre},
+    )

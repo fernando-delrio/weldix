@@ -19,7 +19,9 @@ import '@fontsource/rajdhani/600.css'
 import '@fontsource/rajdhani/700.css'
 import App from './App.jsx'
 import { installApiInterceptor } from './modules/core/lib/apiInterceptor'
+import { initSentry } from './modules/core/lib/sentry'
 
+initSentry()
 installApiInterceptor()
 
 createRoot(document.getElementById('root')).render(

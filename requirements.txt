@@ -38,3 +38,4 @@ resend==2.10.0
 fpdf2==2.8.3
 # Lectura de texto de PDFs (nóminas inteligentes) — pure Python, sin binarios
 pypdf==5.1.0
+sentry-sdk==2.68.0
