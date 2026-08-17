@@ -544,7 +544,7 @@ export const PricingSection = ({ t }) => (
               Probar 15 días gratis — sin tarjeta
             </Link>
             <a
-              href="mailto:hola@weldix.app?subject=Consulta%20sobre%20Weldix"
+              href="mailto:hola@weldix.es?subject=Consulta%20sobre%20Weldix"
               className={cx(
                 'flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-medium tracking-wide transition',
                 t.btnGhost
@@ -644,7 +644,7 @@ export const LandingFooter = ({ t }) => (
         <Link to="/terminos" className="transition hover:opacity-100">
           Términos
         </Link>
-        <a href="mailto:hola@weldix.app" className="transition hover:opacity-100">
+        <a href="mailto:hola@weldix.es" className="transition hover:opacity-100">
           Contacto
         </a>
         <Link to="/login" className="transition hover:opacity-100">

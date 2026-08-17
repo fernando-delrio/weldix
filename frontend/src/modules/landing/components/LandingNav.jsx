@@ -48,7 +48,7 @@ const LandingNav = ({ t, isDark, onToggle }) => (
     <div className="flex items-center gap-2">
       <ThemeToggle isDark={isDark} onToggle={onToggle} t={t} />
       <a
-        href="mailto:hola@weldix.app?subject=Contacto%20Weldix"
+        href="mailto:hola@weldix.es?subject=Contacto%20Weldix"
         className={cx(
           'hidden items-center gap-1.5 px-3 py-1.5 text-[0.7rem] font-semibold uppercase tracking-wider transition sm:flex',
           t.navText

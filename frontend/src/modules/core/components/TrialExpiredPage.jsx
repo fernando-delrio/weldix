@@ -160,11 +160,11 @@ const TrialExpiredPage = () => {
         <div className="space-y-2 border-t border-slate-800 pt-4">
           <p className="text-xs text-slate-600">¿Prefieres hablar con nosotros primero?</p>
           <a
-            href="mailto:hola@weldix.app?subject=Activar%20suscripcion"
+            href="mailto:hola@weldix.es?subject=Activar%20suscripcion"
             className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-amber-400 transition"
           >
             <i className="bx bx-envelope" />
-            hola@weldix.app
+            hola@weldix.es
           </a>
         </div>
 

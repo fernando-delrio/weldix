@@ -162,8 +162,8 @@ const TerminosPage = () => (
       <Section title="13. Contacto">
         <p>
           Para cualquier consulta sobre estos Términos, escribe a{' '}
-          <a href="mailto:legal@weldix.app" className="text-amber-400 underline">
-            legal@weldix.app
+          <a href="mailto:legal@weldix.es" className="text-amber-400 underline">
+            legal@weldix.es
           </a>
           .
         </p>

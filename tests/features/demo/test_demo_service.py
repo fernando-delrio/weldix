@@ -28,7 +28,7 @@ def test_start_demo_creates_tenant_with_jefe_and_operario(db):
 def test_start_demo_operario_returns_operario_token(db):
     data = auth_service.start_demo_session(db, role="operario")
     assert data["role"] == "operario"
-    assert data["email"] == "demo-operario@weldix.app"
+    assert data["email"] == "demo-operario@weldix.es"
 
 
 def test_start_demo_is_idempotent(db):

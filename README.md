@@ -18,7 +18,7 @@
 [![CI](https://img.shields.io/github/actions/workflow/status/fernando-delrio/weldix/test.yml?label=CI&style=flat)](https://github.com/fernando-delrio/weldix/actions)
 [![License](https://img.shields.io/badge/licencia-Propietaria-red?style=flat)](#licencia)
 
-[**Demo en vivo**](https://weldix-frontend.onrender.com) · [**Solicitar acceso**](mailto:hola@weldix.app) · [**Stack técnico**](#stack-completo)
+[**Demo en vivo**](https://weldix-frontend.onrender.com) · [**Solicitar acceso**](mailto:hola@weldix.es) · [**Stack técnico**](#stack-completo)
 
 <!-- TODO(dominio): cuando weldix.es apunte a Render, cambia la URL de "Demo en vivo" a https://weldix.es -->
 
@@ -312,7 +312,7 @@ weldix/
 **Fernando Del Rio** — 10 años en el sector de soldadura y calderería, en transición a desarrollo full-stack.
 
 - Email: [fernandogondelrio@gmail.com](mailto:fernandogondelrio@gmail.com)
-- Demo o consultas: [hola@weldix.app](mailto:hola@weldix.app)
+- Demo o consultas: [hola@weldix.es](mailto:hola@weldix.es)
 
 ---
 

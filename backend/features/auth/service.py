@@ -114,8 +114,8 @@ def create_workspace(
 
 
 DEMO_TENANT_SLUG = "demo"
-DEMO_ADMIN_EMAIL = "demo@weldix.app"
-DEMO_OPERARIO_EMAIL = "demo-operario@weldix.app"
+DEMO_ADMIN_EMAIL = "demo@weldix.es"
+DEMO_OPERARIO_EMAIL = "demo-operario@weldix.es"
 
 
 def _get_or_create_demo_user(

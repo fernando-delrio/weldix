@@ -84,8 +84,8 @@ const FaqsPage = () => {
           </h1>
           <p className={cx('mx-auto mt-3 max-w-xl text-base', t.muted)}>
             ¿No ves tu duda? Pregúntale al chat de abajo o escríbenos a{' '}
-            <a href="mailto:hola@weldix.app" className={cx('font-bold underline', t.accent)}>
-              hola@weldix.app
+            <a href="mailto:hola@weldix.es" className={cx('font-bold underline', t.accent)}>
+              hola@weldix.es
             </a>
             .
           </p>
