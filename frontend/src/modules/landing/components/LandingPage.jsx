@@ -617,20 +617,17 @@ export const CtaSection = ({ t }) => (
 
 // ─── footer ───────────────────────────────────────────────────────────────────
 
-export const LandingFooter = ({ t }) => (
+export const LandingFooter = ({ t, isDark }) => (
   <footer
     className={cx('border-t px-6 py-8 transition-colors duration-300', t.footerBg, t.divider)}
   >
     <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 sm:flex-row">
       <div className="flex items-center gap-2">
         <img
-          src="/weldix-logo.svg"
+          src={isDark ? '/weldix-logo-white.svg' : '/weldix-logo.svg'}
           alt="Weldix"
-          className="h-6 w-6 shrink-0 opacity-40 object-contain"
+          className="h-6 w-auto shrink-0 opacity-40 object-contain"
         />
-        <span className={cx('font-display text-sm font-bold tracking-tight', t.monoMuted)}>
-          Weldix
-        </span>
       </div>
       <div
         className={cx(
@@ -651,7 +648,7 @@ export const LandingFooter = ({ t }) => (
           Acceder
         </Link>
       </div>
-      <p className={cx('font-mono text-[0.52rem] uppercase tracking-widest', t.monoMuted)}>
+      <p className={cx('font-mono text-xs uppercase tracking-widest', t.monoMuted)}>
         © 2026 Weldix
       </p>
     </div>

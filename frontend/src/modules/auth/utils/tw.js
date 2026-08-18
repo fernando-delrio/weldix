@@ -7,7 +7,7 @@ export const authTw = {
   heroGlow:
     'pointer-events-none absolute inset-0 bg-[radial-gradient(760px_520px_at_12%_8%,rgba(245,158,11,0.10),transparent_60%)]',
   heroGridOverlay:
-    'pointer-events-none absolute inset-0 opacity-40 [background-image:linear-gradient(rgba(51,65,85,0.24)_1px,transparent_1px),linear-gradient(90deg,rgba(51,65,85,0.24)_1px,transparent_1px)] [background-size:42px_42px]',
+    'pointer-events-none absolute inset-0 [background-image:linear-gradient(var(--card-border)_1px,transparent_1px),linear-gradient(90deg,var(--card-border)_1px,transparent_1px)] [background-size:42px_42px]',
   heroContent: 'relative z-10 flex h-full flex-col',
   logoRow: 'inline-flex items-center gap-3',
   logoBadge:

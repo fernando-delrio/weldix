@@ -4,6 +4,7 @@ import { authTw, cx } from '../utils/tw'
 import Particles from '../../../components/Particles/Particles'
 import CountUp from '../../../components/CountUp/CountUp'
 import WordReveal from '../../core/components/WordReveal'
+import { useTheme } from '../../core/lib/ThemeContext'
 
 const modeButtonClass = (currentMode, targetMode) =>
   cx(
@@ -19,6 +20,8 @@ const feedbackMessage = ({ feedback, error }) =>
   )
 
 const AuthLayout = ({ mode, title, subtitle, feedback, error, children }) => {
+  const { isDark } = useTheme()
+
   return (
     <main className={authTw.pageRoot}>
       <div className={authTw.twoColumnGrid}>
@@ -30,7 +33,7 @@ const AuthLayout = ({ mode, title, subtitle, feedback, error, children }) => {
               particleCount={120}
               particleSpread={8}
               speed={0.06}
-              particleColors={['#38bdf8', '#7dd3fc', '#ffffff', '#0ea5e9']}
+              particleColors={['#f59e0b', '#fbbf24', '#ffffff', '#d97706']}
               alphaParticles
               particleBaseSize={80}
               sizeRandomness={0.8}
@@ -39,9 +42,13 @@ const AuthLayout = ({ mode, title, subtitle, feedback, error, children }) => {
           </div>
 
           <div className={authTw.heroContent}>
-            <header className={authTw.logoRow}>
-              <img src="/weldix-logo.svg" alt="Weldix" className="h-36 w-auto object-contain" />
-            </header>
+            <div className={authTw.logoRow}>
+              <img
+                src={isDark ? '/weldix-logo-white.svg' : '/weldix-logo.svg'}
+                alt="Weldix"
+                className="h-36 w-auto object-contain"
+              />
+            </div>
 
             <div className={authTw.heroCopyBox}>
               <h2 className={authTw.heroHeadline}>
