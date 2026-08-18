@@ -133,11 +133,17 @@ const SeguimientoPage = () => {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
       {/* Header mínimo */}
       <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
-        <div className="mx-auto flex h-14 max-w-2xl items-center gap-3 px-4">
-          <img src="/weldix-icon.svg" alt="Weldix" className="h-7 w-7 object-contain" />
-          <span className="text-sm font-extrabold tracking-[0.18em] text-slate-800 dark:text-slate-100">
-            WELDIX
-          </span>
+        <div className="mx-auto flex h-14 max-w-2xl items-center px-4">
+          <img
+            src="/weldix-logo.svg"
+            alt="Weldix"
+            className="h-8 w-auto object-contain dark:hidden"
+          />
+          <img
+            src="/weldix-logo-white.svg"
+            alt="Weldix"
+            className="hidden h-8 w-auto object-contain dark:block"
+          />
         </div>
       </header>
 

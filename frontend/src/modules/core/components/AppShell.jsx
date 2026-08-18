@@ -101,16 +101,25 @@ const Sidebar = ({
   alerts,
   unread,
   onRead,
+  isDark,
 }) => {
   const location = useLocation()
 
   return (
     <aside className="flex h-full w-full flex-col border-r border-slate-800 bg-slate-950/98 backdrop-blur">
-      {/* Logo */}
+      {/* Logo — icono solo cuando está colapsado (md), wordmark completo en lg+ */}
       <div className="flex h-16 shrink-0 items-center gap-3 border-b border-slate-800 px-4">
-        <img src="/weldix-icon.svg" alt="Weldix" className="h-8 w-8 shrink-0 object-contain" />
-        <div className="hidden lg:block">
-          <p className="text-sm font-extrabold tracking-[0.18em] text-slate-100">WELDIX</p>
+        <img
+          src="/weldix-icon.svg"
+          alt="Weldix"
+          className="h-8 w-8 shrink-0 object-contain lg:hidden"
+        />
+        <div className="hidden items-center gap-3 lg:flex">
+          <img
+            src={isDark ? '/weldix-logo-white.svg' : '/weldix-logo.svg'}
+            alt="Weldix"
+            className="h-7 w-auto object-contain"
+          />
           <span className="rounded-sm border border-amber-700/50 bg-amber-500/10 px-1.5 py-0.5 text-xs font-bold tracking-[0.12em] text-amber-400">
             {roleLabel}
           </span>
@@ -265,12 +274,24 @@ const Sidebar = ({
 }
 
 // ── Header móvil ────────────────────────────────────────────────────────────
-const MobileHeader = ({ roleLabel, onLogout, onSearchOpen, timeLabel, alerts, unread, onRead }) => (
+const MobileHeader = ({
+  roleLabel,
+  onLogout,
+  onSearchOpen,
+  timeLabel,
+  alerts,
+  unread,
+  onRead,
+  isDark,
+}) => (
   <header className="fixed inset-x-0 top-0 z-40 border-b border-slate-800 bg-slate-950/95 backdrop-blur md:hidden">
     <div className="relative flex h-14 items-center justify-between px-4">
       <div className="flex items-center gap-2.5">
-        <img src="/weldix-icon.svg" alt="Weldix" className="h-7 w-7 object-contain" />
-        <p className="text-sm font-extrabold tracking-[0.18em] text-slate-100">WELDIX</p>
+        <img
+          src={isDark ? '/weldix-logo-white.svg' : '/weldix-logo.svg'}
+          alt="Weldix"
+          className="h-7 w-auto object-contain"
+        />
         <span className="rounded-sm border border-amber-700/50 bg-amber-500/10 px-1.5 py-0.5 text-xs font-bold tracking-[0.12em] text-amber-400">
           {roleLabel}
         </span>
@@ -393,6 +414,7 @@ const AppShellInner = ({ children }) => {
           alerts={alerts}
           unread={unread}
           onRead={markAllRead}
+          isDark={isDark}
         />
       </div>
 
@@ -421,6 +443,7 @@ const AppShellInner = ({ children }) => {
         alerts={alerts}
         unread={unread}
         onRead={markAllRead}
+        isDark={isDark}
       />
       <div className="md:hidden">
         <BottomNav items={navItems} />

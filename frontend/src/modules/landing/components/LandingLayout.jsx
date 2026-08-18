@@ -21,7 +21,7 @@ const LandingLayout = () => {
       <div className={cx('min-h-screen transition-colors duration-300', t.page)}>
         <Outlet context={{ t, isDark }} />
       </div>
-      <LandingFooter t={t} />
+      <LandingFooter t={t} isDark={isDark} />
       <LandingChat t={t} />
     </>
   )

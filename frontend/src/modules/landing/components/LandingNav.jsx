@@ -81,16 +81,12 @@ const LandingNav = ({ t, isDark, onToggle }) => {
           t.nav
         )}
       >
-        <Link to="/" className="flex items-center gap-3" onClick={closeMenu}>
-          <img src="/weldix-logo.svg" alt="Weldix" className="h-9 w-9 shrink-0 object-contain" />
-          <div>
-            <p className="font-display text-base font-bold tracking-tight">Weldix</p>
-            <p
-              className={cx('text-[0.55rem] font-medium uppercase tracking-[0.18em]', t.monoMuted)}
-            >
-              gestión industrial
-            </p>
-          </div>
+        <Link to="/" className="flex items-center" onClick={closeMenu}>
+          <img
+            src={isDark ? '/weldix-logo-white.svg' : '/weldix-logo.svg'}
+            alt="Weldix"
+            className="h-9 w-auto object-contain"
+          />
         </Link>
 
         <div className="hidden items-center gap-8 md:flex">
