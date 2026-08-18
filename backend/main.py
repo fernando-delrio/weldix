@@ -1,5 +1,6 @@
 from contextlib import asynccontextmanager
 
+import sentry_sdk
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
@@ -10,6 +11,11 @@ from backend.core.config import settings
 from backend.features.registry import ENABLED_ROUTERS
 
 is_production = settings.environment.lower() in {"prod", "production"}
+
+# Silencioso si SENTRY_DSN no está configurado -- mismo criterio que
+# fire_webhook() con N8N_WEBHOOK_URL, no rompe nada en dev/tests.
+if settings.sentry_dsn:
+    sentry_sdk.init(dsn=settings.sentry_dsn, environment=settings.environment, traces_sample_rate=0.1)
 
 
 @asynccontextmanager

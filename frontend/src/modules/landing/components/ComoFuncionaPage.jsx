@@ -33,7 +33,7 @@ const ComoFuncionaPage = () => {
           </p>
           <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <a
-              href="mailto:hola@weldix.app?subject=Quiero%20una%20demo%20de%20Weldix&body=Hola,%20me%20gustaría%20ver%20una%20demo%20de%20Weldix%20para%20mi%20taller."
+              href="mailto:hola@weldix.es?subject=Quiero%20una%20demo%20de%20Weldix&body=Hola,%20me%20gustaría%20ver%20una%20demo%20de%20Weldix%20para%20mi%20taller."
               className={cx(
                 'flex items-center gap-2 rounded-xl px-7 py-3.5 text-sm font-bold tracking-wide shadow-lg transition',
                 t.btnPrimary

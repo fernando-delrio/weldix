@@ -13,9 +13,9 @@
 #    SEED_ADMIN_EMAIL        tu-email@dominio.com
 #    SEED_ADMIN_PASSWORD     contraseña-segura-del-primer-admin
 #    SEED_ADMIN_FULL_NAME    "Tu Nombre"
-#    ALLOWED_ORIGINS         ["https://weldix.app","https://www.weldix.app"]
-#    ALLOWED_HOSTS           ["api.weldix.app","weldix-api.onrender.com"]
-#    FRONTEND_URL            https://weldix.app
+#    ALLOWED_ORIGINS         ["https://weldix.es","https://www.weldix.es"]
+#    ALLOWED_HOSTS           ["api.weldix.es","weldix-api.onrender.com"]
+#    FRONTEND_URL            https://weldix.es
 #    MISTRAL_API_KEY         (de console.mistral.ai)
 #    STRIPE_SECRET_KEY       sk_live_...
 #    STRIPE_WEBHOOK_SECRET   whsec_...  (tras crear el endpoint en Stripe)
@@ -24,16 +24,18 @@
 #    RESEND_API_KEY          re_...
 #    N8N_WEBHOOK_URL         https://tu-n8n.dominio.com/webhook/weldix
 #    SUPERADMIN_KEY          clave-larga-secreta
-#    VITE_API_URL            https://api.weldix.app   (en el servicio frontend)
+#    SENTRY_DSN              (proyecto FastAPI en sentry.io, opcional)
+#    VITE_API_URL            https://api.weldix.es   (en el servicio frontend)
+#    VITE_SENTRY_DSN         (proyecto React en sentry.io, opcional, en el servicio frontend)
 #
 # 2. Stripe webhook — registrar en https://dashboard.stripe.com/webhooks:
-#    URL: https://api.weldix.app/billing/webhook
+#    URL: https://api.weldix.es/billing/webhook
 #    Eventos: checkout.session.completed, customer.subscription.updated,
 #             customer.subscription.deleted, customer.subscription.created
 #
 # 3. Dominio personalizado — en el Dashboard de cada servicio → Custom Domains
-#    Backend:  api.weldix.app  → weldix-api.onrender.com
-#    Frontend: weldix.app      → weldix-frontend.onrender.com
+#    Backend:  api.weldix.es  → weldix-api.onrender.com
+#    Frontend: weldix.es      → weldix-frontend.onrender.com
 # ─────────────────────────────────────────────────────────────────────────────
 
 services:
@@ -94,6 +96,8 @@ services:
         sync: false
       - key: SUPERADMIN_KEY
         sync: false
+      - key: SENTRY_DSN
+        sync: false
 
   # ── Frontend React (Static Site) ────────────────────────────────────────────
   - type: web
@@ -123,8 +127,10 @@ services:
 
     envVars:
       # URL del backend — debe apuntar al servicio weldix-api
-      # Ejemplo: https://api.weldix.app  o  https://weldix-api.onrender.com
+      # Ejemplo: https://api.weldix.es  o  https://weldix-api.onrender.com
       - key: VITE_API_URL
+        sync: false
+      - key: VITE_SENTRY_DSN
         sync: false
 
 # El Postgres ya no vive aquí como recurso del blueprint — el free tier de Render

@@ -105,8 +105,8 @@ const PrivacidadPage = () => (
         <p>
           Para cualquier consulta sobre privacidad, contacta a través del correo indicado en el
           panel de administración de tu taller o escribe a{' '}
-          <a href="mailto:privacidad@weldix.app" className="text-amber-400 underline">
-            privacidad@weldix.app
+          <a href="mailto:privacidad@weldix.es" className="text-amber-400 underline">
+            privacidad@weldix.es
           </a>
           .
         </p>

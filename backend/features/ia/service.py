@@ -173,7 +173,7 @@ DATOS CLAVE:
 
 REGLAS:
 - Si no sabes un dato concreto o te preguntan algo muy específico de su caso, NO te lo inventes.
-- Si piden una demo, hablar con una persona, o tienen dudas muy concretas, invítales a escribir a hola@weldix.app.
+- Si piden una demo, hablar con una persona, o tienen dudas muy concretas, invítales a escribir a hola@weldix.es.
 - Si preguntan algo que no tiene que ver con Weldix, redirige con amabilidad al producto.
 - No prometas funciones que no están en la lista de módulos de arriba."""
 

@@ -242,7 +242,7 @@ def _warning_html(name: str, tenant_nombre: str, days_left: int) -> str:
 
           <p style="color:#475569;font-size:13px;margin:28px 0 0;">
             ¿Tienes preguntas? Escríbenos a
-            <a href="mailto:hola@weldix.app" style="color:#f59e0b;">hola@weldix.app</a>
+            <a href="mailto:hola@weldix.es" style="color:#f59e0b;">hola@weldix.es</a>
           </p>
         </td></tr>
 
@@ -333,7 +333,7 @@ def _expired_html(name: str, tenant_nombre: str) -> str:
 
           <p style="color:#475569;font-size:13px;margin:28px 0 0;">
             ¿Necesitas ayuda? Escríbenos a
-            <a href="mailto:hola@weldix.app" style="color:#f59e0b;">hola@weldix.app</a>
+            <a href="mailto:hola@weldix.es" style="color:#f59e0b;">hola@weldix.es</a>
             o por WhatsApp.
           </p>
         </td></tr>

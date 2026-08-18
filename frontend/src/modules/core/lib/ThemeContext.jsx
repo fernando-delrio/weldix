@@ -6,7 +6,7 @@ export const useTheme = () => useContext(ThemeContext)
 
 export const ThemeProvider = ({ children }) => {
   const [isDark, setIsDark] = useState(
-    () => (localStorage.getItem('weldix_theme') ?? 'dark') === 'dark'
+    () => (localStorage.getItem('weldix_theme') ?? 'light') === 'dark'
   )
 
   useEffect(() => {

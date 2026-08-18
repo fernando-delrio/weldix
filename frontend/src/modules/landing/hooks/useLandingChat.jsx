@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react'
 
 import { sendLandingChat } from '../services/landingChatService'
 
-export const CONTACT_EMAIL = 'hola@weldix.app'
+export const CONTACT_EMAIL = 'hola@weldix.es'
 const ESCALATE_AFTER = 4 // tras 4 preguntas, sugerimos hablar con una persona
 
 export const SUGGESTED = [

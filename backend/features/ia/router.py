@@ -72,7 +72,7 @@ def landing_chat(body: LandingChatRequest, request: Request):
     if not _landing_rate_ok(ip):
         raise HTTPException(
             status_code=429,
-            detail="Has hecho muchas preguntas. Escríbenos a hola@weldix.app y te ayudamos en persona.",
+            detail="Has hecho muchas preguntas. Escríbenos a hola@weldix.es y te ayudamos en persona.",
         )
 
     historial = (
