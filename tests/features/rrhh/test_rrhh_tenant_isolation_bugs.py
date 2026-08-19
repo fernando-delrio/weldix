@@ -42,8 +42,10 @@ def test_admin_no_ve_solicitudes_de_otro_tenant(rrhh_client):
     # ARRANGE — el operario de B pide una ausencia claramente identificable
     ctx = rrhh_client
     from datetime import date, timedelta
+    # Ventana de 7 días: contiene al menos un día laborable sea cual sea
+    # el día de la semana en que corra el test (evita flakiness de fin de semana).
     inicio = (date.today() + timedelta(days=10)).isoformat()
-    fin = (date.today() + timedelta(days=12)).isoformat()
+    fin = (date.today() + timedelta(days=17)).isoformat()
     ctx["client"].post(
         "/rrhh/solicitudes",
         json={"tipo": "vacaciones", "fecha_inicio": inicio, "fecha_fin": fin, "motivo": "SOLO-B"},
@@ -65,8 +67,10 @@ def test_admin_no_puede_revisar_solicitud_de_otro_tenant(rrhh_client):
     # ARRANGE
     ctx = rrhh_client
     from datetime import date, timedelta
+    # Ventana de 7 días: contiene al menos un día laborable sea cual sea
+    # el día de la semana en que corra el test (evita flakiness de fin de semana).
     inicio = (date.today() + timedelta(days=10)).isoformat()
-    fin = (date.today() + timedelta(days=12)).isoformat()
+    fin = (date.today() + timedelta(days=17)).isoformat()
     solicitud_b = ctx["client"].post(
         "/rrhh/solicitudes",
         json={"tipo": "vacaciones", "fecha_inicio": inicio, "fecha_fin": fin},
@@ -151,8 +155,10 @@ def test_calendario_no_muestra_ausencias_aprobadas_de_otro_tenant(rrhh_client):
     ctx = rrhh_client
     from datetime import date, timedelta
     hoy = date.today()
+    # Ventana de 7 días: contiene al menos un día laborable sea cual sea
+    # el día de la semana en que corra el test (evita flakiness de fin de semana).
     inicio = (hoy + timedelta(days=3)).isoformat()
-    fin = (hoy + timedelta(days=4)).isoformat()
+    fin = (hoy + timedelta(days=10)).isoformat()
     solicitud_b = ctx["client"].post(
         "/rrhh/solicitudes",
         json={"tipo": "vacaciones", "fecha_inicio": inicio, "fecha_fin": fin},
