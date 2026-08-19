@@ -274,34 +274,21 @@ const Sidebar = ({
 }
 
 // ── Header móvil ────────────────────────────────────────────────────────────
-const MobileHeader = ({
-  roleLabel,
-  onLogout,
-  onSearchOpen,
-  timeLabel,
-  alerts,
-  unread,
-  onRead,
-  isDark,
-}) => (
+const MobileHeader = ({ roleLabel, onLogout, onSearchOpen, timeLabel, alerts, unread, onRead }) => (
   <header className="fixed inset-x-0 top-0 z-40 border-b border-slate-800 bg-slate-950/95 backdrop-blur md:hidden">
-    <div className="relative flex h-14 items-center justify-between px-4">
-      <div className="flex items-center gap-2.5">
-        <img
-          src={isDark ? '/weldix-logo-white.svg' : '/weldix-logo.svg'}
-          alt="Weldix"
-          className="h-7 w-auto object-contain"
-        />
+    <div className="flex h-14 items-center gap-2 px-4">
+      <div className="flex shrink-0 items-center gap-2">
+        <img src="/weldix-icon.svg" alt="Weldix" className="h-7 w-7 shrink-0 object-contain" />
         <span className="rounded-sm border border-amber-700/50 bg-amber-500/10 px-1.5 py-0.5 text-xs font-bold tracking-[0.12em] text-amber-400">
           {roleLabel}
         </span>
       </div>
 
-      {/* Reloj centrado */}
-      <span className="absolute left-1/2 -translate-x-1/2 font-mono text-xs font-semibold tracking-widest text-slate-400">
+      {/* Reloj — hijo flexible real, nunca se solapa con los lados */}
+      <span className="flex-1 truncate text-center font-mono text-xs font-semibold tracking-widest text-slate-400">
         {timeLabel}
       </span>
-      <div className="flex items-center gap-2">
+      <div className="flex shrink-0 items-center gap-2">
         <button
           type="button"
           onClick={onSearchOpen}
@@ -443,7 +430,6 @@ const AppShellInner = ({ children }) => {
         alerts={alerts}
         unread={unread}
         onRead={markAllRead}
-        isDark={isDark}
       />
       <div className="md:hidden">
         <BottomNav items={navItems} />
