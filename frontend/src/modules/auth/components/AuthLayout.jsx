@@ -25,9 +25,8 @@ const AuthLayout = ({ mode, title, subtitle, feedback, error, children }) => {
   return (
     <main className={authTw.pageRoot}>
       <div className={authTw.twoColumnGrid}>
-        <section className={authTw.heroSection}>
+        <section className={cx(authTw.heroSection, isDark ? 'bg-[#070b0f]' : 'bg-[#f1f5f9]')}>
           <div className={authTw.heroGlow} />
-          <div className={authTw.heroGridOverlay} />
           <div className="pointer-events-none absolute inset-0 z-0 opacity-40">
             <Particles
               particleCount={120}

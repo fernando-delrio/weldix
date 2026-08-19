@@ -114,11 +114,11 @@ const Sidebar = ({
           alt="Weldix"
           className="h-8 w-8 shrink-0 object-contain lg:hidden"
         />
-        <div className="hidden items-center gap-3 lg:flex">
+        <div className="hidden min-w-0 flex-col items-start justify-center gap-1 lg:flex">
           <img
             src={isDark ? '/weldix-logo-white.svg' : '/weldix-logo.svg'}
             alt="Weldix"
-            className="h-7 w-auto object-contain"
+            className="h-6 w-auto object-contain"
           />
           <span className="rounded-sm border border-amber-700/50 bg-amber-500/10 px-1.5 py-0.5 text-xs font-bold tracking-[0.12em] text-amber-400">
             {roleLabel}

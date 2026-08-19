@@ -10,7 +10,7 @@ const Section = ({ title, children }) => (
 const PrivacidadPage = () => (
   <AppShell>
     <div className="mx-auto w-full max-w-[720px] space-y-8 pb-8">
-      <header className="space-y-1">
+      <div className="space-y-1">
         <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-300">Legal</p>
         <h1 className="text-3xl font-extrabold tracking-tight text-slate-100">
           Política de Privacidad
@@ -18,7 +18,7 @@ const PrivacidadPage = () => (
         <p className="text-xs text-slate-500">
           Última actualización: abril 2026 · Responsable: Weldix SaaS
         </p>
-      </header>
+      </div>
 
       <Section title="1. Responsable del tratamiento">
         <p>
