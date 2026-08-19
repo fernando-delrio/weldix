@@ -3,11 +3,9 @@ export const authTw = {
   twoColumnGrid: 'grid min-h-screen grid-cols-1 lg:grid-cols-2',
 
   heroSection:
-    'relative overflow-hidden border-b border-slate-800 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 px-6 py-10 lg:border-b-0 lg:border-r lg:px-12 lg:py-12',
+    'relative overflow-hidden border-b border-[color:var(--card-border)] px-6 py-10 lg:border-b-0 lg:border-r lg:px-12 lg:py-12',
   heroGlow:
     'pointer-events-none absolute inset-0 bg-[radial-gradient(760px_520px_at_12%_8%,rgba(245,158,11,0.10),transparent_60%)]',
-  heroGridOverlay:
-    'pointer-events-none absolute inset-0 [background-image:linear-gradient(var(--card-border)_1px,transparent_1px),linear-gradient(90deg,var(--card-border)_1px,transparent_1px)] [background-size:42px_42px]',
   heroContent: 'relative z-10 flex h-full flex-col',
   logoRow: 'inline-flex items-center gap-3',
   logoBadge:
@@ -26,7 +24,7 @@ export const authTw = {
   panelSection:
     'grid place-items-center bg-gradient-to-b from-slate-900 to-slate-950 px-4 py-8 sm:px-6',
   panelCard:
-    'w-full max-w-[430px] rounded-2xl border border-slate-800/90 bg-slate-900/80 p-5 shadow-xl shadow-slate-950/40 backdrop-blur',
+    'w-full max-w-[430px] rounded-2xl border border-[color:var(--card-border)] bg-[var(--card-bg)]/85 p-5 shadow-[var(--card-shadow)] backdrop-blur',
   modeSwitch: 'mb-4 grid grid-cols-2 rounded-lg border border-slate-700 bg-slate-800/70 p-1',
   modeButtonBase: 'rounded-md px-3 py-2 text-center text-sm font-semibold transition',
   modeButtonActive: 'bg-amber-500 text-black shadow-sm',
