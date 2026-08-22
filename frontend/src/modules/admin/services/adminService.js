@@ -78,7 +78,10 @@ export const changeJobStatus = async (jobId, estado) => {
     headers: jsonHeaders(),
     body: JSON.stringify({ estado }),
   })
-  if (!res.ok) throw new Error('Error al cambiar el estado del trabajo')
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}))
+    throw new Error(body.detail ?? 'Error al cambiar el estado del trabajo')
+  }
   return res.json()
 }
 
