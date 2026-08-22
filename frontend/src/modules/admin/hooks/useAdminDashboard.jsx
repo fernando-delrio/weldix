@@ -59,8 +59,17 @@ export const useAdminDashboard = () => {
 
   const changeJobStatus = useCallback(
     async (jobId, estado) => {
-      await apiChangeJobStatus(jobId, estado)
-      await refresh()
+      try {
+        await apiChangeJobStatus(jobId, estado)
+        await refresh()
+        return { ok: true }
+      } catch (err) {
+        // Refrescamos igualmente: si el trabajo ya no existe (ej. 404 porque
+        // alguien lo borró), esto lo quita del Kanban en vez de dejar una
+        // tarjeta fantasma que vuelve a fallar en el próximo intento.
+        await refresh()
+        return { ok: false, error: err.message }
+      }
     },
     [refresh]
   )
