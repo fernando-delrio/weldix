@@ -97,15 +97,33 @@ const AdminJobsSection = () => {
   const { dashboard, isLoading, removeJob, changeJobStatus, rejectJob } = useAdminDashboard()
   const [activeFilter, setActiveFilter] = useState('Todos')
   const [view, setView] = useState('list')
+  const [moveError, setMoveError] = useState('')
   if (isLoading || !dashboard) return null
 
   const filteredJobs = applyFilter(dashboard.jobs, activeFilter)
 
-  const handleMoveJob = (jobId, toEstado) => changeJobStatus(jobId, toEstado)
+  const handleMoveJob = async (jobId, toEstado) => {
+    const result = await changeJobStatus(jobId, toEstado)
+    setMoveError(result.ok ? '' : result.error)
+  }
   const handleRejectJob = (jobId, motivo) => rejectJob(jobId, motivo)
 
   return (
     <section className="space-y-3">
+      {moveError && (
+        <div className="flex items-center justify-between gap-3 rounded-lg border border-rose-700/50 bg-rose-500/10 px-3 py-2 text-sm text-rose-300">
+          <span>{moveError}</span>
+          <button
+            type="button"
+            onClick={() => setMoveError('')}
+            aria-label="Cerrar aviso"
+            className="shrink-0 text-rose-400 hover:text-rose-200"
+          >
+            <i className="bx bx-x text-lg" />
+          </button>
+        </div>
+      )}
+
       {metricPills({ metrics: dashboard.metrics })}
 
       <div className="flex items-center justify-between gap-2">
