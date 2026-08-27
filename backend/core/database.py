@@ -15,7 +15,16 @@ def _normalize_db_url(url: str) -> str:
 
 def _build_engine():
     url = _normalize_db_url(settings.database_url)
-    connect_args = {"check_same_thread": False} if url.startswith("sqlite") else {}
+    if url.startswith("sqlite"):
+        connect_args = {"check_same_thread": False}
+    else:
+        # psycopg3 activa prepared statements de servidor tras 5 usos de la
+        # misma query (prepare_threshold=5 por defecto). El endpoint "pooled"
+        # de Neon usa PgBouncer en modo transacción: cada transacción puede
+        # acabar en una conexión física distinta del servidor real, así que un
+        # prepared statement creado en una no existe en otra — psycopg lanza
+        # "prepared statement ... does not exist". Se desactiva explícitamente.
+        connect_args = {"prepare_threshold": None}
     return create_engine(url, connect_args=connect_args, pool_pre_ping=True)
 
 
