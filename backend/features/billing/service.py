@@ -132,7 +132,14 @@ def handle_webhook(raw_body: bytes, sig_header: str, db) -> dict:
         raise ValueError("Firma del webhook inválida")
 
     event_type = event["type"]
-    data = event["data"]["object"]
+    raw_object = event["data"]["object"]
+    # stripe.Webhook.construct_event() devuelve un stripe.StripeObject, no un
+    # dict — StripeObject no implementa .get() (solo __getitem__ y atributos),
+    # y los handlers de abajo están escritos como dict normales. Sin esta
+    # conversión, cualquier evento real de Stripe explota con AttributeError
+    # en cuanto un handler llama a `.get(...)` (visto en producción: 502 en
+    # /billing/webhook para customer.subscription.created, 27/08/2026).
+    data = raw_object.to_dict() if hasattr(raw_object, "to_dict") else raw_object
 
     if event_type == "checkout.session.completed":
         _on_checkout_completed(data, db)

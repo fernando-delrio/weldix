@@ -61,6 +61,22 @@ def _fake_event(event_type: str, data: dict) -> dict:
     return {"type": event_type, "data": {"object": data}}
 
 
+def _fake_event_real_object(event_type: str, data: dict) -> dict:
+    """
+    Como _fake_event, pero con data.object como un stripe.StripeObject real
+    en vez de un dict de Python — así es como lo devuelve de verdad
+    stripe.Webhook.construct_event() en producción.
+
+    Los demás tests de este archivo usan un dict plano, que silenciosamente
+    oculta bugs como el de _on_subscription_updated usando .get() sobre un
+    objeto que no lo soporta (ver AttributeError en producción, 27/08/2026).
+    """
+    from stripe._stripe_object import StripeObject
+
+    real_object = StripeObject.construct_from(data, "sk_test_fake")
+    return {"type": event_type, "data": {"object": real_object}}
+
+
 def _post_webhook(client, event: dict, sig: str = "t=123,v1=fakesig") -> object:
     """Llama al endpoint de webhook con el evento y la firma dada."""
     return client.post(
@@ -244,6 +260,41 @@ def test_subscription_updated_to_active(workspace_client):
 
     db.refresh(tenant)
     assert tenant.subscription_status == "active"
+
+
+def test_subscription_created_with_real_stripe_object_does_not_crash(workspace_client):
+    """
+    Regresión del 27/08/2026: customer.subscription.created llegó como un
+    stripe.StripeObject real (no un dict), y _on_subscription_updated hacía
+    subscription.get("customer") — StripeObject no tiene .get(), lanza
+    AttributeError, y el webhook respondía 502 en vez de 200.
+    """
+    client, token, tenant, db = workspace_client
+    _set_stripe_customer(tenant, db)
+
+    event = _fake_event_real_object(
+        "customer.subscription.created",
+        {
+            "customer": _FAKE_CUSTOMER_ID,
+            "status": "trialing",
+            "metadata": {"tenant_id": str(tenant.id)},
+        },
+    )
+
+    with patch(_MOCK_SETTINGS, _mock_settings()), patch(_MOCK_STRIPE) as mock_stripe:
+        mock_stripe.error.SignatureVerificationError = (
+            stripe_real.error.SignatureVerificationError
+        )
+        mock_stripe.Webhook.construct_event.return_value = event
+
+        res = _post_webhook(client, {"type": "customer.subscription.created"})
+
+    assert res.status_code == 200
+    assert res.json()["handled"] is True
+
+    db.refresh(tenant)
+    assert tenant.subscription_status == "trialing"
+    assert tenant.plan == "active"
 
 
 def test_unknown_event_type_returns_handled_false(workspace_client):
