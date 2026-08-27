@@ -13,7 +13,10 @@ const jsonHeaders = () => ({
 
 export const getAdminDashboard = async () => {
   const res = await fetch(`${API_BASE_URL}/admin/dashboard`, { headers: authHeaders() })
-  if (!res.ok) throw new Error('Error al cargar el panel de administración')
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}))
+    throw new Error(body.detail ?? 'Error al cargar el panel de administración')
+  }
   return res.json()
 }
 
@@ -23,7 +26,10 @@ export const assignJob = async (jobId, operarioId) => {
     headers: jsonHeaders(),
     body: JSON.stringify({ operario_id: operarioId }),
   })
-  if (!res.ok) throw new Error('Error al asignar el trabajo')
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}))
+    throw new Error(body.detail ?? 'Error al asignar el trabajo')
+  }
   return res.json()
 }
 
@@ -32,7 +38,10 @@ export const deleteJob = async (jobId) => {
     method: 'DELETE',
     headers: authHeaders(),
   })
-  if (!res.ok) throw new Error('Error al eliminar el trabajo')
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}))
+    throw new Error(body.detail ?? 'Error al eliminar el trabajo')
+  }
 }
 
 export const createUser = async (data) => {
@@ -91,7 +100,10 @@ export const rejectJob = async (jobId, motivo) => {
     headers: jsonHeaders(),
     body: JSON.stringify({ motivo }),
   })
-  if (!res.ok) throw new Error('Error al rechazar el trabajo')
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}))
+    throw new Error(body.detail ?? 'Error al rechazar el trabajo')
+  }
   return res.json()
 }
 
@@ -100,6 +112,9 @@ export const deleteDemoData = async () => {
     method: 'DELETE',
     headers: authHeaders(),
   })
-  if (!res.ok) throw new Error('Error al eliminar los datos de demo')
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}))
+    throw new Error(body.detail ?? 'Error al eliminar los datos de demo')
+  }
   return res.json()
 }

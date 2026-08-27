@@ -106,7 +106,14 @@ const AdminJobsSection = () => {
     const result = await changeJobStatus(jobId, toEstado)
     setMoveError(result.ok ? '' : result.error)
   }
-  const handleRejectJob = (jobId, motivo) => rejectJob(jobId, motivo)
+  const handleRejectJob = async (jobId, motivo) => {
+    const result = await rejectJob(jobId, motivo)
+    setMoveError(result.ok ? '' : result.error)
+  }
+  const handleDeleteJob = async (jobId) => {
+    const result = await removeJob(jobId)
+    setMoveError(result.ok ? '' : result.error)
+  }
 
   return (
     <section className="space-y-3">
@@ -149,7 +156,7 @@ const AdminJobsSection = () => {
           {noJobsMessage({ filteredJobs, activeFilter })}
 
           {filteredJobs.map((job) => (
-            <AdminJobCard key={job.id} job={job} onDelete={removeJob} />
+            <AdminJobCard key={job.id} job={job} onDelete={handleDeleteJob} />
           ))}
         </>
       )}
