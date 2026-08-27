@@ -1,4 +1,5 @@
 import AppShell from '../../core/components/AppShell'
+import BillingStatusCard from '../../core/components/BillingStatusCard'
 import PageHeader from '../../core/components/PageHeader'
 import PanelCard from '../../core/components/PanelCard'
 import WeldixButton from '../../core/components/WeldixButton'
@@ -59,6 +60,9 @@ const ProfilePage = () => {
             </div>
           </div>
         </PanelCard>
+
+        {/* Plan y facturación — solo admin */}
+        {!isOperario && <BillingStatusCard />}
 
         {/* Editar nombre */}
         <PanelCard>

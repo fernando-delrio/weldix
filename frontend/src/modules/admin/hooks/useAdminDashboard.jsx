@@ -38,8 +38,9 @@ export const useAdminDashboard = () => {
       try {
         await apiAssignJob(jobId, operarioId)
         await refresh()
-      } catch {
-        /* no-op: el usuario puede reintentar */
+        return { ok: true }
+      } catch (err) {
+        return { ok: false, error: err.message }
       }
     },
     [refresh]
@@ -50,8 +51,9 @@ export const useAdminDashboard = () => {
       try {
         await apiDeleteJob(jobId)
         await refresh()
-      } catch {
-        /* no-op */
+        return { ok: true }
+      } catch (err) {
+        return { ok: false, error: err.message }
       }
     },
     [refresh]
@@ -76,8 +78,13 @@ export const useAdminDashboard = () => {
 
   const rejectJob = useCallback(
     async (jobId, motivo) => {
-      await apiRejectJob(jobId, motivo)
-      await refresh()
+      try {
+        await apiRejectJob(jobId, motivo)
+        await refresh()
+        return { ok: true }
+      } catch (err) {
+        return { ok: false, error: err.message }
+      }
     },
     [refresh]
   )
