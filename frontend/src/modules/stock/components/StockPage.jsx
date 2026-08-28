@@ -1,5 +1,7 @@
 import { useState, useMemo } from 'react'
 import AppShell from '../../core/components/AppShell'
+import PanelCard from '../../core/components/PanelCard'
+import WeldixButton from '../../core/components/WeldixButton'
 import PageHeader from '../../core/components/PageHeader'
 import EmptyState from '../../core/components/EmptyState'
 import { useStockPage } from '../hooks/useStockPage'
@@ -49,12 +51,12 @@ const loadingState = ({ isLoading }) =>
 
 const errorState = ({ error, refresh }) =>
   error && (
-    <div className="rounded-xl border border-rose-700/40 bg-rose-500/5 p-4">
+    <PanelCard className="border-rose-700/40">
       <p className="text-sm font-semibold text-rose-300">{error}</p>
-      <button type="button" onClick={refresh} className="mt-2 text-xs text-rose-400 underline">
+      <WeldixButton variant="danger" size="sm" onClick={refresh} className="mt-3">
         Reintentar
-      </button>
-    </div>
+      </WeldixButton>
+    </PanelCard>
   )
 
 // ── Fila de material ────────────────────────────────────────────────────────
@@ -90,7 +92,7 @@ const MaterialRow = ({
   }
 
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-900/60">
+    <PanelCard className="p-0! overflow-hidden">
       <div className="flex items-center gap-2 px-3 py-2.5">
         {/* Nombre + stock */}
         <div className="min-w-0 flex-1">
@@ -130,35 +132,33 @@ const MaterialRow = ({
           </span>
           {isAdmin && (
             <>
-              <button
-                type="button"
+              <WeldixButton
+                variant={isRestocking ? 'warning' : 'secondary'}
+                size="icon"
                 onClick={() => (isRestocking ? onCloseRestock() : onOpenRestock(item.id))}
                 title="Añadir stock"
-                className={cx(
-                  'flex h-7 w-7 items-center justify-center rounded-lg border text-sm font-bold transition',
-                  isRestocking
-                    ? 'border-amber-500/50 bg-amber-500/10 text-amber-400'
-                    : 'border-slate-700 text-slate-400 hover:border-emerald-500/50 hover:text-emerald-400'
-                )}
+                aria-label="Añadir stock"
               >
-                +
-              </button>
-              <button
-                type="button"
+                <i className="bx bx-plus text-base" aria-hidden="true" />
+              </WeldixButton>
+              <WeldixButton
+                variant="secondary"
+                size="icon"
                 onClick={() => onEdit(item)}
                 title="Editar"
-                className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-700 text-slate-400 transition hover:border-sky-500/40 hover:text-sky-400"
+                aria-label="Editar material"
               >
-                <i className="bx bx-pencil text-xs" aria-hidden="true" />
-              </button>
-              <button
-                type="button"
+                <i className="bx bx-pencil text-base" aria-hidden="true" />
+              </WeldixButton>
+              <WeldixButton
+                variant="danger"
+                size="icon"
                 onClick={() => onDelete(item.id)}
                 title="Eliminar"
-                className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-700 text-slate-400 transition hover:border-rose-500/40 hover:text-rose-400"
+                aria-label="Eliminar material"
               >
-                <i className="bx bx-trash text-xs" aria-hidden="true" />
-              </button>
+                <i className="bx bx-trash text-base" aria-hidden="true" />
+              </WeldixButton>
             </>
           )}
         </div>
@@ -190,24 +190,22 @@ const MaterialRow = ({
             className="w-28 rounded-lg border border-slate-700 bg-slate-800 px-2 py-1 text-sm text-slate-100 placeholder:text-slate-600 focus:border-amber-400 focus:outline-none"
           />
           <span className="shrink-0 text-xs text-slate-500">{item.unit}</span>
-          <button
-            type="button"
+          <WeldixButton
+            variant="success"
+            size="sm"
             onClick={handleConfirmRestock}
-            disabled={saving || !qty || parseFloat(qty) <= 0}
-            className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-300 transition hover:bg-emerald-500/20 disabled:opacity-40"
+            disabled={!qty || parseFloat(qty) <= 0}
+            isLoading={saving}
+            loadingLabel="Registrando…"
           >
-            {saving ? '…' : 'Registrar'}
-          </button>
-          <button
-            type="button"
-            onClick={onCloseRestock}
-            className="text-xs text-slate-500 hover:text-slate-300"
-          >
+            Registrar
+          </WeldixButton>
+          <WeldixButton variant="ghost" size="sm" onClick={onCloseRestock}>
             Cancelar
-          </button>
+          </WeldixButton>
         </div>
       )}
-    </div>
+    </PanelCard>
   )
 }
 
@@ -362,10 +360,7 @@ const BulkRestockModal = ({ materials, onClose, onBulkRestock }) => {
               </p>
               <div className="space-y-1">
                 {grouped[cat].map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex items-center gap-3 rounded-lg border border-slate-800 bg-slate-950/40 px-3 py-2"
-                  >
+                  <PanelCard key={item.id} className="flex items-center gap-3 px-3! py-2!">
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-xs font-semibold text-slate-200">
                         {item.display_name ?? item.name}
@@ -387,7 +382,7 @@ const BulkRestockModal = ({ materials, onClose, onBulkRestock }) => {
                       />
                       <span className="w-8 text-xs text-slate-500">{item.unit}</span>
                     </div>
-                  </div>
+                  </PanelCard>
                 ))}
               </div>
             </div>
@@ -401,25 +396,22 @@ const BulkRestockModal = ({ materials, onClose, onBulkRestock }) => {
 
         {/* Footer */}
         <div className="shrink-0 flex gap-2 border-t border-slate-800 p-4">
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex-1 rounded-xl border border-slate-700 py-2.5 text-sm font-semibold text-slate-400 transition hover:bg-slate-800"
-          >
+          <WeldixButton variant="secondary" size="lg" onClick={onClose} className="flex-1">
             Cancelar
-          </button>
-          <button
-            type="button"
+          </WeldixButton>
+          <WeldixButton
+            variant="success"
+            size="lg"
             onClick={handleSubmit}
-            disabled={saving || !entries.length}
-            className="flex-1 rounded-xl bg-emerald-500 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-400 disabled:opacity-40"
+            disabled={!entries.length}
+            isLoading={saving}
+            loadingLabel="Registrando…"
+            className="flex-1 bg-emerald-500 text-white hover:bg-emerald-400"
           >
-            {saving
-              ? 'Registrando…'
-              : entries.length
-                ? `Registrar ${entries.length} entrada${entries.length !== 1 ? 's' : ''}`
-                : 'Rellena cantidades'}
-          </button>
+            {entries.length
+              ? `Registrar ${entries.length} entrada${entries.length !== 1 ? 's' : ''}`
+              : 'Rellena cantidades'}
+          </WeldixButton>
         </div>
       </div>
     </div>
@@ -514,13 +506,15 @@ const EditMaterialModal = ({ item, onClose, onSave }) => {
                 {item.display_name ?? item.name}
               </p>
             </div>
-            <button
-              type="button"
+            <WeldixButton
+              variant="secondary"
+              size="icon"
               onClick={onClose}
-              className="ml-auto flex h-8 w-8 items-center justify-center rounded-lg border border-slate-700 text-slate-500 transition hover:border-slate-600 hover:text-slate-300"
+              aria-label="Cerrar"
+              className="ml-auto"
             >
               <i className="bx bx-x text-lg" aria-hidden="true" />
-            </button>
+            </WeldixButton>
           </div>
 
           <div className="space-y-4">
@@ -601,21 +595,19 @@ const EditMaterialModal = ({ item, onClose, onSave }) => {
           </div>
 
           <div className="mt-5 flex gap-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 rounded-xl border border-slate-700 py-2.5 text-sm font-semibold text-slate-400 transition hover:bg-slate-800"
-            >
+            <WeldixButton variant="secondary" size="lg" onClick={onClose} className="flex-1">
               Cancelar
-            </button>
-            <button
-              type="button"
+            </WeldixButton>
+            <WeldixButton
+              variant="warning"
+              size="lg"
               onClick={handleSave}
-              disabled={saving}
-              className="flex-1 rounded-xl bg-amber-400 py-2.5 text-sm font-bold text-slate-950 transition hover:bg-amber-300 disabled:opacity-50"
+              isLoading={saving}
+              loadingLabel="Guardando…"
+              className="flex-1 bg-amber-500 text-slate-950 hover:bg-amber-400"
             >
-              {saving ? 'Guardando…' : 'Guardar cambios'}
-            </button>
+              Guardar cambios
+            </WeldixButton>
           </div>
         </div>
       </div>
@@ -734,13 +726,15 @@ const AlbaranModal = ({ materials, onClose, onBulkRestock, onParseAlbaran }) => 
                     Pega el texto y la IA identifica los materiales
                   </p>
                 </div>
-                <button
-                  type="button"
+                <WeldixButton
+                  variant="secondary"
+                  size="icon"
                   onClick={onClose}
-                  className="ml-auto flex h-8 w-8 items-center justify-center rounded-lg border border-slate-700 text-slate-500 transition hover:text-slate-300"
+                  aria-label="Cerrar"
+                  className="ml-auto"
                 >
                   <i className="bx bx-x text-lg" aria-hidden="true" />
-                </button>
+                </WeldixButton>
               </div>
             </div>
             <div className="p-5">
@@ -759,22 +753,19 @@ const AlbaranModal = ({ materials, onClose, onBulkRestock, onParseAlbaran }) => 
                 </p>
               )}
               <div className="mt-4 flex gap-2">
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="flex-1 rounded-xl border border-slate-700 py-2.5 text-sm font-semibold text-slate-400 transition hover:bg-slate-800"
-                >
+                <WeldixButton variant="secondary" size="lg" onClick={onClose} className="flex-1">
                   Cancelar
-                </button>
-                <button
-                  type="button"
+                </WeldixButton>
+                <WeldixButton
+                  variant="warning"
+                  size="lg"
                   onClick={handleAnalyze}
                   disabled={!texto.trim()}
-                  className="flex-1 rounded-xl bg-amber-400 py-2.5 text-sm font-bold text-slate-950 transition hover:bg-amber-300 disabled:opacity-40"
+                  className="flex-1 bg-amber-500 text-slate-950 hover:bg-amber-400"
                 >
-                  <i className="bx bx-bot mr-1.5" aria-hidden="true" />
+                  <i className="bx bx-bot" aria-hidden="true" />
                   Analizar con IA
-                </button>
+                </WeldixButton>
               </div>
             </div>
           </>
@@ -802,10 +793,7 @@ const AlbaranModal = ({ materials, onClose, onBulkRestock, onParseAlbaran }) => 
                   const mat = materialMap[r.material_id]
                   const conf = CONFIDENCE_STYLE[r.confianza] ?? CONFIDENCE_STYLE.media
                   return (
-                    <div
-                      key={r.material_id}
-                      className="rounded-xl border border-slate-800 bg-slate-950/50 p-3"
-                    >
+                    <PanelCard key={r.material_id} className="p-3!">
                       <div className="flex items-start gap-3">
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2 flex-wrap">
@@ -850,7 +838,7 @@ const AlbaranModal = ({ materials, onClose, onBulkRestock, onParseAlbaran }) => 
                           <span className="w-8 text-xs text-slate-500">{mat?.unit ?? ''}</span>
                         </div>
                       </div>
-                    </div>
+                    </PanelCard>
                   )
                 })}
               </div>
@@ -858,27 +846,28 @@ const AlbaranModal = ({ materials, onClose, onBulkRestock, onParseAlbaran }) => 
 
             <div className="shrink-0 border-t border-slate-800 p-4">
               <div className="flex gap-2">
-                <button
-                  type="button"
+                <WeldixButton
+                  variant="secondary"
+                  size="lg"
                   onClick={() => {
                     setStep('input')
                     setError('')
                   }}
-                  className="rounded-xl border border-slate-700 px-4 py-2.5 text-sm font-semibold text-slate-400 transition hover:bg-slate-800"
                 >
-                  <i className="bx bx-left-arrow-alt mr-1" aria-hidden="true" />
+                  <i className="bx bx-left-arrow-alt" aria-hidden="true" />
                   Volver
-                </button>
-                <button
-                  type="button"
+                </WeldixButton>
+                <WeldixButton
+                  variant="success"
+                  size="lg"
                   onClick={handleConfirm}
-                  disabled={saving || activeEntries === 0}
-                  className="flex-1 rounded-xl bg-emerald-500 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-400 disabled:opacity-40"
+                  disabled={activeEntries === 0}
+                  isLoading={saving}
+                  loadingLabel="Registrando…"
+                  className="flex-1 bg-emerald-500 text-white hover:bg-emerald-400"
                 >
-                  {saving
-                    ? 'Registrando…'
-                    : `Confirmar ${activeEntries} entrada${activeEntries !== 1 ? 's' : ''}`}
-                </button>
+                  {`Confirmar ${activeEntries} entrada${activeEntries !== 1 ? 's' : ''}`}
+                </WeldixButton>
               </div>
             </div>
           </>
@@ -988,21 +977,19 @@ const CreateMaterialModal = ({ onClose, onSave }) => {
           {error && <p className="text-xs font-semibold text-rose-400">{error}</p>}
         </div>
         <div className="mt-4 flex gap-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex-1 rounded-xl border border-slate-700 py-2.5 text-sm font-semibold text-slate-400 transition hover:bg-slate-800"
-          >
+          <WeldixButton variant="secondary" size="lg" onClick={onClose} className="flex-1">
             Cancelar
-          </button>
-          <button
-            type="button"
+          </WeldixButton>
+          <WeldixButton
+            variant="warning"
+            size="lg"
             onClick={handleSave}
-            disabled={saving}
-            className="flex-1 rounded-xl bg-amber-400 py-2.5 text-sm font-bold text-slate-950 transition hover:bg-amber-300 disabled:opacity-50"
+            isLoading={saving}
+            loadingLabel="Guardando…"
+            className="flex-1 bg-amber-500 text-slate-950 hover:bg-amber-400"
           >
-            {saving ? 'Guardando…' : 'Crear'}
-          </button>
+            Crear
+          </WeldixButton>
         </div>
       </div>
     </div>
@@ -1086,13 +1073,14 @@ const VariantGeneratorModal = ({ onClose, onGenerate }) => {
               <span className="font-bold text-slate-500">{result.omitidas}</span> omitidas
             </p>
           </div>
-          <button
-            type="button"
+          <WeldixButton
+            variant="warning"
+            size="lg"
             onClick={onClose}
-            className="mt-5 w-full rounded-xl bg-amber-400 py-2.5 text-sm font-bold text-slate-950 transition hover:bg-amber-300"
+            className="mt-5 w-full bg-amber-500 text-slate-950 hover:bg-amber-400"
           >
             Cerrar
-          </button>
+          </WeldixButton>
         </div>
       </div>
     )
@@ -1141,7 +1129,7 @@ const VariantGeneratorModal = ({ onClose, onGenerate }) => {
               className="w-24 rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-amber-400 focus:outline-none"
             />
           </div>
-          <div className="space-y-2 rounded-xl border border-slate-800 bg-slate-950/50 p-3">
+          <PanelCard className="space-y-2 p-3!">
             <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">
               Atributos
             </p>
@@ -1162,25 +1150,28 @@ const VariantGeneratorModal = ({ onClose, onGenerate }) => {
                   className="flex-1 rounded-lg border border-slate-700 bg-slate-800 px-2 py-1.5 text-xs text-slate-100 placeholder:text-slate-600 focus:border-amber-400 focus:outline-none"
                 />
                 {attrs.length > 1 && (
-                  <button
-                    type="button"
+                  <WeldixButton
+                    variant="danger"
+                    size="icon"
                     onClick={() => removeAttr(i)}
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-slate-700 text-slate-500 transition hover:border-rose-500/50 hover:text-rose-400"
+                    aria-label="Quitar atributo"
+                    className="shrink-0"
                   >
                     <i className="bx bx-x text-base" aria-hidden="true" />
-                  </button>
+                  </WeldixButton>
                 )}
               </div>
             ))}
-            <button
-              type="button"
+            <WeldixButton
+              variant="secondary"
+              size="sm"
               onClick={addAttr}
-              className="w-full rounded-lg border border-dashed border-slate-700 py-1.5 text-xs text-slate-500 transition hover:border-amber-500/50 hover:text-amber-400"
+              className="w-full border-dashed"
             >
               + Añadir atributo
-            </button>
-          </div>
-          <div className="flex items-center justify-between rounded-lg border border-slate-800 bg-slate-800/40 px-3 py-2">
+            </WeldixButton>
+          </PanelCard>
+          <PanelCard className="flex items-center justify-between px-3! py-2!">
             <span className="text-xs text-slate-500">Total de variantes</span>
             <span
               className={cx(
@@ -1190,28 +1181,27 @@ const VariantGeneratorModal = ({ onClose, onGenerate }) => {
             >
               {totalVariants()}
             </span>
-          </div>
+          </PanelCard>
           {totalVariants() > 500 && (
             <p className="text-xs text-rose-400">Máximo 500 por generación.</p>
           )}
           {error && <p className="text-xs font-semibold text-rose-400">{error}</p>}
         </div>
         <div className="mt-4 flex gap-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex-1 rounded-xl border border-slate-700 py-2.5 text-sm font-semibold text-slate-400 transition hover:bg-slate-800"
-          >
+          <WeldixButton variant="secondary" size="lg" onClick={onClose} className="flex-1">
             Cancelar
-          </button>
-          <button
-            type="button"
+          </WeldixButton>
+          <WeldixButton
+            variant="warning"
+            size="lg"
             onClick={executeGenerate}
-            disabled={saving || isInvalidForm() || totalVariants() > 500}
-            className="flex-1 rounded-xl bg-amber-400 py-2.5 text-sm font-bold text-slate-950 transition hover:bg-amber-300 disabled:opacity-50"
+            disabled={isInvalidForm() || totalVariants() > 500}
+            isLoading={saving}
+            loadingLabel="Generando…"
+            className="flex-1 bg-amber-500 text-slate-950 hover:bg-amber-400"
           >
-            {saving ? 'Generando…' : `Generar ${totalVariants()} variantes`}
-          </button>
+            {`Generar ${totalVariants()} variantes`}
+          </WeldixButton>
         </div>
       </div>
     </div>
@@ -1278,37 +1268,21 @@ const StockPage = () => {
           action={
             isAdmin && (
               <div className="flex flex-wrap justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setShowAlbaran(true)}
-                  className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-amber-300 transition hover:bg-amber-500/20"
-                >
-                  <i className="bx bx-bot mr-1" aria-hidden="true" />
+                <WeldixButton variant="warning" size="sm" onClick={() => setShowAlbaran(true)}>
+                  <i className="bx bx-bot" aria-hidden="true" />
                   Albarán IA
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowBulkRestock(true)}
-                  className="rounded-lg border border-emerald-500/50 bg-emerald-500/10 px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-emerald-300 transition hover:bg-emerald-500/20"
-                >
-                  <i className="bx bx-package mr-1" aria-hidden="true" />
+                </WeldixButton>
+                <WeldixButton variant="success" size="sm" onClick={() => setShowBulkRestock(true)}>
+                  <i className="bx bx-package" aria-hidden="true" />
                   Recibir pedido
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowGenerator(true)}
-                  className="rounded-lg border border-slate-700 bg-slate-800/60 px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-slate-300 transition hover:border-amber-500/40 hover:text-amber-300"
-                >
-                  <i className="bx bx-grid-alt mr-1" aria-hidden="true" />
+                </WeldixButton>
+                <WeldixButton variant="secondary" size="sm" onClick={() => setShowGenerator(true)}>
+                  <i className="bx bx-grid-alt" aria-hidden="true" />
                   Variantes
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowCreate(true)}
-                  className="rounded-lg border border-slate-700 bg-slate-800/60 px-3 py-2 text-xs font-bold uppercase tracking-[0.12em] text-slate-300 transition hover:border-slate-600"
-                >
+                </WeldixButton>
+                <WeldixButton variant="secondary" size="sm" onClick={() => setShowCreate(true)}>
                   + Material
-                </button>
+                </WeldixButton>
               </div>
             )
           }

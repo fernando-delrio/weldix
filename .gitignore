@@ -22,7 +22,7 @@ backend/docs/
 
 # Claude Code — instrucciones y config locales privadas
 CLAUDE.md
-.claude/settings.local.json
+.claude/
 
 # Frontend artifacts
 frontend/node_modules/

@@ -1,4 +1,4 @@
-import AppShell from './AppShell'
+import LegalPageLayout from './LegalPageLayout'
 
 const Section = ({ title, children }) => (
   <section className="space-y-3">
@@ -8,7 +8,7 @@ const Section = ({ title, children }) => (
 )
 
 const TerminosPage = () => (
-  <AppShell>
+  <LegalPageLayout>
     <div className="mx-auto w-full max-w-[720px] space-y-8 pb-8">
       <div className="space-y-1">
         <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-300">Legal</p>
@@ -169,7 +169,7 @@ const TerminosPage = () => (
         </p>
       </Section>
     </div>
-  </AppShell>
+  </LegalPageLayout>
 )
 
 export default TerminosPage

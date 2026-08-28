@@ -1,10 +1,14 @@
 import { Link } from 'react-router-dom'
 
 import { authTw, cx } from '../utils/tw'
-import Particles from '../../../components/Particles/Particles'
-import CountUp from '../../../components/CountUp/CountUp'
 import WordReveal from '../../core/components/WordReveal'
 import { useTheme } from '../../core/lib/ThemeContext'
+
+const VALUE_PROPS = [
+  { icon: 'bx-tab', text: 'Funciona en la tablet del taller, sin instalar nada' },
+  { icon: 'bx-time-five', text: 'Fichaje conforme al RDL 8/2019 desde el primer día' },
+  { icon: 'bx-bot', text: 'Asistente con contexto real de tus trabajos y tu stock' },
+]
 
 const modeButtonClass = (currentMode, targetMode) =>
   cx(
@@ -27,18 +31,6 @@ const AuthLayout = ({ mode, title, subtitle, feedback, error, children }) => {
       <div className={authTw.twoColumnGrid}>
         <section className={cx(authTw.heroSection, isDark ? 'bg-[#070b0f]' : 'bg-[#f1f5f9]')}>
           <div className={authTw.heroGlow} />
-          <div className="pointer-events-none absolute inset-0 z-0 opacity-40">
-            <Particles
-              particleCount={120}
-              particleSpread={8}
-              speed={0.06}
-              particleColors={['#f59e0b', '#fbbf24', '#ffffff', '#d97706']}
-              alphaParticles
-              particleBaseSize={80}
-              sizeRandomness={0.8}
-              disableRotation={false}
-            />
-          </div>
 
           <div className={authTw.heroContent}>
             <div className={authTw.logoRow}>
@@ -61,25 +53,17 @@ const AuthLayout = ({ mode, title, subtitle, feedback, error, children }) => {
               </h2>
               <p className={authTw.heroParagraph}>
                 Gestiona trabajos, materiales y equipos desde una sola plataforma para soldadura y
-                caldereria industrial.
+                calderería industrial.
               </p>
-            </div>
 
-            <div className={authTw.metricRow}>
-              <div>
-                <strong className={authTw.metricValue}>
-                  <CountUp from={0} to={100} duration={2} />%
-                </strong>
-                <small className={authTw.metricLabel}>WEB SIN INSTALAR</small>
-              </div>
-              <div>
-                <strong className={authTw.metricValue}>IA</strong>
-                <small className={authTw.metricLabel}>INTEGRADA</small>
-              </div>
-              <div>
-                <strong className={authTw.metricValue}>v1.0</strong>
-                <small className={authTw.metricLabel}>PRODUCCION</small>
-              </div>
+              <ul className={authTw.valueList}>
+                {VALUE_PROPS.map((v) => (
+                  <li key={v.icon} className={authTw.valueItem}>
+                    <i className={`bx ${v.icon} ${authTw.valueIcon}`} aria-hidden="true" />
+                    {v.text}
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         </section>
@@ -93,14 +77,16 @@ const AuthLayout = ({ mode, title, subtitle, feedback, error, children }) => {
               <i className="bx bx-arrow-back text-sm" />
               Volver al inicio
             </Link>
-            <div className={authTw.modeSwitch}>
-              <Link to="/login" className={modeButtonClass(mode, 'login')}>
-                Iniciar sesion
-              </Link>
-              <Link to="/registro" className={modeButtonClass(mode, 'register')}>
-                Registrar taller
-              </Link>
-            </div>
+            {(mode === 'login' || mode === 'register') && (
+              <div className={authTw.modeSwitch}>
+                <Link to="/login" className={modeButtonClass(mode, 'login')}>
+                  Iniciar sesion
+                </Link>
+                <Link to="/registro" className={modeButtonClass(mode, 'register')}>
+                  Registrar taller
+                </Link>
+              </div>
+            )}
 
             <h1 className={authTw.panelTitle}>{title}</h1>
             <p className={authTw.panelSubtitle}>{subtitle}</p>
@@ -108,14 +94,6 @@ const AuthLayout = ({ mode, title, subtitle, feedback, error, children }) => {
             {children}
 
             {feedbackMessage({ feedback, error })}
-
-            <div className={authTw.footerRow}>
-              <small className={authTw.footerVersion}>WELDIX v1.0</small>
-              <span className={authTw.footerStatus}>
-                <i className={authTw.footerDot} />
-                Sistemas operativos
-              </span>
-            </div>
           </div>
         </section>
       </div>
