@@ -12,7 +12,6 @@ const COMPARATIVA = [
   { feature: 'Nóminas', fichaje: true, weldix: true },
   { feature: 'Órdenes de trabajo (OT)', fichaje: false, weldix: true },
   { feature: 'Stock + lectura de albaranes con IA', fichaje: false, weldix: true },
-  { feature: 'Mantenimiento de máquinas (GMAO)', fichaje: false, weldix: true },
   { feature: 'Portal para el cliente', fichaje: false, weldix: true },
   { feature: 'IA técnica de soldadura', fichaje: false, weldix: true },
   { feature: 'Fotos y QR por trabajo', fichaje: false, weldix: true },

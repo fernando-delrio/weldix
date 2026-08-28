@@ -63,16 +63,6 @@ const SHOWCASE = [
     ],
   },
   {
-    icon: 'bx bx-wrench',
-    title: 'Equipos y mantenimiento (GMAO)',
-    star: true,
-    hook: 'Tu maquinaria, con semáforo de mantenimiento. Nada se te pasa.',
-    points: [
-      'Inventario con estado: operativo, en revisión, averiado, retirado.',
-      'Alertas de mantenimiento vencido según el intervalo de cada equipo.',
-    ],
-  },
-  {
     icon: 'bx bx-group',
     title: 'RRHH completo',
     hook: 'Todo el papeleo laboral del taller, en un sitio.',
@@ -99,7 +89,7 @@ const SHOWCASE = [
     hook: 'Una IA que entiende de soldadura Y de tu taller.',
     points: [
       'Técnica: MIG/TIG, materiales, defectos, normativa (ISO 9606, EN 1090), seguridad.',
-      'Gestión: responde con tus OTs, stock, mantenimiento, fichajes y nóminas reales.',
+      'Gestión: responde con tus OTs, stock, fichajes y nóminas reales.',
       'Consciente del rol: distinta respuesta para admin y operario.',
     ],
   },
@@ -128,7 +118,7 @@ const SHOWCASE = [
     star: true,
     hook: 'El taller te avisa. No al revés.',
     points: [
-      'Campana con avisos en vivo: stock bajo, OT bloqueada, mantenimiento vencido.',
+      'Campana con avisos en vivo: stock bajo, OT bloqueada más de 48 h.',
       'Sin recargar: llegan solos por WebSocket.',
     ],
   },

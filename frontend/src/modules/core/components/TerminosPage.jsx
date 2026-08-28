@@ -40,7 +40,6 @@ const TerminosPage = () => (
           <li>Gestión de órdenes de trabajo (OT) y seguimiento de estado</li>
           <li>Control de stock de materiales</li>
           <li>Registro de fichajes y jornadas laborales</li>
-          <li>Gestión de equipos y mantenimiento preventivo</li>
           <li>Panel de administración para gestión de operarios</li>
           <li>Asistente IA integrado para consultas sobre el taller</li>
         </ul>

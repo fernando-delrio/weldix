@@ -78,11 +78,6 @@ const CATEGORIES = [
         title: 'Nóminas',
         desc: 'El admin sube el PDF de cada nómina y el operario descarga solo las suyas desde su perfil.',
       },
-      {
-        icon: 'bx bx-wrench',
-        title: 'Mantenimiento (GMAO)',
-        desc: 'Inventario de máquinas con estado y semáforo de mantenimiento: te avisa cuando una revisión vence.',
-      },
     ],
   },
   {
@@ -101,7 +96,7 @@ const CATEGORIES = [
       {
         icon: 'bx bx-bell',
         title: 'Avisos en tiempo real',
-        desc: 'Campana con avisos en vivo: stock bajo, OT bloqueada más de 48 h o mantenimiento vencido.',
+        desc: 'Campana con avisos en vivo: stock bajo o OT bloqueada más de 48 h.',
       },
     ],
   },

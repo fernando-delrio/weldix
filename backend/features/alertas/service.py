@@ -1,17 +1,20 @@
 """
 Motor de alertas — calcula los avisos activos del taller en este momento.
 
-Tres fuentes de alerta:
+Dos fuentes de alerta:
   1. OTs bloqueadas en 'en_proceso' más de 48 h desde fecha_inicio
   2. Materiales de stock por debajo del mínimo
-  3. Equipos con mantenimiento vencido (días desde último > intervalo)
+
+Nota: hubo una tercera fuente (mantenimiento de equipos vencido) que se quitó
+porque el módulo Equipos/GMAO no tiene ruta en el frontend — esas alertas
+enlazaban a /app/equipos, un callejón sin salida. Si el módulo se publica
+alguna vez, esta es la función a la que hay que devolver esa fuente.
 """
 from datetime import date, timedelta
 
 from sqlalchemy.orm import Session
 
 from backend.core.ws_manager import ws_manager
-from backend.features.equipos.model import Equipo
 from backend.features.jobs.model import Job
 from backend.features.stock.model import Material
 
@@ -41,19 +44,6 @@ def get_current_alerts(db: Session, tenant_id: int) -> list[dict]:
         .all()
     )
 
-    equipos_vencidos = [
-        e
-        for e in db.query(Equipo)
-        .filter(
-            Equipo.tenant_id == tenant_id,
-            Equipo.estado == "operativo",
-            Equipo.ultimo_mantenimiento.isnot(None),
-            Equipo.intervalo_dias > 0,
-        )
-        .all()
-        if (date.today() - e.ultimo_mantenimiento).days > e.intervalo_dias
-    ]
-
     alerts: list[dict] = []
 
     alerts += [
@@ -78,21 +68,6 @@ def get_current_alerts(db: Session, tenant_id: int) -> list[dict]:
             "link": "/app/stock",
         }
         for m in low_stock
-    ]
-
-    today = date.today()
-    alerts += [
-        {
-            "id": f"equipo_{e.id}",
-            "type": "equipo_mantenimiento",
-            "level": "error"
-            if (today - e.ultimo_mantenimiento).days > e.intervalo_dias * 1.5
-            else "warning",
-            "title": f"Mantenimiento vencido: {e.nombre}",
-            "body": f"Último: {e.ultimo_mantenimiento.strftime('%d/%m/%Y')} · intervalo: {e.intervalo_dias} días",
-            "link": "/app/equipos",
-        }
-        for e in equipos_vencidos
     ]
 
     return alerts

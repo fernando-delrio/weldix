@@ -10,7 +10,6 @@ const FEATURES = [
   { icon: 'bx bx-time-five', label: 'Control de fichaje' },
   { icon: 'bx bx-package', label: 'Gestión de stock' },
   { icon: 'bx bx-group', label: 'RRHH completo' },
-  { icon: 'bx bx-wrench', label: 'GMAO — Equipos' },
   { icon: 'bx bx-bot', label: 'IA especializada' },
   { icon: 'bx bx-qr', label: 'Escáner QR' },
   { icon: 'bx bxs-file-pdf', label: 'Nóminas digitales' },

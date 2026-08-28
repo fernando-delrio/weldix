@@ -11,6 +11,9 @@ backend/venv/
 *.db
 backend/weldix.db
 
+# Media subida por usuarios en dev local (en prod es efímero por diseño, no se versiona)
+media/
+
 # Environment files
 .env
 .env.*

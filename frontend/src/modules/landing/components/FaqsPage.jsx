@@ -22,7 +22,7 @@ const FAQS = [
   },
   {
     q: '¿Qué diferencia hay con un software de fichaje (Sesame, Jornada…)?',
-    a: 'Esos hacen fichaje y RRHH. Weldix hace eso y además gestiona el taller entero: órdenes de trabajo, stock, mantenimiento de máquinas, portal para el cliente y una IA que entiende de soldadura.',
+    a: 'Esos hacen fichaje y RRHH. Weldix hace eso y además gestiona el taller entero: órdenes de trabajo, stock, portal para el cliente y una IA que entiende de soldadura.',
   },
   {
     q: '¿Cumple la ley de registro horario (RDL 8/2019)?',
