@@ -11,6 +11,7 @@ están filtrados por tenant (un admin no ve datos de otro taller). Usa
 
 from datetime import date, datetime, timedelta, timezone
 
+from backend.features.auth.model import User
 from backend.features.fichaje.model import Fichaje
 from backend.features.rrhh.model import SolicitudAusencia
 
@@ -242,3 +243,23 @@ def test_admin_dashboard_ignora_solicitud_pendiente_de_aprobar(admin_client):
     # ASSERT — una solicitud pendiente no debe marcar al operario como ausente
     user = next(u for u in response.json()["users"] if u["id"] == ctx["op_a_id"])
     assert user["ausente_hoy"] is None
+
+
+def test_admin_dashboard_exposes_pin_del_operario(admin_client):
+    """Regresión: AdminUserItem no declaraba `pin`, así que Pydantic lo
+    descartaba en silencio aunque el service ya lo calculaba (_user_item).
+    Mismo patrón de bug que urgente/motivo_rechazo, ver ERRORES_APRENDIDOS.md."""
+    # ARRANGE
+    ctx = admin_client
+    operario = ctx["db"].query(User).filter_by(id=ctx["op_a_id"]).first()
+    operario.pin = "4321"
+    ctx["db"].commit()
+
+    # ACT
+    response = ctx["client"].get(
+        "/admin/dashboard", headers=_auth_header(ctx["token_admin_a"])
+    )
+
+    # ASSERT
+    user = next(u for u in response.json()["users"] if u["id"] == ctx["op_a_id"])
+    assert user["pin"] == "4321"

@@ -25,6 +25,9 @@ class AdminUserItem(BaseModel):
     full_name: str | None
     role: str
     worker_number: int | None = None
+    # Sin este campo, Pydantic lo descartaba de la respuesta en silencio —
+    # el service ya lo calculaba (_user_item), pero el admin nunca lo veía.
+    pin: str | None = None
     pending_vacaciones_count: int = 0
     pending_vacaciones_dias: int = 0
     active_jobs_count: int = 0
