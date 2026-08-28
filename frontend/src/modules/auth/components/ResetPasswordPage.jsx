@@ -1,5 +1,8 @@
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import AuthLayout from './AuthLayout'
+import { authTw } from '../utils/tw'
+import WeldixButton from '../../core/components/WeldixButton'
 import { authService } from '../services/authService'
 
 const ResetPasswordPage = () => {
@@ -42,7 +45,7 @@ const ResetPasswordPage = () => {
       <p className="text-sm font-semibold text-rose-300">Enlace no válido. Solicita uno nuevo.</p>
       <Link
         to="/forgot-password"
-        className="mt-4 block text-sm font-semibold text-sky-400 hover:text-sky-300"
+        className="mt-4 block text-sm font-semibold text-amber-400 hover:text-amber-300"
       >
         Recuperar contraseña
       </Link>
@@ -50,71 +53,63 @@ const ResetPasswordPage = () => {
   )
 
   return (
-    <main className="grid min-h-screen place-items-center bg-slate-950 px-4">
-      <div className="w-full max-w-sm space-y-8">
-        <div className="text-center">
-          <p className="text-2xl font-extrabold tracking-[0.18em] text-slate-100">WELDIX</p>
-          <h1 className="mt-3 text-lg font-semibold text-slate-300">Nueva contraseña</h1>
-        </div>
+    <AuthLayout mode="reset" title="Nueva contraseña" subtitle="Elige una contraseña que recuerdes">
+      {noToken || (
+        <form onSubmit={handleSubmit} className={authTw.formGrid} noValidate>
+          <label htmlFor="new-password" className={authTw.fieldLabel}>
+            NUEVA CONTRASEÑA
+          </label>
+          <div className={authTw.fieldShell}>
+            <i className={`bx bx-lock-alt ${authTw.fieldIcon}`} aria-hidden="true" />
+            <input
+              id="new-password"
+              type="password"
+              autoComplete="new-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Mínimo 8 caracteres"
+              className={authTw.fieldInput}
+            />
+          </div>
 
-        {noToken || (
-          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-            <div>
-              <label
-                htmlFor="new-password"
-                className="mb-1.5 block text-xs font-semibold uppercase tracking-widest text-slate-500"
-              >
-                Nueva contraseña
-              </label>
-              <input
-                id="new-password"
-                type="password"
-                autoComplete="new-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Mínimo 8 caracteres"
-                className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 text-sm text-slate-100 placeholder-slate-600 outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
-              />
-            </div>
+          <label htmlFor="confirm-password" className={authTw.fieldLabel}>
+            CONFIRMAR CONTRASEÑA
+          </label>
+          <div className={authTw.fieldShell}>
+            <i className={`bx bx-lock-alt ${authTw.fieldIcon}`} aria-hidden="true" />
+            <input
+              id="confirm-password"
+              type="password"
+              autoComplete="new-password"
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+              placeholder="Repite la contraseña"
+              className={authTw.fieldInput}
+            />
+          </div>
 
-            <div>
-              <label
-                htmlFor="confirm-password"
-                className="mb-1.5 block text-xs font-semibold uppercase tracking-widest text-slate-500"
-              >
-                Confirmar contraseña
-              </label>
-              <input
-                id="confirm-password"
-                type="password"
-                autoComplete="new-password"
-                value={confirm}
-                onChange={(e) => setConfirm(e.target.value)}
-                placeholder="Repite la contraseña"
-                className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 text-sm text-slate-100 placeholder-slate-600 outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
-              />
-            </div>
+          {error && <p className="text-xs text-rose-400">{error}</p>}
 
-            {error && <p className="text-xs text-rose-400">{error}</p>}
+          <WeldixButton
+            type="submit"
+            variant="warning"
+            size="lg"
+            isLoading={isLoading}
+            loadingLabel="Guardando…"
+            className="mt-1 w-full bg-amber-500 text-slate-950 hover:bg-amber-400"
+          >
+            Guardar nueva contraseña
+          </WeldixButton>
 
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="h-12 w-full rounded-xl bg-sky-600 text-sm font-bold tracking-wide text-white transition hover:bg-sky-500 disabled:opacity-60"
-            >
-              {isLoading ? 'Guardando…' : 'Guardar nueva contraseña'}
-            </button>
-
-            <Link
-              to="/login"
-              className="block text-center text-sm text-slate-500 hover:text-slate-300"
-            >
-              ← Volver al inicio de sesión
-            </Link>
-          </form>
-        )}
-      </div>
-    </main>
+          <Link
+            to="/login"
+            className="mt-1 block text-center text-sm text-slate-500 hover:text-slate-300"
+          >
+            ← Volver al inicio de sesión
+          </Link>
+        </form>
+      )}
+    </AuthLayout>
   )
 }
 
