@@ -1,4 +1,5 @@
 from collections import defaultdict
+from datetime import date
 
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -7,6 +8,7 @@ from backend.features.auth.model import User
 from backend.features.fichaje.model import Fichaje
 from backend.features.jobs.model import Job
 from backend.features.rrhh.model import SolicitudAusencia
+from backend.features.rrhh.schemas import TIPOS_AUSENCIA
 
 _ESTADO_TONE = {
     "pendiente": "warning",
@@ -102,6 +104,25 @@ def get_admin_dashboard(db: Session, tenant_id: int | None = None) -> dict:
             }
         )
 
+    # Tarjeta "quién está en el taller" (Inicio del admin): fichaje abierto ahora
+    # mismo, o ausencia aprobada que cubre hoy. Query aparte (no reutiliza el
+    # `fichajes` de arriba, que está recortado a 800 filas por rendimiento) para
+    # que un fichaje abierto nunca se pierda por ese recorte.
+    q_open_fichajes = db.query(Fichaje).filter(Fichaje.fin.is_(None))
+    if tenant_id is not None:
+        q_open_fichajes = q_open_fichajes.filter(Fichaje.tenant_id == tenant_id)
+    en_taller_ids = {f.operario_id for f in q_open_fichajes.all()}
+
+    hoy = date.today()
+    ausencias_hoy = q_solicitudes.filter(
+        SolicitudAusencia.estado == "aprobada",
+        SolicitudAusencia.fecha_inicio <= hoy,
+        SolicitudAusencia.fecha_fin >= hoy,
+    ).all()
+    ausente_hoy_by_operario = {
+        a.operario_id: TIPOS_AUSENCIA.get(a.tipo, a.tipo) for a in ausencias_hoy
+    }
+
     pending_vac_rows = (
         q_solicitudes.with_entities(
             SolicitudAusencia.operario_id,
@@ -126,6 +147,8 @@ def get_admin_dashboard(db: Session, tenant_id: int | None = None) -> dict:
         item["active_jobs"] = active_by_operario.get(user.id, [])
         item["active_jobs_count"] = len(item["active_jobs"])
         item["fichajes"] = fichajes_by_operario.get(user.id, [])
+        item["en_taller"] = user.id in en_taller_ids
+        item["ausente_hoy"] = ausente_hoy_by_operario.get(user.id)
         users_payload.append(item)
 
     return {
