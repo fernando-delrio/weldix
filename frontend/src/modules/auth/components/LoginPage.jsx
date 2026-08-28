@@ -1,6 +1,7 @@
 import { Link, useSearchParams } from 'react-router-dom'
 import AuthLayout from './AuthLayout'
-import { authTw, cx } from '../utils/tw'
+import { authTw } from '../utils/tw'
+import WeldixButton from '../../core/components/WeldixButton'
 import { useLoginForm } from '../hooks/useLoginForm'
 
 const LoginPage = () => {
@@ -24,10 +25,10 @@ const LoginPage = () => {
       )}
       <form onSubmit={submit} className={authTw.formGrid}>
         <label htmlFor="login-email" className={authTw.fieldLabel}>
-          CORREO ELECTRONICO
+          CORREO ELECTRÓNICO
         </label>
         <div className={authTw.fieldShell}>
-          <span className={authTw.fieldIcon}>@</span>
+          <i className={`bx bx-envelope ${authTw.fieldIcon}`} aria-hidden="true" />
           <input
             id="login-email"
             type="email"
@@ -41,16 +42,16 @@ const LoginPage = () => {
         </div>
 
         <label htmlFor="login-password" className={authTw.fieldLabel}>
-          CONTRASENA
+          CONTRASEÑA
         </label>
         <div className={authTw.fieldShell}>
-          <span className={authTw.fieldIcon}>#</span>
+          <i className={`bx bx-lock-alt ${authTw.fieldIcon}`} aria-hidden="true" />
           <input
             id="login-password"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="******"
+            placeholder="••••••"
             autoComplete="current-password"
             required
             className={authTw.fieldInput}
@@ -61,15 +62,16 @@ const LoginPage = () => {
           ¿Olvidaste tu contraseña?
         </Link>
 
-        <button
+        <WeldixButton
           type="submit"
-          disabled={isSubmitting}
-          aria-busy={isSubmitting}
-          aria-label={isSubmitting ? 'Validando credenciales…' : 'Entrar'}
-          className={cx(authTw.primaryButton, authTw.primaryButtonWideTracking)}
+          variant="warning"
+          size="lg"
+          isLoading={isSubmitting}
+          loadingLabel="Validando credenciales…"
+          className="mt-1 w-full bg-amber-500 text-slate-950 hover:bg-amber-400"
         >
-          {isSubmitting ? 'VALIDANDO...' : 'ENTRAR  ->'}
-        </button>
+          Entrar
+        </WeldixButton>
       </form>
     </AuthLayout>
   )

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import AuthLayout from './AuthLayout'
-import { authTw, cx } from '../utils/tw'
+import { authTw } from '../utils/tw'
+import WeldixButton from '../../core/components/WeldixButton'
 import useRegisterWorkspaceForm from '../hooks/useRegisterWorkspaceForm'
 
 const RegisterWorkspacePage = () => {
@@ -10,7 +11,7 @@ const RegisterWorkspacePage = () => {
     <AuthLayout
       mode="register"
       title="Crea tu taller"
-      subtitle="Empieza gratis en 30 segundos. Sin tarjeta."
+      subtitle="15 días de prueba con todas las funciones. Sin tarjeta."
       feedback={feedback}
       error={error}
     >
@@ -20,7 +21,7 @@ const RegisterWorkspacePage = () => {
           NOMBRE DEL TALLER
         </label>
         <div className={authTw.fieldShell}>
-          <span className={authTw.fieldIcon}>⚒</span>
+          <i className={`bx bx-buildings ${authTw.fieldIcon}`} aria-hidden="true" />
           <input
             id="reg-taller"
             type="text"
@@ -38,7 +39,7 @@ const RegisterWorkspacePage = () => {
           TU NOMBRE <span className="text-slate-600">(opcional)</span>
         </label>
         <div className={authTw.fieldShell}>
-          <span className={authTw.fieldIcon}>👤</span>
+          <i className={`bx bx-user ${authTw.fieldIcon}`} aria-hidden="true" />
           <input
             id="reg-name"
             type="text"
@@ -52,10 +53,10 @@ const RegisterWorkspacePage = () => {
 
         {/* Email */}
         <label htmlFor="reg-email" className={authTw.fieldLabel}>
-          CORREO ELECTRONICO
+          CORREO ELECTRÓNICO
         </label>
         <div className={authTw.fieldShell}>
-          <span className={authTw.fieldIcon}>@</span>
+          <i className={`bx bx-envelope ${authTw.fieldIcon}`} aria-hidden="true" />
           <input
             id="reg-email"
             type="email"
@@ -70,10 +71,10 @@ const RegisterWorkspacePage = () => {
 
         {/* Contraseña */}
         <label htmlFor="reg-password" className={authTw.fieldLabel}>
-          CONTRASENA (mín. 8 caracteres)
+          CONTRASEÑA (mín. 8 caracteres)
         </label>
         <div className={authTw.fieldShell}>
-          <span className={authTw.fieldIcon}>#</span>
+          <i className={`bx bx-lock-alt ${authTw.fieldIcon}`} aria-hidden="true" />
           <input
             id="reg-password"
             type="password"
@@ -108,15 +109,16 @@ const RegisterWorkspacePage = () => {
           </span>
         </label>
 
-        <button
+        <WeldixButton
           type="submit"
-          disabled={isSubmitting}
-          aria-busy={isSubmitting}
-          aria-label={isSubmitting ? 'Creando tu taller…' : 'Crear mi taller'}
-          className={cx(authTw.primaryButton, authTw.primaryButtonWideTracking, 'mt-2')}
+          variant="warning"
+          size="lg"
+          isLoading={isSubmitting}
+          loadingLabel="Creando tu taller…"
+          className="mt-2 w-full bg-amber-500 text-slate-950 hover:bg-amber-400"
         >
-          {isSubmitting ? 'CREANDO...' : 'CREAR MI TALLER  ->'}
-        </button>
+          Crear mi taller
+        </WeldixButton>
 
         <p className="mt-3 text-center text-xs text-slate-500">
           ¿Ya tienes cuenta?{' '}
