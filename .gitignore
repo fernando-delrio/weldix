@@ -27,6 +27,7 @@ CLAUDE.md
 # Frontend artifacts
 frontend/node_modules/
 frontend/dist/
+frontend/.twprobe/
 
 # Logs
 *.log
