@@ -9,6 +9,12 @@ están filtrados por tenant (un admin no ve datos de otro taller). Usa
 """
 
 
+from datetime import date, datetime, timedelta, timezone
+
+from backend.features.fichaje.model import Fichaje
+from backend.features.rrhh.model import SolicitudAusencia
+
+
 def _auth_header(token: str) -> dict:
     return {"Authorization": f"Bearer {token}"}
 
@@ -136,3 +142,103 @@ def test_admin_dashboard_exposes_urgente_and_motivo_rechazo(admin_client):
     dashboard_job = next(j for j in response.json()["jobs"] if j["id"] == job["id"])
     assert dashboard_job["urgente"] is True
     assert dashboard_job["motivo_rechazo"] == "Falta rematar"
+
+
+# ─── Tarjeta "quién está en el taller" (Inicio del admin) ──────────────────
+
+
+def test_admin_dashboard_marks_operario_en_taller_con_fichaje_abierto(admin_client):
+    # ARRANGE — el operario de A tiene una jornada abierta (sin fin)
+    ctx = admin_client
+    ctx["db"].add(
+        Fichaje(tenant_id=ctx["tenant_a"].id, operario_id=ctx["op_a_id"], fin=None)
+    )
+    ctx["db"].commit()
+
+    # ACT
+    response = ctx["client"].get(
+        "/admin/dashboard", headers=_auth_header(ctx["token_admin_a"])
+    )
+
+    # ASSERT
+    user = next(u for u in response.json()["users"] if u["id"] == ctx["op_a_id"])
+    assert user["en_taller"] is True
+    assert user["ausente_hoy"] is None
+
+
+def test_admin_dashboard_no_marca_en_taller_si_la_jornada_ya_se_cerro(admin_client):
+    # ARRANGE — jornada de ayer, ya finalizada
+    ctx = admin_client
+    ctx["db"].add(
+        Fichaje(
+            tenant_id=ctx["tenant_a"].id,
+            operario_id=ctx["op_a_id"],
+            fin=datetime.now(timezone.utc) - timedelta(days=1),
+            horas=8,
+        )
+    )
+    ctx["db"].commit()
+
+    # ACT
+    response = ctx["client"].get(
+        "/admin/dashboard", headers=_auth_header(ctx["token_admin_a"])
+    )
+
+    # ASSERT
+    user = next(u for u in response.json()["users"] if u["id"] == ctx["op_a_id"])
+    assert user["en_taller"] is False
+
+
+def test_admin_dashboard_marca_ausente_hoy_con_solicitud_aprobada(admin_client):
+    # ARRANGE — vacaciones aprobadas que cubren hoy
+    ctx = admin_client
+    hoy = date.today()
+    ctx["db"].add(
+        SolicitudAusencia(
+            tenant_id=ctx["tenant_a"].id,
+            operario_id=ctx["op_a_id"],
+            tipo="vacaciones",
+            fecha_inicio=hoy - timedelta(days=1),
+            fecha_fin=hoy + timedelta(days=1),
+            dias_solicitados=3,
+            estado="aprobada",
+        )
+    )
+    ctx["db"].commit()
+
+    # ACT
+    response = ctx["client"].get(
+        "/admin/dashboard", headers=_auth_header(ctx["token_admin_a"])
+    )
+
+    # ASSERT
+    user = next(u for u in response.json()["users"] if u["id"] == ctx["op_a_id"])
+    assert user["ausente_hoy"] == "Vacaciones"
+    assert user["en_taller"] is False
+
+
+def test_admin_dashboard_ignora_solicitud_pendiente_de_aprobar(admin_client):
+    # ARRANGE — vacaciones que cubren hoy pero SIN aprobar todavía
+    ctx = admin_client
+    hoy = date.today()
+    ctx["db"].add(
+        SolicitudAusencia(
+            tenant_id=ctx["tenant_a"].id,
+            operario_id=ctx["op_a_id"],
+            tipo="vacaciones",
+            fecha_inicio=hoy,
+            fecha_fin=hoy,
+            dias_solicitados=1,
+            estado="pendiente",
+        )
+    )
+    ctx["db"].commit()
+
+    # ACT
+    response = ctx["client"].get(
+        "/admin/dashboard", headers=_auth_header(ctx["token_admin_a"])
+    )
+
+    # ASSERT — una solicitud pendiente no debe marcar al operario como ausente
+    user = next(u for u in response.json()["users"] if u["id"] == ctx["op_a_id"])
+    assert user["ausente_hoy"] is None

@@ -10,6 +10,7 @@ import { useAuthSession } from '../../auth/hooks/useAuthSession'
 import { useWorkerDashboard } from '../hooks/useWorkerDashboard'
 import { useIaContext } from '../../ia/lib/IaContext'
 import AdminJobsSection from '../../admin/components/AdminJobsSection'
+import TeamStatusCard from '../../admin/components/TeamStatusCard'
 import JornadaButton from '../../fichaje/components/JornadaButton'
 import ActiveJobCard from './ActiveJobCard'
 import MetricCard from './MetricCard'
@@ -248,6 +249,7 @@ const WorkerDashboardPage = () => {
                 canStart: !dashboard.activeJob,
               })}
 
+            {isAdmin && <TeamStatusCard />}
             {isAdmin && <AdminJobsSection />}
           </>
         )}
