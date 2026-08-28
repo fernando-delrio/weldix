@@ -30,6 +30,8 @@ class AdminUserItem(BaseModel):
     active_jobs_count: int = 0
     active_jobs: list[dict] = Field(default_factory=list)
     fichajes: list[dict] = Field(default_factory=list)
+    en_taller: bool = False
+    ausente_hoy: str | None = None
 
 
 class AdminMetrics(BaseModel):

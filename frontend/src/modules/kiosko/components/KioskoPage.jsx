@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 
 import useKiosko from '../hooks/useKiosko'
@@ -73,6 +74,27 @@ const KioskoPage = () => {
   const { token } = useParams()
   const state = useKiosko(token)
   const { info, input, submitting, pressDigit, backspace, clearInput, submit } = state
+
+  // Soporte de teclado físico — para talleres que ponen un PC fijo en la
+  // entrada en vez de una tablet táctil. El teclado numérico y el de fila
+  // superior mandan el mismo dígito en `e.key`, así que no hace falta
+  // distinguirlos.
+  useEffect(() => {
+    if (!info) return undefined
+    const handleKeyDown = (e) => {
+      if (e.key >= '0' && e.key <= '9') {
+        pressDigit(e.key)
+      } else if (e.key === 'Backspace') {
+        backspace()
+      } else if (e.key === 'Escape') {
+        clearInput()
+      } else if (e.key === 'Enter' && input && !submitting) {
+        submit()
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [info, input, submitting, pressDigit, backspace, clearInput, submit])
 
   const keyBtn =
     'flex h-16 items-center justify-center rounded-xl border border-slate-700 bg-slate-800/80 text-2xl font-bold text-slate-100 transition active:scale-95 active:bg-slate-700 sm:h-20 sm:text-3xl'
