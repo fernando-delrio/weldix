@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import WeldixButton from '../../core/components/WeldixButton'
 import ProgressBar from '../../core/components/ProgressBar'
 
@@ -70,27 +71,31 @@ const AdminJobCard = ({ job, onDelete }) => {
       }}
     >
       <div className="flex flex-wrap items-start justify-between gap-2">
-        <div className="flex flex-wrap items-center gap-2">
-          {codeTag(job)}
-          {statusBadge(job)}
-          {urgenteBadge(job)}
-        </div>
+        {/* El botón de eliminar queda fuera del Link a propósito: un <button>
+            dentro de un <a> es HTML inválido y complica el foco/accesibilidad. */}
+        <Link to={`/app/trabajos/${job.id}`} className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            {codeTag(job)}
+            {statusBadge(job)}
+            {urgenteBadge(job)}
+          </div>
+
+          <p className="mt-2 text-sm font-semibold text-slate-100">{job.titulo}</p>
+          <p className="text-sm text-slate-400">{job.cliente}</p>
+
+          {job.motivo_rechazo && (
+            <p className="mt-1 text-xs text-rose-400">Motivo: {job.motivo_rechazo}</p>
+          )}
+
+          {job.fecha_inicio && (
+            <p className="mt-1 text-xs text-slate-500">Entrega: {job.fecha_inicio}</p>
+          )}
+
+          <ProgressBar value={job.progreso} />
+          {operarioTag(job)}
+        </Link>
         {deleteButton({ onDelete: () => onDelete(job.id) })}
       </div>
-
-      <p className="mt-2 text-sm font-semibold text-slate-100">{job.titulo}</p>
-      <p className="text-sm text-slate-400">{job.cliente}</p>
-
-      {job.motivo_rechazo && (
-        <p className="mt-1 text-xs text-rose-400">Motivo: {job.motivo_rechazo}</p>
-      )}
-
-      {job.fecha_inicio && (
-        <p className="mt-1 text-xs text-slate-500">Entrega: {job.fecha_inicio}</p>
-      )}
-
-      <ProgressBar value={job.progreso} />
-      {operarioTag(job)}
     </div>
   )
 }
