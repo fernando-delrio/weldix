@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 
 import AppShell from '../../core/components/AppShell'
 import PanelCard from '../../core/components/PanelCard'
@@ -26,14 +27,29 @@ const loadingState = ({ isLoading }) =>
     </div>
   )
 
-const errorState = ({ isLoading, error, refresh }) =>
+// Un 403 no se arregla reintentando — es un problema de permisos, no de red.
+// En vez del botón "Reintentar", ofrecemos volver a una pantalla que sí puede ver.
+const forbiddenAction = () => (
+  <Link
+    to="/app"
+    className="mt-3 inline-block rounded-lg border border-rose-500/40 px-3 py-2 text-sm font-semibold text-rose-200 transition hover:bg-rose-500/10"
+  >
+    Volver a Inicio
+  </Link>
+)
+
+const retryAction = ({ refresh }) => (
+  <WeldixButton variant="danger" size="sm" onClick={refresh} className="mt-3">
+    Reintentar
+  </WeldixButton>
+)
+
+const errorState = ({ isLoading, error, isForbidden, refresh }) =>
   !isLoading &&
   error && (
     <PanelCard className="border-rose-700/40">
       <p className="text-sm font-semibold text-rose-300">{error}</p>
-      <WeldixButton variant="danger" size="sm" onClick={refresh} className="mt-3">
-        Reintentar
-      </WeldixButton>
+      {isForbidden ? forbiddenAction() : retryAction({ refresh })}
     </PanelCard>
   )
 
@@ -46,8 +62,16 @@ const feedbackBanner = ({ feedback }) =>
 
 // ── Componente principal ─────────────────────────────────────────────────────
 const AdminDashboardPage = () => {
-  const { dashboard, isLoading, error, refresh, createUser, resetUserPassword, regenerateUserPin } =
-    useAdminDashboard()
+  const {
+    dashboard,
+    isLoading,
+    error,
+    isForbidden,
+    refresh,
+    createUser,
+    resetUserPassword,
+    regenerateUserPin,
+  } = useAdminDashboard()
 
   const [showNewJobModal, setShowNewJobModal] = useState(false)
   const [showUserModal, setShowUserModal] = useState(false)
@@ -83,7 +107,7 @@ const AdminDashboardPage = () => {
         />
 
         {loadingState({ isLoading })}
-        {errorState({ isLoading, error, refresh })}
+        {errorState({ isLoading, error, isForbidden, refresh })}
         {feedbackBanner({ feedback })}
 
         {!isLoading && dashboard && (

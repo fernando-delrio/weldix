@@ -15,7 +15,11 @@ export const getAdminDashboard = async () => {
   const res = await fetch(`${API_BASE_URL}/admin/dashboard`, { headers: authHeaders() })
   if (!res.ok) {
     const body = await res.json().catch(() => ({}))
-    throw new Error(body.detail ?? 'Error al cargar el panel de administración')
+    const error = new Error(body.detail ?? 'Error al cargar el panel de administración')
+    // El status viaja en el error para que el hook distinga "no tienes permiso"
+    // (403, no tiene sentido reintentar) de un fallo real de red/servidor.
+    error.status = res.status
+    throw error
   }
   return res.json()
 }

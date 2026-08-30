@@ -12,18 +12,27 @@ import {
   resetUserPassword as apiResetUserPassword,
 } from '../services/adminService'
 
+const isForbiddenError = (err) => err.status === 403
+
 export const useAdminDashboard = () => {
   const [dashboard, setDashboard] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+  const [isForbidden, setIsForbidden] = useState(false)
 
   const refresh = useCallback(async () => {
     setIsLoading(true)
     setError('')
+    setIsForbidden(false)
     try {
       setDashboard(mapAdminDashboard(await getAdminDashboard()))
-    } catch {
-      setError('No se pudo cargar el panel de administración.')
+    } catch (err) {
+      setIsForbidden(isForbiddenError(err))
+      setError(
+        isForbiddenError(err)
+          ? 'No tienes permiso para ver el panel de administración.'
+          : 'No se pudo cargar el panel de administración.'
+      )
     } finally {
       setIsLoading(false)
     }
@@ -121,6 +130,7 @@ export const useAdminDashboard = () => {
     dashboard,
     isLoading,
     error,
+    isForbidden,
     refresh,
     assignJob,
     removeJob,

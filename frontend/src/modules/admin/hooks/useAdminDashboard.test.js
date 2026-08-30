@@ -1,5 +1,8 @@
 import { renderHook, waitFor, act } from '@testing-library/react'
 import { describe, it, expect, beforeEach } from 'vitest'
+import { http, HttpResponse } from 'msw'
+import { server } from '../../../tests/mocks/server'
+import { API_BASE_URL } from '../../core/lib/api'
 import { useAdminDashboard } from './useAdminDashboard'
 import { resetAdminMocks } from '../../../tests/mocks/handlers/admin.handlers'
 
@@ -28,5 +31,23 @@ describe('useAdminDashboard', () => {
     expect(result.current.dashboard.jobs[0].estado).toBe('pendiente')
     expect(result.current.dashboard.jobs[0].urgente).toBe(true)
     expect(result.current.dashboard.jobs[0].motivo_rechazo).toBe('Falta pulir la soldadura')
+  })
+
+  // Bug real: un operario que entra a /app/admin veía "No se pudo cargar" +
+  // un botón "Reintentar" que nunca iba a funcionar — un 403 no es un fallo
+  // de red, reintentar no cambia nada. El hook debe distinguir el 403.
+  it('expone isForbidden cuando el backend responde 403', async () => {
+    server.use(
+      http.get(`${API_BASE_URL}/admin/dashboard`, () => {
+        return HttpResponse.json({ detail: 'No autorizado' }, { status: 403 })
+      })
+    )
+
+    const { result } = renderHook(() => useAdminDashboard())
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false))
+
+    expect(result.current.isForbidden).toBe(true)
+    expect(result.current.error).toBe('No tienes permiso para ver el panel de administración.')
   })
 })
