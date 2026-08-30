@@ -21,6 +21,7 @@ class MetricSchema(BaseModel):
 
 class ActiveJobSchema(BaseModel):
     id: int
+    code: str | None = None
     status: str
     status_tone: str
     due_label: str
@@ -34,6 +35,7 @@ class ActiveJobSchema(BaseModel):
 
 class TodayJobSchema(BaseModel):
     id: int
+    code: str | None = None
     title: str
     due: str
     status: str
