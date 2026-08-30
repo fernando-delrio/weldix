@@ -366,6 +366,30 @@ def test_generar_variantes_creates_one_material_per_combination(stock_client):
     assert len(body["materiales"]) == 4
 
 
+def test_generar_variantes_display_name_uses_readable_labels(stock_client):
+    """Bug real: el display_name generado salia como 'metrica=M6' (formato
+    de print de depuracion, clave en snake_case + signo igual). Ahora sale
+    como 'Metrica: M6' -- legible, sin el '=' ni el guion bajo."""
+    # ARRANGE
+    token = _admin_token(stock_client)
+
+    # ACT
+    response = stock_client.post(
+        "/stock/generar-variantes",
+        json={
+            "category": "tornilleria",
+            "attribute_values": {"metrica": ["M6"], "longitud_mm": [20]},
+        },
+        headers=_auth_header(token),
+    )
+
+    # ASSERT
+    display_name = response.json()["materiales"][0]["display_name"]
+    assert "Metrica: M6" in display_name
+    assert "Longitud mm: 20" in display_name
+    assert "=" not in display_name
+
+
 def test_generar_variantes_skips_ones_that_already_exist(stock_client):
     """Repetir la misma generación no duplica — 'omitidas' cuenta los que ya
     existen con el mismo display_name (backend/features/stock/service.py)."""

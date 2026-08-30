@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { deleteDemoData } from '../../admin/services/adminService'
 import { cx } from '../lib/cx'
+import { ONBOARDING_STEP_KEY, readStoredOnboardingStep } from '../lib/onboardingStorage'
 import WeldixButton from './WeldixButton'
 
 const STEPS = [
@@ -53,7 +54,7 @@ const StepDot = ({ index, current }) => (
 )
 
 const OnboardingWizard = ({ onComplete }) => {
-  const [step, setStep] = useState(0)
+  const [step, setStep] = useState(() => readStoredOnboardingStep(STEPS.length))
   const [isCleaning, setIsCleaning] = useState(false)
   const [cleanDone, setCleanDone] = useState(false)
   const navigate = useNavigate()
@@ -62,15 +63,25 @@ const OnboardingWizard = ({ onComplete }) => {
   const isLast = step === STEPS.length - 1
   const isFirst = step === 0
 
-  const goNext = () => {
-    if (isLast) {
-      onComplete()
-      return
-    }
-    setStep((s) => s + 1)
+  const goToStep = (next) => {
+    setStep(next)
+    localStorage.setItem(ONBOARDING_STEP_KEY, String(next))
   }
 
-  const goBack = () => setStep((s) => s - 1)
+  const finish = () => {
+    localStorage.removeItem(ONBOARDING_STEP_KEY)
+    onComplete()
+  }
+
+  const goNext = () => {
+    if (isLast) {
+      finish()
+      return
+    }
+    goToStep(step + 1)
+  }
+
+  const goBack = () => goToStep(step - 1)
 
   const handleCleanDemo = async () => {
     setIsCleaning(true)
@@ -101,12 +112,7 @@ const OnboardingWizard = ({ onComplete }) => {
           <span className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
             Paso {step + 1} de {STEPS.length}
           </span>
-          <WeldixButton
-            variant="ghost"
-            size="sm"
-            onClick={onComplete}
-            aria-label="Saltar onboarding"
-          >
+          <WeldixButton variant="ghost" size="sm" onClick={finish} aria-label="Saltar onboarding">
             Saltar
           </WeldixButton>
         </div>

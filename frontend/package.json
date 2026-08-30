@@ -63,10 +63,12 @@
 		"lint-staged": "^16.4.0",
 		"msw": "^2.14.6",
 		"prettier": "^3.8.3",
-		"sharp": "^0.34.5",
 		"vite": "^7.3.1",
 		"vite-plugin-pwa": "^1.2.0",
 		"vitest": "^4.1.7",
 		"workbox-window": "^7.4.0"
+	},
+	"overrides": {
+		"esbuild": "^0.28.2"
 	}
 }
