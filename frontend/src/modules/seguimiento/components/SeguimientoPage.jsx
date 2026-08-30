@@ -1,6 +1,7 @@
 import { useParams } from 'react-router-dom'
 import useSeguimiento from '../hooks/useSeguimiento'
 import { cx } from '../../core/lib/cx'
+import { useTheme } from '../../core/lib/ThemeContext'
 
 const STEPS = [
   { key: 'pendiente', label: 'Recibido', step: 1 },
@@ -126,23 +127,24 @@ const errorState = ({ error }) =>
 const SeguimientoPage = () => {
   const { token } = useParams()
   const { job, isLoading, error, lastUpdated } = useSeguimiento(token)
+  const { isDark } = useTheme()
 
   const fmtTime = (d) => d?.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
-      {/* Header mínimo */}
-      <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+      {/* Header mínimo — usa var(--card-*) en vez de dark: para no chocar con
+          la redefinición de la escala slate que hace el tema de la app (ver
+          el bug del título más arriba: dark:bg-slate-900 se volvía blanco). */}
+      <header
+        className="border-b"
+        style={{ borderColor: 'var(--card-border)', backgroundColor: 'var(--card-bg)' }}
+      >
         <div className="mx-auto flex h-14 max-w-2xl items-center px-4">
           <img
-            src="/weldix-logo.svg"
+            src={isDark ? '/weldix-logo-white.svg' : '/weldix-logo.svg'}
             alt="Weldix"
-            className="h-8 w-auto object-contain dark:hidden"
-          />
-          <img
-            src="/weldix-logo-white.svg"
-            alt="Weldix"
-            className="hidden h-8 w-auto object-contain dark:block"
+            className="h-8 w-auto object-contain"
           />
         </div>
       </header>
@@ -158,9 +160,7 @@ const SeguimientoPage = () => {
               <p className="text-xs font-bold uppercase tracking-widest text-amber-600">
                 {job.code}
               </p>
-              <h1 className="mt-1 text-2xl font-bold text-slate-900 dark:text-slate-100">
-                {job.titulo}
-              </h1>
+              <h1 className="mt-1 text-2xl font-bold text-[var(--app-text)]">{job.titulo}</h1>
             </div>
 
             {/* Tarjeta de estado actual */}
