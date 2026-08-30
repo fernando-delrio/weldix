@@ -357,7 +357,10 @@ def crear_epi(
     current_user: User = Depends(require_role("admin")),
 ):
     """Admin: registra la entrega de un EPI a un operario."""
-    epi = service.crear_epi(db, current_user.tenant_id, current_user.id, body)
+    try:
+        epi = service.crear_epi(db, current_user.tenant_id, current_user.id, body)
+    except ValueError as exc:
+        raise HTTPException(400, detail=str(exc))
     return EpiEntregaResponse.from_orm(epi)
 
 
@@ -366,11 +369,11 @@ def actualizar_estado_epi(
     epi_id: int,
     estado: str = Query(...),
     db: Session = Depends(get_db),
-    _: User = Depends(require_role("admin")),
+    current_user: User = Depends(require_role("admin")),
 ):
     """Admin: cambia el estado de un EPI (activo → repuesto → baja)."""
     try:
-        epi = service.actualizar_estado_epi(db, epi_id, estado)
+        epi = service.actualizar_estado_epi(db, current_user.tenant_id, epi_id, estado)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
     return EpiEntregaResponse.from_orm(epi)
@@ -380,11 +383,11 @@ def actualizar_estado_epi(
 def eliminar_epi(
     epi_id: int,
     db: Session = Depends(get_db),
-    _: User = Depends(require_role("admin")),
+    current_user: User = Depends(require_role("admin")),
 ):
     """Admin: elimina un registro de entrega de EPI (para corregir errores)."""
     try:
-        service.eliminar_epi(db, epi_id)
+        service.eliminar_epi(db, current_user.tenant_id, epi_id)
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
 
@@ -624,7 +627,9 @@ def revisar_cambio_turno(
     current_user: User = Depends(require_role("admin")),
 ):
     try:
-        sol = service.revisar_cambio_turno(db, solicitud_id, current_user.id, body)
+        sol = service.revisar_cambio_turno(
+            db, current_user.tenant_id, solicitud_id, current_user.id, body
+        )
     except ValueError as exc:
         raise HTTPException(400, detail=str(exc))
     return SolicitudCambioTurnoResponse.from_orm(sol)
