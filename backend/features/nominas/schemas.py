@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel
+from backend.core.schemas import UTCResponseModel
 
 MESES_ES = {
     1: "Enero", 2: "Febrero", 3: "Marzo", 4: "Abril",
@@ -9,7 +9,7 @@ MESES_ES = {
 }
 
 
-class NominaResponse(BaseModel):
+class NominaResponse(UTCResponseModel):
     id: int
     operario_id: int
     operario_nombre: str

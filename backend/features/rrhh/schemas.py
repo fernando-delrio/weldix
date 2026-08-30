@@ -3,6 +3,8 @@ from typing import Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from backend.core.schemas import UTCResponseModel
+
 # ─── Tipos válidos de ausencia ────────────────────────────────────────────────
 
 TIPOS_AUSENCIA = {
@@ -63,7 +65,7 @@ class ConfiguracionLaboralRequest(BaseModel):
 # ─── Solicitud de ausencia ────────────────────────────────────────────────────
 
 
-class SolicitudAusenciaResponse(BaseModel):
+class SolicitudAusenciaResponse(UTCResponseModel):
     id: int
     operario_id: int
     operario_nombre: Optional[str] = None
@@ -464,7 +466,7 @@ class TurnosBulkRequest(BaseModel):
     turnos: list[TurnoAsignadoRequest]
 
 
-class SolicitudCambioTurnoResponse(BaseModel):
+class SolicitudCambioTurnoResponse(UTCResponseModel):
     id: int
     solicitante_id: int
     solicitante_nombre: Optional[str] = None
@@ -533,7 +535,7 @@ TIPOS_PERMISO_ESPECIAL = {
 }
 
 
-class AccidenteLaboralResponse(BaseModel):
+class AccidenteLaboralResponse(UTCResponseModel):
     id: int
     afectado_id: int
     afectado_nombre: Optional[str] = None

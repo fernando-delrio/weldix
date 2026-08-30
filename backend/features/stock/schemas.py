@@ -4,6 +4,8 @@ from typing import Any, Optional
 
 from pydantic import BaseModel, Field, model_validator
 
+from backend.core.schemas import UTCResponseModel
+
 from .model import CATEGORIAS_VALIDAS
 
 
@@ -24,7 +26,7 @@ def _tone(level: int) -> str:
 # ─── Respuesta ────────────────────────────────────────────────────────────────
 
 
-class StockItemResponse(BaseModel):
+class StockItemResponse(UTCResponseModel):
     id: int
     name: str
     category: Optional[str] = None

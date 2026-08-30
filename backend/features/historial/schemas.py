@@ -1,9 +1,9 @@
 from datetime import datetime
 
-from pydantic import BaseModel
+from backend.core.schemas import UTCResponseModel
 
 
-class JobEventResponse(BaseModel):
+class JobEventResponse(UTCResponseModel):
     id: int
     trabajo_id: int
     tipo: str

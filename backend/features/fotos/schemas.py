@@ -1,9 +1,9 @@
 from datetime import datetime
 
-from pydantic import BaseModel
+from backend.core.schemas import UTCResponseModel
 
 
-class FotoResponse(BaseModel):
+class FotoResponse(UTCResponseModel):
     id: int
     job_id: int
     filename: str

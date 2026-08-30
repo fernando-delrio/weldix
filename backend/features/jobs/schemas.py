@@ -3,6 +3,8 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 
+from backend.core.schemas import UTCResponseModel
+
 _ESTADO_TONE = {
     "pendiente": "warning",
     "en_proceso": "info",
@@ -16,7 +18,7 @@ def _tone_for(estado: str) -> str:
     return _ESTADO_TONE.get(estado, "neutral")
 
 
-class JobResponse(BaseModel):
+class JobResponse(UTCResponseModel):
     id: int
     code: str | None
     titulo: str

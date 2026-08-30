@@ -2,6 +2,8 @@ from datetime import date, datetime
 
 from pydantic import BaseModel
 
+from backend.core.schemas import UTCResponseModel
+
 
 class CreateEquipoRequest(BaseModel):
     nombre: str
@@ -24,7 +26,7 @@ class UpdateEquipoEstadoRequest(BaseModel):
     estado: str
 
 
-class EquipoResponse(BaseModel):
+class EquipoResponse(UTCResponseModel):
     id: int
     nombre: str
     tipo: str | None

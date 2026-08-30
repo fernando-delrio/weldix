@@ -2,6 +2,8 @@ from datetime import datetime
 
 from pydantic import BaseModel, EmailStr, Field
 
+from backend.core.schemas import UTCResponseModel
+
 
 class RegisterWorkspaceRequest(BaseModel):
     """Registro público: crea un taller nuevo con su admin."""
@@ -67,7 +69,7 @@ class ChangePasswordRequest(BaseModel):
     new_password: str = Field(min_length=8)
 
 
-class TrialStatusResponse(BaseModel):
+class TrialStatusResponse(UTCResponseModel):
     is_trial: bool
     is_expired: bool
     days_left: int | None

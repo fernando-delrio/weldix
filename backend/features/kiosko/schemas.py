@@ -2,6 +2,8 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field
 
+from backend.core.schemas import UTCResponseModel
+
 
 class KioskInfoResponse(BaseModel):
     tenant_nombre: str
@@ -16,7 +18,7 @@ class FicharKioskoRequest(BaseModel):
     pin: str = Field(min_length=4, max_length=4, pattern=r"^\d{4}$")
 
 
-class FicharKioskoResponse(BaseModel):
+class FicharKioskoResponse(UTCResponseModel):
     operario: str
     accion: str  # "entrada" | "salida"
     hora: datetime
