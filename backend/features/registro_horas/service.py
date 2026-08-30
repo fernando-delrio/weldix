@@ -78,13 +78,17 @@ def get_registros_para_ot(db: Session, job_id: int) -> list[RegistroHoras]:
     )
 
 
-def get_registros_operario(db: Session, operario_id: int) -> list[RegistroHoras]:
-    return (
-        db.query(RegistroHoras)
-        .filter(RegistroHoras.operario_id == operario_id)
-        .order_by(RegistroHoras.inicio.desc())
-        .all()
-    )
+def get_registros_operario(
+    db: Session, operario_id: int, tenant_id: int | None = None
+) -> list[RegistroHoras]:
+    """Sin uso actual (no está conectada a ningún router) — el filtro por
+    tenant_id se añade preventivamente para que, si algún día se conecta,
+    no reintroduzca el mismo IDOR cross-tenant que ya se corrigió en
+    get_resumen_horas_ot e iniciar_registro."""
+    q = db.query(RegistroHoras).filter(RegistroHoras.operario_id == operario_id)
+    if tenant_id is not None:
+        q = q.filter(RegistroHoras.tenant_id == tenant_id)
+    return q.order_by(RegistroHoras.inicio.desc()).all()
 
 
 # ── Mutaciones ────────────────────────────────────────────────────────────────
