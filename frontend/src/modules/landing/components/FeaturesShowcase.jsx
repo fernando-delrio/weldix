@@ -166,7 +166,7 @@ const FeaturesShowcase = ({ t }) => {
             Explora todo lo que hace Weldix
           </h2>
           <p className={cx('mx-auto mt-3 max-w-2xl text-base', t.muted)}>
-            No es solo fichaje. Es la gestión completa de tu taller — {SHOWCASE.length} módulos
+            No es solo fichaje: es la gestión completa de tu taller, con {SHOWCASE.length} módulos
             conectados entre sí.
           </p>
         </div>

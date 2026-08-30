@@ -30,7 +30,7 @@ const FAQS = [
   },
   {
     q: '¿Cómo fichan los operarios?',
-    a: 'Como quieras: web, móvil, tablet, o modo kiosko — una tablet en la entrada donde cada uno ficha con su PIN. Sea cual sea, es la misma jornada.',
+    a: 'Como quieras: web, móvil, tablet, o modo kiosko (una tablet en la entrada donde cada uno ficha con su PIN). Sea cual sea, es la misma jornada.',
   },
   {
     q: '¿Mis datos están separados de los de otros talleres?',

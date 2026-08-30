@@ -140,12 +140,13 @@ const LandingNav = ({ t, isDark, onToggle }) => {
           <Link
             to="/registro"
             className={cx(
-              'flex items-center gap-1.5 rounded-lg px-4 py-2 text-[0.7rem] font-bold tracking-wide shadow-lg transition',
+              'flex items-center gap-1.5 rounded-lg px-4 py-2 text-[0.7rem] font-bold tracking-wide shadow-lg transition active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/70 focus-visible:ring-offset-2',
+              isDark ? 'focus-visible:ring-offset-[#070b0f]' : 'focus-visible:ring-offset-white',
               t.btnPrimary
             )}
           >
             <i className="bx bx-rocket text-sm" />
-            Crear taller
+            Probar gratis
           </Link>
           <button
             type="button"

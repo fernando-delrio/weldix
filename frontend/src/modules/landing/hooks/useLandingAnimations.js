@@ -247,7 +247,15 @@ export const useLandingAnimations = () => {
   // que el elemento sea visible → elimina el FOUC (el "pop" que aparecía y se
   // recolocaba). Con useEffect, GSAP se ejecutaba tras el primer frame pintado.
   useLayoutEffect(() => {
+    // prefers-reduced-motion: cada animate* de aquí es un gsap.from(), es
+    // decir, parte de un estado oculto (opacity:0, offset) hacia el estado
+    // natural del elemento. Si el usuario pide menos movimiento, no llamamos
+    // a ninguna — el DOM nunca recibe ese estado inicial oculto y todo
+    // aparece directamente en su posición final, sin animar.
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
     ctx.current = gsap.context(() => {
+      if (prefersReducedMotion) return
       animateHero()
       animatePainCards()
       animateTrustMetrics()
