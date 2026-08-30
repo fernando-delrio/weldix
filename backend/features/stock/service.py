@@ -32,10 +32,17 @@ def get_material_by_id(
     return material
 
 
+def _format_attribute_label(key: str) -> str:
+    """El admin escribe la clave libremente (ej. 'longitud_mm'). La mostramos
+    como texto legible ('Longitud mm') en vez del snake_case tal cual —
+    antes salía 'longitud_mm=20', con pinta de print de depuración."""
+    return key.replace("_", " ").capitalize()
+
+
 def _build_display_name(category: str, specs: dict) -> str:
     parts = [category.capitalize()]
     for k, v in specs.items():
-        parts.append(f"{k}={v}")
+        parts.append(f"{_format_attribute_label(k)}: {v}")
     return " · ".join(parts)
 
 
