@@ -213,6 +213,52 @@ def test_register_workspace_with_duplicate_email_returns_409(workspace_client):
     assert response.status_code == 409
 
 
+# ─── Onboarding: el operario no debe ver el wizard del admin ─────────────────
+#
+# Bug real: create_user() no fijaba onboarding_done, así que un operario
+# creado por el admin arrancaba con onboarding_done=False (default de la
+# columna) y veía el wizard de "monta tu taller" (crear OT, añadir equipo,
+# stock) en su primer login — contenido pensado solo para quien crea el taller.
+
+
+def test_admin_signup_operario_nace_con_onboarding_ya_hecho(workspace_client):
+    # ARRANGE
+    client, admin_token, _, _ = workspace_client
+
+    # ACT — el admin crea un operario nuevo (role por defecto = "operario")
+    response = client.post(
+        "/auth/admin/signup",
+        json={"email": "operario@taller.dev", "password": "Secret123"},
+        headers=_auth_header(admin_token),
+    )
+    assert response.status_code == 200
+
+    login = _login(client, "operario@taller.dev", "Secret123")
+    me = _me(client, login.json()["access_token"])
+
+    # ASSERT — nunca ve el wizard de onboarding del admin
+    assert me["onboarding_done"] is True
+
+
+def test_admin_signup_coadmin_nace_con_onboarding_pendiente(workspace_client):
+    # ARRANGE — un admin nuevo (rol explícito "admin") sí debe ver el wizard
+    client, admin_token, _, _ = workspace_client
+
+    # ACT
+    response = client.post(
+        "/auth/admin/signup",
+        json={"email": "coadmin@taller.dev", "password": "Secret123", "role": "admin"},
+        headers=_auth_header(admin_token),
+    )
+    assert response.status_code == 200
+
+    login = _login(client, "coadmin@taller.dev", "Secret123")
+    me = _me(client, login.json()["access_token"])
+
+    # ASSERT
+    assert me["onboarding_done"] is False
+
+
 # ─── Flujo completo de "olvidé mi contraseña" ────────────────────────────────
 
 

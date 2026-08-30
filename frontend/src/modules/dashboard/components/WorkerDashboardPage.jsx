@@ -171,7 +171,9 @@ const WorkerDashboardPage = () => {
 
   return (
     <AppShell>
-      {showOnboarding && <OnboardingWizard onComplete={completeOnboarding} />}
+      {/* El wizard es para quien monta el taller (crear OT, añadir equipo, stock).
+          El operario nunca debe verlo, aunque su onboarding_done sea false. */}
+      {showOnboarding && isAdmin && <OnboardingWizard onComplete={completeOnboarding} />}
       <div
         className={`mx-auto w-full ${isAdmin ? 'max-w-[1100px]' : 'max-w-[680px]'} space-y-4 pb-5`}
       >

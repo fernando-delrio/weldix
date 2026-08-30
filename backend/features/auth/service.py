@@ -227,6 +227,10 @@ def create_user(
         full_name=full_name,
         role=normalized_role,
         password_hash=hash_password(password),
+        # El wizard de onboarding (crear OT, añadir equipo, stock) es para quien
+        # monta el taller. El operario no lo necesita — si no se marca aquí,
+        # ve el wizard del admin en su primer login (bug real, ver ERRORES_APRENDIDOS.md).
+        onboarding_done=(normalized_role == "operario"),
     )
     db.add(user)
     db.commit()
