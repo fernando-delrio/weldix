@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import WeldixButton from '../../core/components/WeldixButton'
 import ProgressBar from '../../core/components/ProgressBar'
 import RechazarJobModal from './RechazarJobModal'
@@ -83,30 +84,34 @@ const AdminJobCard = ({ job, onDelete, onReject }) => {
         }}
       >
         <div className="flex flex-wrap items-start justify-between gap-2">
-          <div className="flex flex-wrap items-center gap-2">
-            {codeTag(job)}
-            {statusBadge(job)}
-            {urgenteBadge(job)}
-          </div>
+          {/* Los botones quedan fuera del Link a propósito: un <button>
+              dentro de un <a> es HTML inválido y complica el foco/accesibilidad. */}
+          <Link to={`/app/trabajos/${job.id}`} className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              {codeTag(job)}
+              {statusBadge(job)}
+              {urgenteBadge(job)}
+            </div>
+
+            <p className="mt-2 text-sm font-semibold text-slate-100">{job.titulo}</p>
+            <p className="text-sm text-slate-400">{job.cliente}</p>
+
+            {job.motivo_rechazo && (
+              <p className="mt-1 text-xs text-rose-400">Motivo: {job.motivo_rechazo}</p>
+            )}
+
+            {job.fecha_inicio && (
+              <p className="mt-1 text-xs text-slate-500">Entrega: {job.fecha_inicio}</p>
+            )}
+
+            <ProgressBar value={job.progreso} />
+            {operarioTag(job)}
+          </Link>
           <div className="flex items-center gap-2">
             {rejectButton({ estado: job.estado, onOpen: () => setIsRejecting(true) })}
             {deleteButton({ onDelete: () => onDelete(job.id) })}
           </div>
         </div>
-
-        <p className="mt-2 text-sm font-semibold text-slate-100">{job.titulo}</p>
-        <p className="text-sm text-slate-400">{job.cliente}</p>
-
-        {job.motivo_rechazo && (
-          <p className="mt-1 text-xs text-rose-400">Motivo: {job.motivo_rechazo}</p>
-        )}
-
-        {job.fecha_inicio && (
-          <p className="mt-1 text-xs text-slate-500">Entrega: {job.fecha_inicio}</p>
-        )}
-
-        <ProgressBar value={job.progreso} />
-        {operarioTag(job)}
       </div>
 
       {isRejecting && (
@@ -121,3 +126,4 @@ const AdminJobCard = ({ job, onDelete, onReject }) => {
 }
 
 export default AdminJobCard
+
