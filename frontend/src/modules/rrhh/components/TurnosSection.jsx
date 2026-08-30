@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import WeldixButton from '../../core/components/WeldixButton'
 import { cx } from '../../core/lib/cx'
+import { useTheme } from '../../core/lib/ThemeContext'
 import { useRrhhTurnos } from '../hooks/useRrhhTurnos'
 
 const cardBase = 'rounded-xl border border-slate-700/60 bg-slate-900/65 p-4'
@@ -219,6 +220,7 @@ const RevisarCambioModal = ({ cambio, onClose, onSubmit, isSubmitting }) => {
 
 // ── Componente principal ──────────────────────────────────────────────────────
 const TurnosSection = ({ isAdmin, operarios = [] }) => {
+  const { isDark } = useTheme()
   const {
     turnos,
     cambios,
@@ -392,39 +394,63 @@ const TurnosSection = ({ isAdmin, operarios = [] }) => {
                         {diasSemana.map((dia) => {
                           const t = opTurnos.find((turno) => turno.fecha === dia)
                           const cfg = t ? getTurnoConfig(t.turno) : null
-                          return (
-                            <td
-                              key={dia}
-                              className={cx('py-1 px-0.5 text-center', isAdmin && 'cursor-pointer')}
-                              onClick={() => isAdmin && handleCeldaClick(dia, op.id)}
-                              title={
-                                isAdmin
-                                  ? t
-                                    ? `${cfg.label} — click para cambiar`
-                                    : 'Click para asignar turno'
-                                  : undefined
-                              }
+                          const turnoBadge = (hoverClass) => (
+                            <span
+                              className={cx(
+                                'inline-flex items-center rounded border px-1.5 py-0.5 text-[10px] font-bold transition',
+                                cfg.color,
+                                hoverClass
+                              )}
                             >
-                              {t ? (
-                                <span
-                                  className={cx(
-                                    'inline-flex items-center rounded border px-1.5 py-0.5 text-[10px] font-bold transition',
-                                    cfg.color,
-                                    isAdmin && 'hover:opacity-70'
-                                  )}
+                              {cfg.label.slice(0, 3)}
+                            </span>
+                          )
+
+                          return (
+                            <td key={dia} className="p-0.5 text-center">
+                              {isAdmin ? (
+                                <button
+                                  type="button"
+                                  onClick={() => handleCeldaClick(dia, op.id)}
+                                  aria-label={
+                                    t
+                                      ? `${cfg.label} el ${dia} para ${op.full_name} — click para cambiar`
+                                      : `Asignar turno el ${dia} para ${op.full_name}`
+                                  }
+                                  title={
+                                    t
+                                      ? `${cfg.label} — click para cambiar`
+                                      : 'Click para asignar turno'
+                                  }
+                                  className="flex min-h-10 w-full items-center justify-center rounded transition hover:bg-slate-800/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-amber-400"
                                 >
-                                  {cfg.label.slice(0, 3)}
-                                </span>
+                                  {t ? (
+                                    turnoBadge('hover:opacity-70')
+                                  ) : (
+                                    <span
+                                      className={cx(
+                                        'text-[10px] hover:text-slate-300',
+                                        isDark ? 'text-slate-400' : 'text-slate-500'
+                                      )}
+                                    >
+                                      +
+                                    </span>
+                                  )}
+                                </button>
                               ) : (
-                                <span
-                                  className={cx(
-                                    'text-[10px]',
-                                    isAdmin
-                                      ? 'text-slate-700 hover:text-slate-500'
-                                      : 'text-slate-800'
+                                <span className="flex min-h-10 items-center justify-center">
+                                  {t ? (
+                                    turnoBadge()
+                                  ) : (
+                                    <span
+                                      className={cx(
+                                        'text-[10px]',
+                                        isDark ? 'text-slate-400' : 'text-slate-500'
+                                      )}
+                                    >
+                                      —
+                                    </span>
                                   )}
-                                >
-                                  {isAdmin ? '+' : '—'}
                                 </span>
                               )}
                             </td>
