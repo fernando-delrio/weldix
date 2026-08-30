@@ -425,7 +425,7 @@ const TurnosSection = ({ isAdmin, operarios = [] }) => {
                                   {t ? (
                                     turnoBadge('hover:opacity-70')
                                   ) : (
-                                    <span className="text-[10px] text-slate-700 hover:text-slate-500">
+                                    <span className="text-[10px] text-slate-500 hover:text-slate-300">
                                       +
                                     </span>
                                   )}
