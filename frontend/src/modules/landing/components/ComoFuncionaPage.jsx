@@ -5,7 +5,7 @@ import { useLandingAnimations } from '../hooks/useLandingAnimations'
 import { CtaSection, TimelineSection } from './LandingPage'
 
 const ComoFuncionaPage = () => {
-  const { t } = useOutletContext()
+  const { t, isDark } = useOutletContext()
   useLandingAnimations()
 
   return (
@@ -35,7 +35,10 @@ const ComoFuncionaPage = () => {
             <a
               href="mailto:hola@weldix.es?subject=Quiero%20una%20demo%20de%20Weldix&body=Hola,%20me%20gustaría%20ver%20una%20demo%20de%20Weldix%20para%20mi%20taller."
               className={cx(
-                'flex items-center gap-2 rounded-xl px-7 py-3.5 text-sm font-bold tracking-wide shadow-lg transition',
+                'flex items-center gap-2 rounded-xl px-7 py-3.5 text-sm font-bold tracking-wide shadow-lg transition active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/70 focus-visible:ring-offset-2',
+                isDark
+                  ? 'focus-visible:ring-offset-[#070b0f]'
+                  : 'focus-visible:ring-offset-[#f8fafc]',
                 t.btnPrimary
               )}
             >
@@ -45,7 +48,10 @@ const ComoFuncionaPage = () => {
             <Link
               to="/registro"
               className={cx(
-                'flex items-center gap-2 rounded-xl px-7 py-3.5 text-sm font-medium tracking-wide transition',
+                'flex items-center gap-2 rounded-xl px-7 py-3.5 text-sm font-medium tracking-wide transition active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/70 focus-visible:ring-offset-2',
+                isDark
+                  ? 'focus-visible:ring-offset-[#070b0f]'
+                  : 'focus-visible:ring-offset-[#f8fafc]',
                 t.btnGhost
               )}
             >

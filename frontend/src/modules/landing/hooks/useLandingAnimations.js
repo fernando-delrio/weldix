@@ -87,6 +87,10 @@ const animatePainCards = () => {
 }
 
 // ---- Trust metrics: scale bounce al entrar ---------------------------------
+//
+// back.out(1.15) en vez de 1.5: un rebote grande queda infantil sobre datos
+// que venden seriedad legal ("100% cumplimiento RDL 8/2019"). El overshoot
+// sutil da vida sin restar credibilidad al mensaje.
 
 const animateTrustMetrics = () => {
   if (!existsInDom('[data-gsap="trust-item"]')) return
@@ -98,36 +102,11 @@ const animateTrustMetrics = () => {
         opacity: 0,
         duration: 0.55,
         stagger: 0.08,
-        ease: 'back.out(1.5)',
+        ease: 'back.out(1.15)',
       })
     },
     once: true,
     start: 'top 88%',
-  })
-}
-
-// ---- Features: anima todas las tarjetas juntas cuando la sección entra -----
-// Usamos gsap.from sobre el selector completo (no batch) para garantizar que
-// todas las tarjetas —incluso las de la columna derecha— parten de opacity:0
-// y llegan a su estado natural. clearProps elimina los estilos inline de GSAP
-// tras la animación para que el hover funcione correctamente.
-// Solo vive en FuncionalidadesPage (FeaturesShowcase.jsx, id="modulos").
-
-const animateFeatures = () => {
-  if (!existsInDom('[data-gsap="feature-card"]') || !existsInDom('#modulos')) return
-
-  gsap.from('[data-gsap="feature-card"]', {
-    y: 40,
-    opacity: 0,
-    duration: 0.6,
-    stagger: 0.05,
-    ease: 'power3.out',
-    clearProps: 'all',
-    scrollTrigger: {
-      trigger: '#modulos',
-      start: 'top 78%',
-      once: true,
-    },
   })
 }
 
@@ -259,7 +238,6 @@ export const useLandingAnimations = () => {
       animateHero()
       animatePainCards()
       animateTrustMetrics()
-      animateFeatures()
       animateTimeline()
       animatePricing()
       animateCtaFinal()

@@ -188,7 +188,7 @@ const FeaturesShowcase = ({ t }) => {
                     aria-selected={isActive}
                     onClick={() => setActive(index)}
                     className={cx(
-                      'flex shrink-0 items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold transition lg:w-full',
+                      'flex shrink-0 items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold transition lg:w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/70',
                       isActive ? cx(t.accentTint, t.accent) : cx(t.muted, 'hover:bg-white/[0.03]')
                     )}
                   >
@@ -224,7 +224,7 @@ const FeaturesShowcase = ({ t }) => {
                   onClick={() => go(-1)}
                   aria-label="Funcionalidad anterior"
                   className={cx(
-                    'flex h-9 w-9 items-center justify-center rounded-lg border transition',
+                    'flex h-9 w-9 items-center justify-center rounded-lg border transition active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/70',
                     t.divider,
                     t.navText
                   )}
@@ -238,7 +238,7 @@ const FeaturesShowcase = ({ t }) => {
                   onClick={() => go(1)}
                   aria-label="Funcionalidad siguiente"
                   className={cx(
-                    'flex h-9 w-9 items-center justify-center rounded-lg border transition',
+                    'flex h-9 w-9 items-center justify-center rounded-lg border transition active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/70',
                     t.divider,
                     t.navText
                   )}

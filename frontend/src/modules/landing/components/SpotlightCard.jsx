@@ -5,7 +5,9 @@ import { cx } from '../../core/lib/cx'
 // Card con "spotlight": un foco radial que sigue al ratón y aparece solo en hover.
 // Estilo Aceternity, sin dependencias: usamos un ref + variables CSS (--mx/--my)
 // y las escribimos con style.setProperty → CERO re-render de React por movimiento.
-export const SpotlightCard = ({ children, className, spotColor = 'rgba(56,189,248,0.16)' }) => {
+// spotColor por defecto en ámbar — es el único acento de marca del landing;
+// un azul aquí sería el único elemento fuera de paleta de toda la página.
+export const SpotlightCard = ({ children, className, spotColor = 'rgba(245,158,11,0.14)' }) => {
   const ref = useRef(null)
 
   const handleMouseMove = (event) => {

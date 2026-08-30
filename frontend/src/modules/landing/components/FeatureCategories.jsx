@@ -117,7 +117,7 @@ const FeatureCard = ({ card, t }) => (
     <Link
       to="/registro"
       className={cx(
-        'mt-4 inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wider',
+        'mt-4 inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wider transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/70 focus-visible:ring-offset-2 rounded-sm',
         t.accent
       )}
     >
