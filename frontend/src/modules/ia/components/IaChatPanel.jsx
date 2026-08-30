@@ -6,6 +6,7 @@ const MotionDiv = motion.div
 import { cx } from '../../core/lib/cx'
 import { useIaContext } from '../lib/IaContext'
 import { useIaChat } from '../hooks/useIaChat'
+import { renderFormattedText } from '../lib/formatMessage'
 import WeldixButton from '../../core/components/WeldixButton'
 
 const SPRING = { type: 'spring', damping: 26, stiffness: 140 }
@@ -21,7 +22,7 @@ const UserBubble = ({ content }) => (
 const AssistantBubble = ({ content }) => (
   <div className="flex justify-start">
     <div className="max-w-[80%] rounded-2xl rounded-tl-sm border border-slate-700/60 bg-slate-800/60 px-3.5 py-2.5 text-sm text-slate-200 whitespace-pre-wrap">
-      {content}
+      {renderFormattedText(content)}
     </div>
   </div>
 )
