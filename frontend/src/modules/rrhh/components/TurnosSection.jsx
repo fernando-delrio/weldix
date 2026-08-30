@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import WeldixButton from '../../core/components/WeldixButton'
 import { cx } from '../../core/lib/cx'
+import { useTheme } from '../../core/lib/ThemeContext'
 import { useRrhhTurnos } from '../hooks/useRrhhTurnos'
 
 const cardBase = 'rounded-xl border border-slate-700/60 bg-slate-900/65 p-4'
@@ -219,6 +220,7 @@ const RevisarCambioModal = ({ cambio, onClose, onSubmit, isSubmitting }) => {
 
 // ── Componente principal ──────────────────────────────────────────────────────
 const TurnosSection = ({ isAdmin, operarios = [] }) => {
+  const { isDark } = useTheme()
   const {
     turnos,
     cambios,
@@ -425,7 +427,12 @@ const TurnosSection = ({ isAdmin, operarios = [] }) => {
                                   {t ? (
                                     turnoBadge('hover:opacity-70')
                                   ) : (
-                                    <span className="text-[10px] text-slate-500 hover:text-slate-300">
+                                    <span
+                                      className={cx(
+                                        'text-[10px] hover:text-slate-300',
+                                        isDark ? 'text-slate-400' : 'text-slate-500'
+                                      )}
+                                    >
                                       +
                                     </span>
                                   )}
@@ -435,7 +442,14 @@ const TurnosSection = ({ isAdmin, operarios = [] }) => {
                                   {t ? (
                                     turnoBadge()
                                   ) : (
-                                    <span className="text-[10px] text-slate-500">—</span>
+                                    <span
+                                      className={cx(
+                                        'text-[10px]',
+                                        isDark ? 'text-slate-400' : 'text-slate-500'
+                                      )}
+                                    >
+                                      —
+                                    </span>
                                   )}
                                 </span>
                               )}
