@@ -49,6 +49,9 @@ def test_worker_dashboard_shows_own_active_job(dashboard_client):
     active_job = response.json()["active_job"]
     assert active_job is not None
     assert active_job["id"] == job["id"]
+    # Bug real: ActiveJobSchema no declaraba "code" y Pydantic lo descartaba
+    # en silencio -- el operario veia "#152" en vez de "ORD-2026-004".
+    assert active_job["code"] == job["code"]
 
 
 def test_worker_dashboard_has_no_active_job_when_none_assigned(dashboard_client):
@@ -122,6 +125,26 @@ def test_worker_dashboard_today_jobs_never_includes_other_operarios_jobs(dashboa
     # ASSERT
     titles = [j["title"] for j in response.json()["today_jobs"]]
     assert "Pendiente de op2" not in titles
+
+
+def test_worker_dashboard_today_jobs_expose_code(dashboard_client):
+    """Mismo bug que en active_job: TodayJobSchema tampoco declaraba "code"."""
+    # ARRANGE
+    ctx = dashboard_client
+    client = ctx["client"]
+    job = _create_job(
+        client,
+        ctx["token_admin_a"],
+        titulo="Pendiente de op1",
+        operario_id=ctx["op1_a_id"],
+    ).json()
+
+    # ACT
+    response = client.get("/dashboard/worker", headers=_auth_header(ctx["token_op1_a"]))
+
+    # ASSERT
+    today_job = next(j for j in response.json()["today_jobs"] if j["id"] == job["id"])
+    assert today_job["code"] == job["code"]
 
 
 # ─── Flag de urgente tras rechazo ──────────────────────────────────────────
