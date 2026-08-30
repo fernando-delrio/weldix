@@ -11,6 +11,7 @@ const NAV_ITEMS_OPERARIO = [
 
 const NAV_ITEMS_ADMIN = [
   { key: 'inicio', label: 'Inicio', to: '/app/inicio', icon: 'IN' },
+  { key: 'trabajos', label: 'Trabajos', to: '/app/trabajos', icon: 'TB' },
   { key: 'stock', label: 'Stock', to: '/app/stock', icon: 'ST' },
   { key: 'rrhh', label: 'RRHH', to: '/app/rrhh', icon: 'RH' },
   { key: 'admin', label: 'Admin', to: '/app/admin', icon: 'AD' },

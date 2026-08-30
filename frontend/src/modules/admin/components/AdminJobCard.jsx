@@ -1,5 +1,8 @@
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import WeldixButton from '../../core/components/WeldixButton'
 import ProgressBar from '../../core/components/ProgressBar'
+import RechazarJobModal from './RechazarJobModal'
 
 // Acento lateral por estado — mismo sistema que JobCard
 const STATUS_ACCENT = {
@@ -55,43 +58,70 @@ const deleteButton = ({ onDelete }) => (
   </WeldixButton>
 )
 
+// Solo un trabajo en "control" puede rechazarse (vuelve a "pendiente" con
+// motivo) — misma regla que el gesto de arrastre en el Kanban.
+const rejectButton = ({ estado, onOpen }) =>
+  estado === 'control' && (
+    <WeldixButton variant="secondary" size="sm" onClick={onOpen}>
+      Rechazar
+    </WeldixButton>
+  )
+
 // ── Componente ───────────────────────────────────────────────────────────────
-const AdminJobCard = ({ job, onDelete }) => {
+const AdminJobCard = ({ job, onDelete, onReject }) => {
   const accentClass = STATUS_ACCENT[job.estado] ?? 'border-l-slate-600/50'
+  const [isRejecting, setIsRejecting] = useState(false)
 
   return (
-    <div
-      className={`rounded-xl border-y border-r border-l-[3px] bg-[var(--card-bg)] p-4 ${accentClass}`}
-      style={{
-        borderTopColor: 'var(--card-border)',
-        borderRightColor: 'var(--card-border)',
-        borderBottomColor: 'var(--card-border)',
-        boxShadow: 'var(--card-shadow-sm)',
-      }}
-    >
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <div className="flex flex-wrap items-center gap-2">
-          {codeTag(job)}
-          {statusBadge(job)}
-          {urgenteBadge(job)}
+    <>
+      <div
+        className={`rounded-xl border-y border-r border-l-[3px] bg-[var(--card-bg)] p-4 ${accentClass}`}
+        style={{
+          borderTopColor: 'var(--card-border)',
+          borderRightColor: 'var(--card-border)',
+          borderBottomColor: 'var(--card-border)',
+          boxShadow: 'var(--card-shadow-sm)',
+        }}
+      >
+        <div className="flex flex-wrap items-start justify-between gap-2">
+          {/* Los botones quedan fuera del Link a propósito: un <button>
+              dentro de un <a> es HTML inválido y complica el foco/accesibilidad. */}
+          <Link to={`/app/trabajos/${job.id}`} className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              {codeTag(job)}
+              {statusBadge(job)}
+              {urgenteBadge(job)}
+            </div>
+
+            <p className="mt-2 text-sm font-semibold text-slate-100">{job.titulo}</p>
+            <p className="text-sm text-slate-400">{job.cliente}</p>
+
+            {job.motivo_rechazo && (
+              <p className="mt-1 text-xs text-rose-400">Motivo: {job.motivo_rechazo}</p>
+            )}
+
+            {job.fecha_inicio && (
+              <p className="mt-1 text-xs text-slate-500">Entrega: {job.fecha_inicio}</p>
+            )}
+
+            <ProgressBar value={job.progreso} />
+            {operarioTag(job)}
+          </Link>
+          <div className="flex items-center gap-2">
+            {rejectButton({ estado: job.estado, onOpen: () => setIsRejecting(true) })}
+            {deleteButton({ onDelete: () => onDelete(job.id) })}
+          </div>
         </div>
-        {deleteButton({ onDelete: () => onDelete(job.id) })}
       </div>
 
-      <p className="mt-2 text-sm font-semibold text-slate-100">{job.titulo}</p>
-      <p className="text-sm text-slate-400">{job.cliente}</p>
-
-      {job.motivo_rechazo && (
-        <p className="mt-1 text-xs text-rose-400">Motivo: {job.motivo_rechazo}</p>
+      {isRejecting && (
+        <RechazarJobModal
+          job={job}
+          onClose={() => setIsRejecting(false)}
+          onConfirm={(motivo) => onReject(job.id, motivo)}
+        />
       )}
-
-      {job.fecha_inicio && (
-        <p className="mt-1 text-xs text-slate-500">Entrega: {job.fecha_inicio}</p>
-      )}
-
-      <ProgressBar value={job.progreso} />
-      {operarioTag(job)}
-    </div>
+    </>
   )
 }
 

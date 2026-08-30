@@ -156,7 +156,12 @@ const AdminJobsSection = () => {
           {noJobsMessage({ filteredJobs, activeFilter })}
 
           {filteredJobs.map((job) => (
-            <AdminJobCard key={job.id} job={job} onDelete={handleDeleteJob} />
+            <AdminJobCard
+              key={job.id}
+              job={job}
+              onDelete={handleDeleteJob}
+              onReject={handleRejectJob}
+            />
           ))}
         </>
       )}

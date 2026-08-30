@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import {
   DndContext,
   PointerSensor,
@@ -58,23 +59,27 @@ const KanbanCard = ({ job, isDragging = false }) => {
       {...attributes}
       className="rounded-xl border bg-[var(--card-bg)] p-3 touch-none select-none"
     >
-      <p className="text-xs font-bold tracking-widest text-slate-500">{job.code}</p>
-      <p className="mt-0.5 text-[0.8rem] font-semibold leading-tight text-slate-200 line-clamp-2">
-        {job.titulo}
-      </p>
-      {job.cliente && <p className="mt-1 text-xs text-slate-500 truncate">{job.cliente}</p>}
-      {job.urgente && (
-        <div className="mt-1.5 flex items-center gap-1 rounded-full border border-rose-500/40 bg-rose-500/15 px-2 py-0.5 text-xs font-bold text-rose-300">
-          <i className="bx bx-error-circle" aria-hidden="true" />
-          Urgente
-        </div>
-      )}
-      {job.operario_name && (
-        <div className="mt-1.5 flex items-center gap-1">
-          <i className="bx bx-user text-xs text-slate-600" />
-          <span className="text-xs text-slate-400">{job.operario_name}</span>
-        </div>
-      )}
+      {/* Un click sin arrastre (activationConstraint.distance=5 en el sensor)
+          navega al detalle; arrastrar mueve la tarjeta de columna. */}
+      <Link to={`/app/trabajos/${job.id}`} className="block">
+        <p className="text-xs font-bold tracking-widest text-slate-500">{job.code}</p>
+        <p className="mt-0.5 text-[0.8rem] font-semibold leading-tight text-slate-200 line-clamp-2">
+          {job.titulo}
+        </p>
+        {job.cliente && <p className="mt-1 text-xs text-slate-500 truncate">{job.cliente}</p>}
+        {job.urgente && (
+          <div className="mt-1.5 flex items-center gap-1 rounded-full border border-rose-500/40 bg-rose-500/15 px-2 py-0.5 text-xs font-bold text-rose-300">
+            <i className="bx bx-error-circle" aria-hidden="true" />
+            Urgente
+          </div>
+        )}
+        {job.operario_name && (
+          <div className="mt-1.5 flex items-center gap-1">
+            <i className="bx bx-user text-xs text-slate-600" />
+            <span className="text-xs text-slate-400">{job.operario_name}</span>
+          </div>
+        )}
+      </Link>
     </div>
   )
 }

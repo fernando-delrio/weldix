@@ -134,25 +134,25 @@ def get_festivos(db: Session, year: int) -> list[Festivo]:
     return festivos
 
 
+def _validar_operario_del_tenant(db: Session, tenant_id: int | None, operario_id: int) -> None:
+    """Guard clause de aislamiento: comprueba que operario_id pertenece al
+    mismo tenant que el admin que hace la petición — evita asociar EPIs,
+    certificados, reconocimientos o permisos a un operario de otro taller."""
+    operario = (
+        db.query(User).filter(User.id == operario_id, User.tenant_id == tenant_id).first()
+    )
+    if not operario:
+        raise ValueError(f"Operario {operario_id} no encontrado")
+
+
 # ─── Configuración laboral ────────────────────────────────────────────────────
 
 
 def upsert_config(
     db: Session, tenant_id: int | None, data: ConfiguracionLaboralRequest
 ) -> ConfiguracionLaboral:
-    """Crea o actualiza la configuración laboral de un operario de SU taller.
-
-    Guard clause de aislamiento: valida que data.operario_id pertenezca al
-    mismo tenant que el admin que hace la petición — evita que un admin
-    reconfigure (jornada, vacaciones, turno) a un operario de otro taller.
-    """
-    operario = (
-        db.query(User)
-        .filter(User.id == data.operario_id, User.tenant_id == tenant_id)
-        .first()
-    )
-    if not operario:
-        raise ValueError(f"Operario {data.operario_id} no encontrado")
+    """Crea o actualiza la configuración laboral de un operario de SU taller."""
+    _validar_operario_del_tenant(db, tenant_id, data.operario_id)
 
     config = (
         db.query(ConfiguracionLaboral)
@@ -630,6 +630,7 @@ def get_epis_proximos_caducar(db: Session, tenant_id: int | None, dias: int = 30
 
 
 def crear_epi(db: Session, tenant_id: int | None, registrado_por_id: int, data) -> EpiEntrega:
+    _validar_operario_del_tenant(db, tenant_id, data.operario_id)
     epi = EpiEntrega(
         tenant_id=tenant_id,
         operario_id=data.operario_id,
@@ -648,16 +649,26 @@ def crear_epi(db: Session, tenant_id: int | None, registrado_por_id: int, data) 
     return epi
 
 
-def eliminar_epi(db: Session, epi_id: int) -> None:
-    epi = db.query(EpiEntrega).filter(EpiEntrega.id == epi_id).first()
+def eliminar_epi(db: Session, tenant_id: int | None, epi_id: int) -> None:
+    epi = (
+        db.query(EpiEntrega)
+        .filter(EpiEntrega.id == epi_id, EpiEntrega.tenant_id == tenant_id)
+        .first()
+    )
     if not epi:
         raise ValueError("EPI no encontrado")
     db.delete(epi)
     db.commit()
 
 
-def actualizar_estado_epi(db: Session, epi_id: int, nuevo_estado: str) -> EpiEntrega:
-    epi = db.query(EpiEntrega).filter(EpiEntrega.id == epi_id).first()
+def actualizar_estado_epi(
+    db: Session, tenant_id: int | None, epi_id: int, nuevo_estado: str
+) -> EpiEntrega:
+    epi = (
+        db.query(EpiEntrega)
+        .filter(EpiEntrega.id == epi_id, EpiEntrega.tenant_id == tenant_id)
+        .first()
+    )
     if not epi:
         raise ValueError("EPI no encontrado")
     if nuevo_estado not in {"activo", "repuesto", "baja"}:
@@ -700,6 +711,7 @@ def crear_certificado(
     db: Session, tenant_id: int | None, registrado_por_id: int,
     data, archivo_ruta: str | None = None, archivo_nombre: str | None = None,
 ) -> Certificado:
+    _validar_operario_del_tenant(db, tenant_id, data.operario_id)
     cert = Certificado(
         tenant_id=tenant_id,
         operario_id=data.operario_id,
@@ -735,6 +747,7 @@ def crear_reconocimiento(
     db: Session, tenant_id: int | None, registrado_por_id: int,
     data, archivo_ruta: str | None = None, archivo_nombre: str | None = None,
 ) -> ReconocimientoMedico:
+    _validar_operario_del_tenant(db, tenant_id, data.operario_id)
     rec = ReconocimientoMedico(
         tenant_id=tenant_id,
         operario_id=data.operario_id,
@@ -797,7 +810,12 @@ def get_resumen_horas(db: Session, tenant_id: int | None, operario_id: int, mes:
         .all()
     }
 
-    operario = db.query(User).filter(User.id == operario_id).first()
+    # Filtrado por tenant_id: si operario_id pertenece a otro taller, operario
+    # queda None y el resumen muestra "—" en vez de filtrar el nombre real de
+    # un empleado ajeno (las horas ya salen en 0 porque Fichaje sí está scoped).
+    operario = (
+        db.query(User).filter(User.id == operario_id, User.tenant_id == tenant_id).first()
+    )
 
     horas_total = 0.0
     horas_nocturnas = 0.0
@@ -958,9 +976,16 @@ def get_solicitudes_cambio_turno(db: Session, tenant_id: int | None) -> list:
 
 
 def revisar_cambio_turno(
-    db: Session, solicitud_id: int, aprobado_por_id: int, data
+    db: Session, tenant_id: int | None, solicitud_id: int, aprobado_por_id: int, data
 ) -> SolicitudCambioTurno:
-    solicitud = db.query(SolicitudCambioTurno).filter(SolicitudCambioTurno.id == solicitud_id).first()
+    solicitud = (
+        db.query(SolicitudCambioTurno)
+        .filter(
+            SolicitudCambioTurno.id == solicitud_id,
+            SolicitudCambioTurno.tenant_id == tenant_id,
+        )
+        .first()
+    )
     if not solicitud:
         raise ValueError("Solicitud no encontrada")
     if solicitud.estado != "pendiente":
@@ -1133,6 +1158,7 @@ def crear_permiso_trabajo(
     db: Session, tenant_id: int | None, autorizado_por_id: int,
     data, archivo_ruta: str | None = None, archivo_nombre: str | None = None,
 ) -> PermisoTrabajoEspecial:
+    _validar_operario_del_tenant(db, tenant_id, data.operario_id)
     permiso = PermisoTrabajoEspecial(
         tenant_id=tenant_id,
         operario_id=data.operario_id,
