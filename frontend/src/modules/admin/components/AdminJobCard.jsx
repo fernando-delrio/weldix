@@ -126,4 +126,3 @@ const AdminJobCard = ({ job, onDelete, onReject }) => {
 }
 
 export default AdminJobCard
-
