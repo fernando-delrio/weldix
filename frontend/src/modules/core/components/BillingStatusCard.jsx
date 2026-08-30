@@ -44,9 +44,28 @@ const activeSummary = ({ status }) =>
     </p>
   )
 
+const checkoutErrorMessage = (error) =>
+  error.includes('503') || error.includes('configurado')
+    ? 'Los pagos aún no están configurados. Contacta con soporte.'
+    : error
+
+const checkoutError = ({ error }) =>
+  error && (
+    <p className="mt-3 rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-300">
+      {checkoutErrorMessage(error)}
+    </p>
+  )
+
 const BillingStatusCard = () => {
-  const { status, isLoadingStatus, refreshStatus, startCheckout, openPortal, isRedirecting } =
-    useBilling()
+  const {
+    status,
+    isLoadingStatus,
+    refreshStatus,
+    startCheckout,
+    openPortal,
+    isRedirecting,
+    error,
+  } = useBilling()
 
   useEffect(() => {
     refreshStatus()
@@ -80,6 +99,8 @@ const BillingStatusCard = () => {
       >
         {status.plan === 'active' ? 'Gestionar suscripción' : 'Activar suscripción'}
       </WeldixButton>
+
+      {checkoutError({ error })}
     </PanelCard>
   )
 }
