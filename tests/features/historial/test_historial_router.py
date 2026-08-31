@@ -60,6 +60,32 @@ def test_historial_includes_status_change_event(two_tenants_historial_client):
     assert "estado_cambiado" in tipos
 
 
+def test_historial_status_change_description_uses_human_label_not_raw_enum(
+    two_tenants_historial_client,
+):
+    """Bug real: la descripcion decia "Estado cambiado a 'en_proceso'" (el
+    valor crudo del enum) en vez de "Estado cambiado a 'En proceso'" (la
+    etiqueta que el resto de la UI usa, ver STATUS_CONFIG en el frontend)."""
+    # ARRANGE
+    client, token_a, _ = two_tenants_historial_client
+    job = _create_job(client, token_a)
+
+    # ACT
+    client.patch(
+        f"/trabajos/{job['id']}/estado",
+        json={"estado": "en_proceso"},
+        headers=_auth(token_a),
+    )
+    eventos = client.get(
+        f"/trabajos/{job['id']}/historial", headers=_auth(token_a)
+    ).json()
+
+    # ASSERT
+    evento_cambio = next(e for e in eventos if e["tipo"] == "estado_cambiado")
+    assert "En proceso" in evento_cambio["descripcion"]
+    assert "en_proceso" not in evento_cambio["descripcion"]
+
+
 def test_historial_events_are_ordered_chronologically(two_tenants_historial_client):
     # ARRANGE — un trabajo con dos eventos: creación y cambio de estado
     client, token_a, _ = two_tenants_historial_client

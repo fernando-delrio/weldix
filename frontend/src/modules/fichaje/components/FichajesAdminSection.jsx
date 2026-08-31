@@ -584,8 +584,12 @@ const FichajesAdminSection = ({ operarios = [], onRefresh }) => {
   const handleKioskLink = async () => {
     setKioskLoading(true)
     try {
-      const { url } = await getKioskLink()
-      setKioskUrl(url)
+      // Construimos la URL con el origin real del navegador, no con la que
+      // devuelve el backend (settings.frontend_url): si el admin entra desde
+      // una IP de red local o un puerto distinto al configurado en el .env,
+      // el enlace del backend apuntaría a un sitio que no existe en la tablet.
+      const { token } = await getKioskLink()
+      setKioskUrl(`${window.location.origin}/kiosko/${token}`)
     } catch {
       setKioskUrl('')
     } finally {

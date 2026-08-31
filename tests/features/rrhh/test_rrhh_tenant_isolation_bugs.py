@@ -28,6 +28,19 @@ Bugs corregidos (archivo:línea, backend/features/rrhh/):
    por tenant_id antes de construir el informe mensual.
 7. service.py get_calendario() (~L426): ahora filtra las ausencias
    aprobadas del "equipo" por tenant_id.
+8. service.py revisar_cambio_turno() (~L960): ahora filtra la solicitud de
+   cambio de turno por tenant_id además de por id — antes un admin podía
+   aprobar el intercambio de turnos de dos operarios de OTRO taller.
+9. service.py actualizar_estado_epi() / eliminar_epi() (~L651, ~L663): ahora
+   filtran el EPI por tenant_id — antes un admin podía cambiar el estado o
+   borrar el EPI de un operario de otro taller conociendo su id.
+10. service.py crear_epi() (~L632, vía _validar_operario_del_tenant): ahora
+    valida que operario_id pertenezca al tenant del admin antes de crear el
+    registro (mismo guard clause que ya usaba upsert_config, replicado
+    también en crear_certificado/crear_reconocimiento/crear_permiso_trabajo).
+11. service.py get_resumen_horas() (~L813): ahora filtra el operario por
+    tenant_id al construir operario_nombre — antes un admin podía enumerar
+    el nombre real de un operario de otro taller pasando su id.
 """
 
 
@@ -182,3 +195,152 @@ def test_calendario_no_muestra_ausencias_aprobadas_de_otro_tenant(rrhh_client):
         e.get("operario_id") for e in response.json() if e["tipo"] == "ausencia"
     ]
     assert ctx["op_b_id"] not in operarios_en_calendario
+
+
+# ─── 8 — un admin ya no puede aprobar un cambio de turno de otro taller ────
+
+
+def test_admin_no_puede_revisar_cambio_de_turno_de_otro_tenant(rrhh_client):
+    # ARRANGE — dos turnos de B y una solicitud de cambio entre ellos
+    from backend.features.rrhh.model import SolicitudCambioTurno, TurnoAsignado
+    from datetime import date, timedelta
+
+    ctx = rrhh_client
+    db = ctx["db"]
+    fecha_cedida = date.today() + timedelta(days=5)
+    fecha_recibida = date.today() + timedelta(days=6)
+
+    turno_cedido = TurnoAsignado(
+        tenant_id=ctx["tenant_b"].id,
+        operario_id=ctx["op_b_id"],
+        fecha=fecha_cedida,
+        turno="manana",
+    )
+    turno_recibido = TurnoAsignado(
+        tenant_id=ctx["tenant_b"].id,
+        operario_id=ctx["op_b_id"],
+        fecha=fecha_recibida,
+        turno="tarde",
+    )
+    db.add_all([turno_cedido, turno_recibido])
+    db.flush()
+    solicitud = SolicitudCambioTurno(
+        tenant_id=ctx["tenant_b"].id,
+        solicitante_id=ctx["op_b_id"],
+        receptor_id=ctx["op_b_id"],
+        turno_cedido_id=turno_cedido.id,
+        turno_recibido_id=turno_recibido.id,
+        estado="pendiente",
+    )
+    db.add(solicitud)
+    db.commit()
+    db.refresh(solicitud)
+    operario_original_cedido = turno_cedido.operario_id
+
+    # ACT — el admin de A (otro taller) intenta aprobar el cambio de B
+    response = ctx["client"].patch(
+        f"/rrhh/turnos/cambios/{solicitud.id}/revisar",
+        json={"estado": "aprobada"},
+        headers=_auth(ctx["token_admin_a"]),
+    )
+
+    # ASSERT — filtrada por tenant, la solicitud "no existe" para A
+    assert response.status_code == 400
+
+    # Confirma el efecto de lado real: los turnos de B no se intercambiaron
+    db.refresh(turno_cedido)
+    assert turno_cedido.operario_id == operario_original_cedido
+    db.refresh(solicitud)
+    assert solicitud.estado == "pendiente"
+
+
+# ─── 9 — un admin ya no puede modificar/borrar el EPI de otro taller ───────
+
+
+def test_admin_no_puede_cambiar_estado_de_epi_de_otro_tenant(rrhh_client):
+    # ARRANGE — EPI real del operario de B
+    ctx = rrhh_client
+    epi = ctx["client"].post(
+        "/rrhh/epis",
+        json={
+            "operario_id": ctx["op_b_id"],
+            "tipo_epi": "casco",
+            "fecha_entrega": "2026-01-01",
+        },
+        headers=_auth(ctx["token_admin_b"]),
+    ).json()
+
+    # ACT — el admin de A intenta darlo de baja
+    response = ctx["client"].patch(
+        f"/rrhh/epis/{epi['id']}/estado",
+        params={"estado": "baja"},
+        headers=_auth(ctx["token_admin_a"]),
+    )
+
+    # ASSERT
+    assert response.status_code == 400
+    epis_de_b = ctx["client"].get(
+        "/rrhh/epis", headers=_auth(ctx["token_admin_b"])
+    ).json()
+    assert epis_de_b[0]["estado"] == "activo"
+
+
+def test_admin_no_puede_eliminar_epi_de_otro_tenant(rrhh_client):
+    # ARRANGE
+    ctx = rrhh_client
+    epi = ctx["client"].post(
+        "/rrhh/epis",
+        json={
+            "operario_id": ctx["op_b_id"],
+            "tipo_epi": "guantes",
+            "fecha_entrega": "2026-01-01",
+        },
+        headers=_auth(ctx["token_admin_b"]),
+    ).json()
+
+    # ACT — el admin de A intenta borrarlo
+    response = ctx["client"].delete(
+        f"/rrhh/epis/{epi['id']}", headers=_auth(ctx["token_admin_a"])
+    )
+
+    # ASSERT
+    assert response.status_code == 404
+    epis_de_b = ctx["client"].get(
+        "/rrhh/epis", headers=_auth(ctx["token_admin_b"])
+    ).json()
+    assert len(epis_de_b) == 1
+
+
+# ─── 10 — un admin ya no puede crear un EPI para un operario de otro taller ─
+
+
+def test_admin_no_puede_crear_epi_para_operario_de_otro_tenant(rrhh_client):
+    # ARRANGE / ACT — el admin de A intenta registrar un EPI a nombre de B
+    ctx = rrhh_client
+    response = ctx["client"].post(
+        "/rrhh/epis",
+        json={
+            "operario_id": ctx["op_b_id"],
+            "tipo_epi": "botas",
+            "fecha_entrega": "2026-01-01",
+        },
+        headers=_auth(ctx["token_admin_a"]),
+    )
+
+    # ASSERT
+    assert response.status_code == 400
+
+
+# ─── 11 — el resumen de horas ya no expone el nombre de otro tenant ────────
+
+
+def test_resumen_horas_no_expone_nombre_de_operario_de_otro_tenant(rrhh_client):
+    # ARRANGE / ACT — el admin de A consulta las horas extra del operario de B
+    ctx = rrhh_client
+    response = ctx["client"].get(
+        f"/rrhh/horas-extra/{ctx['op_b_id']}", headers=_auth(ctx["token_admin_a"])
+    )
+
+    # ASSERT — no se filtra el nombre real de un empleado de otro taller
+    assert response.status_code == 200
+    assert response.json()["operario_nombre"] == "—"

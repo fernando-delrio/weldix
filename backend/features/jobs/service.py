@@ -11,6 +11,15 @@ from .model import Job
 from .schemas import CreateJobRequest, UpdateJobRequest
 
 
+_ESTADO_LABELS = {
+    "pendiente": "Pendiente",
+    "en_proceso": "En proceso",
+    "control": "Control",
+    "listo": "Listo",
+    "entregado": "Entregado",
+}
+
+
 def _clamp_progress(value: int) -> int:
     return max(0, min(value, 100))
 
@@ -174,7 +183,7 @@ def update_estado(
         db,
         job.id,
         "estado_cambiado",
-        f"Estado cambiado a '{estado}'",
+        f"Estado cambiado a '{_ESTADO_LABELS.get(estado, estado)}'",
         current_user_name,
         tenant_id=tenant_id,
     )
