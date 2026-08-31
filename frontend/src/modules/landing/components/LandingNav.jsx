@@ -140,13 +140,18 @@ const LandingNav = ({ t, isDark, onToggle }) => {
           <Link
             to="/registro"
             className={cx(
-              'flex items-center gap-1.5 rounded-lg px-4 py-2 text-[0.7rem] font-bold tracking-wide shadow-lg transition active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/70 focus-visible:ring-offset-2',
+              'flex items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-2 text-[0.7rem] font-bold tracking-wide shadow-lg transition active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/70 focus-visible:ring-offset-2 sm:px-4',
               isDark ? 'focus-visible:ring-offset-[#070b0f]' : 'focus-visible:ring-offset-white',
               t.btnPrimary
             )}
           >
-            <i className="bx bx-rocket text-sm" />
-            Probar gratis
+            {/* En móvil no hay hueco para icono + "Probar gratis" en una sola
+                línea (medido: 375px de ancho solo dejan ~104px al CTA junto
+                al logo, el toggle y el menú) — se cae a "Gratis" sin icono
+                para no partirse en dos líneas. */}
+            <i className="hidden bx bx-rocket text-sm sm:inline" aria-hidden="true" />
+            <span className="sm:hidden">Gratis</span>
+            <span className="hidden sm:inline">Probar gratis</span>
           </Link>
           <button
             type="button"

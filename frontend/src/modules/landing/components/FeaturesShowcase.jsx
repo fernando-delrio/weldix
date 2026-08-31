@@ -172,9 +172,15 @@ const FeaturesShowcase = ({ t }) => {
         </div>
 
         <div className="mt-12 grid gap-6 lg:grid-cols-12">
-          {/* Lista lateral numerada */}
+          {/* Lista lateral numerada.
+              min-w-0: sin esto, al ser hijo directo de un contenedor grid,
+              el navegador no lo encoge por debajo del ancho de su contenido
+              (min-width:auto por defecto en grid/flex) — la fila de pestañas
+              empujaba TODA la página a un ancho de ~2900px en móvil en vez
+              de quedarse en su columna y dejar que su propio overflow-x-auto
+              haga el scroll interno. */}
           <div
-            className={cx('rounded-2xl border p-2 lg:col-span-4', t.card)}
+            className={cx('min-w-0 rounded-2xl border p-2 lg:col-span-4', t.card)}
             role="tablist"
             aria-label="Funcionalidades de Weldix"
           >
