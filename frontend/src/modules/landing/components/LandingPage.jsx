@@ -240,36 +240,6 @@ export const HeroSection = ({ t, isDark }) => (
         </div>
       </div>
     </div>
-
-    {/* Métricas — banda única, centrada y del mismo tamaño que antes */}
-    <div data-gsap="hero-stats" className="relative z-10 mx-auto mt-16 w-full max-w-4xl">
-      <div
-        className={cx(
-          'grid grid-cols-2 divide-x divide-y overflow-hidden rounded-2xl border sm:grid-cols-4 sm:divide-y-0',
-          t.card,
-          isDark ? 'divide-slate-800' : 'divide-stone-200'
-        )}
-      >
-        {[
-          { v: '< 5 min', l: 'para empezar' },
-          { v: '0 €', l: 'sin tarjeta' },
-          { v: '15 días', l: 'gratis' },
-          { v: '100%', l: 'en la nube' },
-        ].map(({ v, l }) => (
-          <div key={l} className="px-4 py-8 text-center">
-            <div className={cx('text-3xl font-black sm:text-4xl', t.accent)}>{v}</div>
-            <div
-              className={cx(
-                'mt-1.5 text-[0.7rem] font-semibold uppercase tracking-[0.14em]',
-                t.muted
-              )}
-            >
-              {l}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
   </section>
 )
 
@@ -473,12 +443,21 @@ export const PricingSection = ({ t }) => (
       </div>
 
       <div className="mx-auto max-w-3xl">
-        {/* Tarjeta de precio único — glow-pulse-amber se aplica via CSS keyframe (sin JS) */}
+        {/* Tarjeta de precio único — glow-pulse-amber se aplica via CSS keyframe (sin JS).
+            overflow-hidden en la tarjeta (no rounded-t-2xl en la barra): un radio de
+            16px no cabe en una franja de 2px de alto, así que redondear la propia
+            barra la deforma en una curva que no coincide con la esquina real de la
+            tarjeta. Dejar que la tarjeta recorte a sus hijos es lo que la encaja
+            de verdad. box-shadow (el glow) no lo afecta: se pinta fuera de la caja,
+            overflow-hidden solo recorta contenido y descendientes. */}
         <div
           data-gsap="plan-card"
-          className={cx('glow-pulse-amber relative rounded-2xl border p-8', t.planPopular)}
+          className={cx(
+            'glow-pulse-amber relative overflow-hidden rounded-2xl border p-8',
+            t.planPopular
+          )}
         >
-          <div className={cx('absolute inset-x-0 top-0 h-0.5 rounded-t-2xl', t.planPopLine)} />
+          <div className={cx('absolute inset-x-0 top-0 h-0.5', t.planPopLine)} />
 
           <div className="mb-6 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
             <div>

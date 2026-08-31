@@ -50,9 +50,6 @@ const animateHero = () => {
   // Botones CTA
   tl.from('[data-gsap="hero-cta"]', { y: 15, opacity: 0, duration: 0.5, stagger: 0.1 }, '-=0.25')
 
-  // Stats grid
-  tl.from('[data-gsap="hero-stats"]', { opacity: 0, duration: 0.4 }, '-=0.2')
-
   // Mockup entra desde la derecha en paralelo al word reveal
   tl.from(
     '[data-gsap="hero-mockup"]',

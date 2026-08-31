@@ -17,12 +17,26 @@ import '@fontsource/rajdhani/400.css'
 import '@fontsource/rajdhani/500.css'
 import '@fontsource/rajdhani/600.css'
 import '@fontsource/rajdhani/700.css'
+import { registerSW } from 'virtual:pwa-register'
 import App from './App.jsx'
 import { installApiInterceptor } from './modules/core/lib/apiInterceptor'
 import { initSentry } from './modules/core/lib/sentry'
 
 initSentry()
 installApiInterceptor()
+
+// El script que vite-plugin-pwa inyecta por defecto (registerSW.js) no
+// captura errores de navigator.serviceWorker.register() — un fallo ahí
+// (scope inválido, SW previo en conflicto, navegador sin soporte real...)
+// llegaba a Sentry como promesa rechazada sin gestionar, con handled:false.
+// Registrarlo aquí a mano deja el error contenido: no rompe la app —
+// sin service worker sigue siendo una web normal, solo pierde el modo
+// offline y la instalación como PWA — así que un console.warn basta.
+registerSW({
+  onRegisterError: (error) => {
+    console.warn('No se pudo registrar el service worker (PWA offline no disponible):', error)
+  },
+})
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

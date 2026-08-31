@@ -9,6 +9,11 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: "autoUpdate",
+      // injectRegister: false — el script registerSW.js que inyecta vite-plugin-pwa
+      // por defecto no captura errores de registro (ver src/main.jsx): un fallo ahí
+      // llegaba a Sentry como promesa rechazada sin gestionar. Registramos el SW
+      // nosotros mismos vía `virtual:pwa-register` para poder atraparlo.
+      injectRegister: false,
       includeAssets: ["weldix-logo.svg", "favicon.ico"],
       manifest: {
         name: "Weldix — Gestión de Taller",
