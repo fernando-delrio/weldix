@@ -30,7 +30,7 @@ const FAQS = [
   },
   {
     q: '¿Cómo fichan los operarios?',
-    a: 'Como quieras: web, móvil, tablet, o modo kiosko — una tablet en la entrada donde cada uno ficha con su PIN. Sea cual sea, es la misma jornada.',
+    a: 'Como quieras: web, móvil, tablet, o modo kiosko (una tablet en la entrada donde cada uno ficha con su PIN). Sea cual sea, es la misma jornada.',
   },
   {
     q: '¿Mis datos están separados de los de otros talleres?',
@@ -52,7 +52,7 @@ const FaqItem = ({ item, isOpen, onToggle, t }) => (
       type="button"
       onClick={onToggle}
       aria-expanded={isOpen}
-      className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left"
+      className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/70 focus-visible:ring-inset"
     >
       <span className={cx('text-sm font-bold', t.headline)}>{item.q}</span>
       <i
@@ -107,7 +107,7 @@ const FaqsPage = () => {
           <Link
             to="/registro"
             className={cx(
-              'inline-flex items-center gap-2 rounded-xl px-8 py-3.5 text-sm font-bold tracking-wide shadow-lg transition',
+              'inline-flex items-center gap-2 rounded-xl px-8 py-3.5 text-sm font-bold tracking-wide shadow-lg transition active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/70 focus-visible:ring-offset-2',
               t.btnPrimary
             )}
           >

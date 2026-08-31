@@ -192,6 +192,16 @@ article {
   animation: glowPulseAmber 3s ease-in-out infinite;
 }
 
+/* prefers-reduced-motion: los dos bucles infinitos de arriba (gradiente y
+   glow) son movimiento puramente decorativo — se paran del todo, el fondo y
+   la tarjeta se quedan en su estado visual final sin perder información. */
+@media (prefers-reduced-motion: reduce) {
+  .landing-hero-gradient-anim,
+  .glow-pulse-amber {
+    animation: none;
+  }
+}
+
 /* ── font-display swap override — evita FOIT en display fonts ── */
 @font-face {
   font-display: swap;

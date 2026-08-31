@@ -1,11 +1,13 @@
 import { useId } from 'react'
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 
 const MotionDiv = motion.div
 
 // Texto SVG que orbita alrededor de un círculo — efecto de badge rotante (estilo Apple/Vercel).
 // `color` se controla con className (usa fill="currentColor").
 // El `useId` evita conflicto de id si hay varios RotatingBadge en la misma página.
+// prefers-reduced-motion: un giro infinito es justo el tipo de movimiento que
+// esa preferencia pide evitar — se queda estático, el texto se sigue leyendo igual.
 const RotatingBadge = ({
   text = '✦ GRATIS 15 DÍAS ✦ SIN TARJETA',
   size = 88,
@@ -14,10 +16,11 @@ const RotatingBadge = ({
 }) => {
   const uid = useId().replace(/:/g, '')
   const pathId = `rb-${uid}`
+  const prefersReducedMotion = useReducedMotion()
 
   return (
     <MotionDiv
-      animate={{ rotate: 360 }}
+      animate={prefersReducedMotion ? undefined : { rotate: 360 }}
       transition={{ duration: speed, repeat: Infinity, ease: 'linear' }}
       style={{ width: size, height: size }}
       className={className}

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { cx } from '../../core/lib/cx'
 
 const MotionDiv = motion.div
@@ -19,6 +19,7 @@ const SocialProofToast = ({ isDark }) => {
   const [key, setKey] = useState(0)
   const timerRef = useRef(null)
   const indexRef = useRef(0)
+  const prefersReducedMotion = useReducedMotion()
 
   const cardClass = isDark
     ? 'bg-[#0d1520] border border-slate-800 text-slate-100 shadow-xl shadow-black/40'
@@ -42,15 +43,19 @@ const SocialProofToast = ({ isDark }) => {
   }, [])
 
   return (
-    <div className="pointer-events-none fixed bottom-6 left-6 z-[9500]">
+    <div className="pointer-events-none fixed bottom-6 left-6 z-[9500]" aria-hidden="true">
       <AnimatePresence mode="wait">
         {current && (
           <MotionDiv
             key={key}
-            initial={{ x: -72, opacity: 0, scale: 0.94 }}
-            animate={{ x: 0, opacity: 1, scale: 1 }}
-            exit={{ x: -60, opacity: 0, scale: 0.94 }}
-            transition={{ type: 'spring', damping: 22, stiffness: 220 }}
+            initial={prefersReducedMotion ? { opacity: 0 } : { x: -72, opacity: 0, scale: 0.94 }}
+            animate={prefersReducedMotion ? { opacity: 1 } : { x: 0, opacity: 1, scale: 1 }}
+            exit={prefersReducedMotion ? { opacity: 0 } : { x: -60, opacity: 0, scale: 0.94 }}
+            transition={
+              prefersReducedMotion
+                ? { duration: 0.15 }
+                : { type: 'spring', damping: 22, stiffness: 220 }
+            }
             className={cx('flex max-w-[280px] items-start gap-3 rounded-xl p-3.5', cardClass)}
           >
             {/* Avatar */}

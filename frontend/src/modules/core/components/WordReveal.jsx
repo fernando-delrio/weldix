@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 
 const MotionSpan = motion.span
 
@@ -17,8 +17,18 @@ const wordVariant = {
   }),
 }
 
+// prefers-reduced-motion: el titular aparece directamente en su posición
+// final, sin el desplazamiento vertical — el usuario sigue viendo el mismo
+// texto, solo pierde la animación de entrada.
+const reducedVariant = {
+  hidden: { opacity: 1, y: 0 },
+  visible: { opacity: 1, y: 0 },
+}
+
 const WordReveal = ({ text, className, initialDelay = 0 }) => {
   const words = text.split(' ')
+  const prefersReducedMotion = useReducedMotion()
+  const variants = prefersReducedMotion ? reducedVariant : wordVariant
 
   return (
     <span className={className} aria-label={text}>
@@ -29,7 +39,7 @@ const WordReveal = ({ text, className, initialDelay = 0 }) => {
         >
           <MotionSpan
             custom={i + initialDelay / 0.08}
-            variants={wordVariant}
+            variants={variants}
             initial="hidden"
             animate="visible"
             style={{ display: 'inline-block' }}

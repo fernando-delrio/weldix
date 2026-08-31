@@ -166,15 +166,21 @@ const FeaturesShowcase = ({ t }) => {
             Explora todo lo que hace Weldix
           </h2>
           <p className={cx('mx-auto mt-3 max-w-2xl text-base', t.muted)}>
-            No es solo fichaje. Es la gestión completa de tu taller — {SHOWCASE.length} módulos
+            No es solo fichaje: es la gestión completa de tu taller, con {SHOWCASE.length} módulos
             conectados entre sí.
           </p>
         </div>
 
         <div className="mt-12 grid gap-6 lg:grid-cols-12">
-          {/* Lista lateral numerada */}
+          {/* Lista lateral numerada.
+              min-w-0: sin esto, al ser hijo directo de un contenedor grid,
+              el navegador no lo encoge por debajo del ancho de su contenido
+              (min-width:auto por defecto en grid/flex) — la fila de pestañas
+              empujaba TODA la página a un ancho de ~2900px en móvil en vez
+              de quedarse en su columna y dejar que su propio overflow-x-auto
+              haga el scroll interno. */}
           <div
-            className={cx('rounded-2xl border p-2 lg:col-span-4', t.card)}
+            className={cx('min-w-0 rounded-2xl border p-2 lg:col-span-4', t.card)}
             role="tablist"
             aria-label="Funcionalidades de Weldix"
           >
@@ -188,7 +194,7 @@ const FeaturesShowcase = ({ t }) => {
                     aria-selected={isActive}
                     onClick={() => setActive(index)}
                     className={cx(
-                      'flex shrink-0 items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold transition lg:w-full',
+                      'flex shrink-0 items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold transition lg:w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/70',
                       isActive ? cx(t.accentTint, t.accent) : cx(t.muted, 'hover:bg-white/[0.03]')
                     )}
                   >
@@ -224,7 +230,7 @@ const FeaturesShowcase = ({ t }) => {
                   onClick={() => go(-1)}
                   aria-label="Funcionalidad anterior"
                   className={cx(
-                    'flex h-9 w-9 items-center justify-center rounded-lg border transition',
+                    'flex h-9 w-9 items-center justify-center rounded-lg border transition active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/70',
                     t.divider,
                     t.navText
                   )}
@@ -238,7 +244,7 @@ const FeaturesShowcase = ({ t }) => {
                   onClick={() => go(1)}
                   aria-label="Funcionalidad siguiente"
                   className={cx(
-                    'flex h-9 w-9 items-center justify-center rounded-lg border transition',
+                    'flex h-9 w-9 items-center justify-center rounded-lg border transition active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/70',
                     t.divider,
                     t.navText
                   )}

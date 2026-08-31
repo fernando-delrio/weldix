@@ -50,7 +50,7 @@ const TIMELINE_STEPS = [
     when: 'Este mes',
     icon: 'bx bx-bar-chart-alt-2',
     title: 'Cero papel',
-    desc: 'Stock, RRHH, equipos y OTs — todo en una pantalla.',
+    desc: 'Stock, RRHH, equipos y OTs, todo en una pantalla.',
   },
 ]
 
@@ -178,7 +178,7 @@ export const HeroSection = ({ t, isDark }) => (
 
         <p data-gsap="hero-sub" className={cx('max-w-lg text-[1.05rem] leading-relaxed', t.muted)}>
           Cada hora perdida con papeleo es dinero que no cobras. Weldix digitaliza tu taller en 5
-          minutos — sin instalar nada.
+          minutos, sin instalar nada.
         </p>
 
         {/* CTAs envueltos en MagneticWrap */}
@@ -188,7 +188,10 @@ export const HeroSection = ({ t, isDark }) => (
               to="/registro"
               data-gsap="hero-cta"
               className={cx(
-                'flex items-center gap-2 rounded-xl px-7 py-3.5 text-sm font-bold tracking-wide shadow-lg transition',
+                'flex items-center gap-2 rounded-xl px-7 py-3.5 text-sm font-bold tracking-wide shadow-lg transition active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/70 focus-visible:ring-offset-2',
+                isDark
+                  ? 'focus-visible:ring-offset-[#070b0f]'
+                  : 'focus-visible:ring-offset-[#f1f5f9]',
                 t.btnPrimary
               )}
             >
@@ -201,7 +204,10 @@ export const HeroSection = ({ t, isDark }) => (
               to="/demo"
               data-gsap="hero-cta"
               className={cx(
-                'flex items-center gap-2 rounded-xl px-7 py-3.5 text-sm font-bold tracking-wide shadow-lg transition',
+                'flex items-center gap-2 rounded-xl px-7 py-3.5 text-sm font-bold tracking-wide shadow-lg transition active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/70 focus-visible:ring-offset-2',
+                isDark
+                  ? 'focus-visible:ring-offset-[#070b0f]'
+                  : 'focus-visible:ring-offset-[#f1f5f9]',
                 t.btnGhost
               )}
             >
@@ -420,12 +426,12 @@ export const TimelineSection = ({ t }) => (
         <Link
           to="/registro"
           className={cx(
-            'inline-flex items-center gap-2 rounded-xl px-8 py-3.5 text-sm font-bold tracking-wide shadow-lg transition',
+            'inline-flex items-center gap-2 rounded-xl px-8 py-3.5 text-sm font-bold tracking-wide shadow-lg transition active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/70 focus-visible:ring-offset-2',
             t.btnPrimary
           )}
         >
           <i className="bx bx-rocket" />
-          Empezar hoy — gratis
+          Probar 15 días gratis
         </Link>
       </div>
     </div>
@@ -470,9 +476,9 @@ export const PricingSection = ({ t }) => (
         {/* Tarjeta de precio único — glow-pulse-amber se aplica via CSS keyframe (sin JS) */}
         <div
           data-gsap="plan-card"
-          className={cx('glow-pulse-amber relative border p-8', t.planPopular)}
+          className={cx('glow-pulse-amber relative rounded-2xl border p-8', t.planPopular)}
         >
-          <div className={cx('absolute inset-x-0 top-0 h-[2px]', t.planPopLine)} />
+          <div className={cx('absolute inset-x-0 top-0 h-0.5 rounded-t-2xl', t.planPopLine)} />
 
           <div className="mb-6 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
             <div>
@@ -536,17 +542,17 @@ export const PricingSection = ({ t }) => (
             <Link
               to="/registro"
               className={cx(
-                'flex flex-1 items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold tracking-wide transition shadow-lg',
+                'flex flex-1 items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold tracking-wide transition shadow-lg active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/70 focus-visible:ring-offset-2',
                 t.btnPrimary
               )}
             >
               <i className="bx bx-rocket" />
-              Probar 15 días gratis — sin tarjeta
+              Probar 15 días gratis
             </Link>
             <a
               href="mailto:hola@weldix.es?subject=Consulta%20sobre%20Weldix"
               className={cx(
-                'flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-medium tracking-wide transition',
+                'flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-medium tracking-wide transition active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/70 focus-visible:ring-offset-2',
                 t.btnGhost
               )}
             >
@@ -600,12 +606,12 @@ export const CtaSection = ({ t }) => (
           to="/registro"
           data-gsap="cta-primary"
           className={cx(
-            'flex items-center gap-2 rounded-xl px-10 py-4 text-sm font-bold tracking-wide shadow-lg transition',
+            'flex items-center gap-2 rounded-xl px-10 py-4 text-sm font-bold tracking-wide shadow-lg transition active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/70 focus-visible:ring-offset-2',
             t.btnPrimary
           )}
         >
           <i className="bx bx-rocket text-lg" />
-          Crear mi taller gratis
+          Probar 15 días gratis
         </Link>
       </div>
       <p className={cx('text-[0.62rem] font-semibold uppercase tracking-[0.18em]', t.faint)}>
