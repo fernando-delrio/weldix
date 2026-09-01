@@ -1,8 +1,11 @@
 import { Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 
 // Alias en JS puro → ESLint detecta el uso de `motion` fuera de JSX
 const MotionDiv = motion.div
+// motion(Link): un <Link> normal no entiende `variants`/`animate` — hace
+// falta envolverlo con motion() para que la CTA final pueda animar su glow.
+const MotionLink = motion(Link)
 import { cx } from '../../core/lib/cx'
 import DemoPreview from '../../core/components/DemoPreview'
 import MagneticWrap from './MagneticWrap'
@@ -244,38 +247,145 @@ export const HeroSection = ({ t, isDark }) => (
 )
 
 // ─── pain points ──────────────────────────────────────────────────────────────
+//
+// Bento deliberado, no un accidente: PAIN_POINTS tiene 6 elementos + el cierre
+// ("Weldix es para ti") como 7º. En una grid de 3 columnas, la primera tarjeta
+// grande (2 cols) + 1 normal llenan la fila 1; 3 normales llenan la fila 2;
+// 1 normal + el cierre grande (2 cols) llenan la fila 3. Sin huecos sueltos.
+// La primera y la de cierre no solo ocupan más ancho: llevan icono más grande,
+// texto más grande y más padding, así el peso visual es real, no solo de grid.
+//
+// Motion en vez de GSAP: es "aparece al entrar en viewport", no scroll-hijack
+// ni pin — el patrón más simple gana. reversible (whileInView sin once:true):
+// al bajar aparecen, al subir vuelven a su estado inicial — es literalmente
+// scroll, no un "ya lo vi una vez y ya está".
+const painCardSpan = (index) => (index === 0 ? 'sm:col-span-2 lg:col-span-2' : 'lg:col-span-1')
 
-export const PainSection = ({ t }) => (
-  <section
-    className={cx('border-y px-6 py-16 transition-colors duration-300', t.divider, t.painBg)}
-  >
-    <div className="mx-auto max-w-6xl">
-      <p
-        className={cx(
-          'mb-8 text-center font-mono text-[0.58rem] font-bold uppercase tracking-[0.25em]',
-          t.painText
-        )}
-      >
-        // ¿te suena esto?
-      </p>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {PAIN_POINTS.map(({ icon, text }) => (
-          <div
-            key={text}
-            data-gsap="pain-card"
-            className={cx('flex items-start gap-3 rounded-xl border p-4', t.painBorder)}
+const painContainerVariants = {
+  hidden: { transition: { staggerChildren: 0.04, staggerDirection: -1 } },
+  visible: { transition: { staggerChildren: 0.08, delayChildren: 0.05 } },
+}
+
+// Entrada con spring sutil (bounce 0.16-0.2): un toque de vida, no un rebote
+// de juguete — esta sección es más humana que la de métricas legales, admite
+// algo de personalidad. La salida (scroll hacia arriba) es rápida y sin
+// spring: "slow where deciding, fast where responding" — aquí el sistema
+// solo está respondiendo al gesto de subir, no hay nada que decidir.
+const painCardVariants = {
+  hidden: {
+    opacity: 0,
+    y: 24,
+    scale: 0.94,
+    transition: { duration: 0.22, ease: [0.4, 0, 1, 1] },
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { type: 'spring', duration: 0.5, bounce: 0.16 },
+  },
+}
+
+const painClosingVariants = {
+  hidden: {
+    opacity: 0,
+    y: 28,
+    scale: 0.92,
+    transition: { duration: 0.22, ease: [0.4, 0, 1, 1] },
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { type: 'spring', duration: 0.6, bounce: 0.22 },
+  },
+}
+
+// prefers-reduced-motion: sin desplazamiento ni escala ni spring, solo un
+// fade corto — se conserva el orden de aparición (sigue contando la misma
+// historia) pero sin el movimiento que esa preferencia pide evitar.
+const painReducedVariants = {
+  hidden: { opacity: 0, transition: { duration: 0.15 } },
+  visible: { opacity: 1, transition: { duration: 0.3 } },
+}
+
+export const PainSection = ({ t }) => {
+  const prefersReducedMotion = useReducedMotion()
+  const cardVariants = prefersReducedMotion ? painReducedVariants : painCardVariants
+  const closingVariants = prefersReducedMotion ? painReducedVariants : painClosingVariants
+
+  return (
+    <section
+      className={cx('border-y px-6 py-16 transition-colors duration-300', t.divider, t.painBg)}
+    >
+      <div className="mx-auto max-w-6xl">
+        <p
+          className={cx(
+            'mb-8 text-center font-mono text-sm font-bold uppercase tracking-[0.2em]',
+            t.painText
+          )}
+        >
+          // ¿te suena esto?
+        </p>
+        <MotionDiv
+          className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3"
+          variants={painContainerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: false, amount: 0.25 }}
+        >
+          {PAIN_POINTS.map(({ icon, text }, index) => {
+            const isLead = index === 0
+            return (
+              <MotionDiv
+                key={text}
+                variants={cardVariants}
+                className={cx(
+                  'flex items-start gap-3 rounded-xl border',
+                  isLead ? 'p-5' : 'p-4',
+                  t.painBorder,
+                  painCardSpan(index)
+                )}
+              >
+                <i
+                  className={cx(
+                    icon,
+                    'mt-0.5 shrink-0',
+                    isLead ? 'text-2xl' : 'text-lg',
+                    t.painText
+                  )}
+                />
+                <p className={cx('leading-relaxed', isLead ? 'text-base' : 'text-sm', t.muted)}>
+                  {text}
+                </p>
+              </MotionDiv>
+            )
+          })}
+
+          {/* El cierre ya no es texto plano debajo del grid: es la 7ª pieza
+              del bento, ocupa 2 columnas como la primera, y usa el acento
+              ámbar (no el rosa de "dolor") para marcar que aquí cambia el
+              registro: de problema a solución. Icono + texto más grandes que
+              el resto — es el remate de la sección, tiene que pesar más. */}
+          <MotionDiv
+            variants={closingVariants}
+            className={cx(
+              'flex items-center justify-center gap-3 rounded-xl border p-5 text-center sm:col-span-2 lg:col-span-2',
+              t.accentBorder,
+              t.accentTint
+            )}
           >
-            <i className={cx(icon, 'mt-0.5 shrink-0 text-lg', t.painText)} />
-            <p className={cx('text-sm leading-relaxed', t.muted)}>{text}</p>
-          </div>
-        ))}
+            <i className={cx('bx bx-check-circle shrink-0 text-2xl', t.accent)} />
+            <p className={cx('text-base font-bold sm:text-lg', t.headline)}>
+              Si has dicho sí a alguno de estos,{' '}
+              <span className={t.accent}>Weldix es para ti.</span>
+            </p>
+          </MotionDiv>
+        </MotionDiv>
       </div>
-      <p className={cx('mt-6 text-center text-sm font-semibold', t.muted)}>
-        Si has dicho sí a alguno de estos, Weldix es para ti.
-      </p>
-    </div>
-  </section>
-)
+    </section>
+  )
+}
 
 // ─── trust metrics ────────────────────────────────────────────────────────────
 
@@ -555,50 +665,94 @@ export const PricingSection = ({ t }) => (
 )
 
 // ─── cta final ────────────────────────────────────────────────────────────────
+//
+// Eco del cierre de Pain points ("Weldix es para ti") pero a escala de página
+// entera: el remate definitivo. Reversible como el resto, pero MÁS calmado
+// que Pain (sin spring, sin rebote) — este es el momento de decisión, tiene
+// que transmitir seguridad, no diversión.
 
-export const CtaSection = ({ t }) => (
-  <section
-    data-gsap="cta-section"
-    className={cx('border-y px-6 py-28 text-center transition-colors duration-300', t.divider)}
-  >
-    <div className="mx-auto max-w-2xl space-y-6">
-      <p className={cx('font-mono text-[0.58rem] font-bold uppercase tracking-[0.25em]', t.accent)}>
-        Empieza hoy
-      </p>
-      <h2
-        data-gsap="cta-headline"
-        className={cx(
-          'font-display text-5xl font-extrabold leading-tight tracking-tight sm:text-6xl',
-          t.headline
-        )}
+const ctaTextVariants = {
+  hidden: { opacity: 0, y: 24, transition: { duration: 0.2, ease: [0.4, 0, 1, 1] } },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] } },
+}
+
+const ctaTextVariantsReduced = {
+  hidden: { opacity: 0, transition: { duration: 0.15 } },
+  visible: { opacity: 1, transition: { duration: 0.3 } },
+}
+
+// El glow del botón se repite cada vez que la sección vuelve a entrar en
+// viewport — refuerza "este es el botón" sin ser un bucle infinito molesto:
+// dos pulsos y para.
+const ctaGlowVariants = {
+  hidden: { boxShadow: '0 0 0 0 rgba(245,158,11,0)' },
+  visible: {
+    boxShadow: [
+      '0 0 0 0 rgba(245,158,11,0)',
+      '0 0 32px 8px rgba(245,158,11,0.35)',
+      '0 0 0 0 rgba(245,158,11,0)',
+    ],
+    transition: { duration: 1.3, repeat: 1, ease: 'easeInOut', delay: 0.45 },
+  },
+}
+
+export const CtaSection = ({ t }) => {
+  const prefersReducedMotion = useReducedMotion()
+  const textVariants = prefersReducedMotion ? ctaTextVariantsReduced : ctaTextVariants
+
+  return (
+    <section
+      className={cx('border-y px-6 py-28 text-center transition-colors duration-300', t.divider)}
+    >
+      <MotionDiv
+        className="mx-auto max-w-2xl space-y-6"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: false, amount: 0.4 }}
       >
-        Tu taller,
-        <br />
-        <span className={t.accent}>en marcha hoy.</span>
-      </h2>
-      <p data-gsap="cta-sub" className={cx('mx-auto max-w-md text-sm leading-relaxed', t.muted)}>
-        Gestiona tus OTs, fichajes y stock desde una sola plataforma. Olvídate del papel y del Excel
-        para siempre.
-      </p>
-      <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-        <Link
-          to="/registro"
-          data-gsap="cta-primary"
-          className={cx(
-            'flex items-center gap-2 rounded-xl px-10 py-4 text-sm font-bold tracking-wide shadow-lg transition active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/70 focus-visible:ring-offset-2',
-            t.btnPrimary
-          )}
+        <p
+          className={cx('font-mono text-[0.58rem] font-bold uppercase tracking-[0.25em]', t.accent)}
         >
-          <i className="bx bx-rocket text-lg" />
-          Probar 15 días gratis
-        </Link>
-      </div>
-      <p className={cx('text-[0.62rem] font-semibold uppercase tracking-[0.18em]', t.faint)}>
-        Sin compromiso · Sin tarjeta · Cancela cuando quieras
-      </p>
-    </div>
-  </section>
-)
+          Empieza hoy
+        </p>
+        <MotionDiv variants={textVariants}>
+          <h2
+            className={cx(
+              'font-display text-5xl font-extrabold leading-tight tracking-tight sm:text-6xl',
+              t.headline
+            )}
+          >
+            Tu taller,
+            <br />
+            <span className={t.accent}>en marcha hoy.</span>
+          </h2>
+        </MotionDiv>
+        <MotionDiv variants={textVariants}>
+          <p className={cx('mx-auto max-w-md text-sm leading-relaxed', t.muted)}>
+            Gestiona tus OTs, fichajes y stock desde una sola plataforma. Olvídate del papel y del
+            Excel para siempre.
+          </p>
+        </MotionDiv>
+        <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+          <MotionLink
+            to="/registro"
+            className={cx(
+              'flex items-center gap-2 rounded-xl px-10 py-4 text-sm font-bold tracking-wide shadow-lg transition active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/70 focus-visible:ring-offset-2',
+              t.btnPrimary
+            )}
+            variants={prefersReducedMotion ? undefined : ctaGlowVariants}
+          >
+            <i className="bx bx-rocket text-lg" />
+            Probar 15 días gratis
+          </MotionLink>
+        </div>
+        <p className={cx('text-[0.62rem] font-semibold uppercase tracking-[0.18em]', t.faint)}>
+          Sin compromiso · Sin tarjeta · Cancela cuando quieras
+        </p>
+      </MotionDiv>
+    </section>
+  )
+}
 
 // ─── footer ───────────────────────────────────────────────────────────────────
 

@@ -63,25 +63,9 @@ const animateHero = () => {
 // Parallax eliminado — scrub:true aplicaba transforms que rompían
 // el position:fixed del navbar en todos los navegadores.
 
-// ---- Pain points: stagger de tarjetas --------------------------------------
-
-const animatePainCards = () => {
-  if (!existsInDom('[data-gsap="pain-card"]')) return
-
-  ScrollTrigger.batch('[data-gsap="pain-card"]', {
-    onEnter: (els) => {
-      gsap.from(els, {
-        y: 30,
-        opacity: 0,
-        duration: 0.6,
-        stagger: 0.1,
-        ease: 'power3.out',
-      })
-    },
-    once: true,
-    start: 'top 85%',
-  })
-}
+// Pain points: migrado a Motion (whileInView + variants) en PainSection,
+// LandingPage.jsx — es un simple "aparece al entrar en viewport" sin pin
+// ni scrub, el caso donde Motion es más simple que GSAP ScrollTrigger.
 
 // ---- Trust metrics: scale bounce al entrar ---------------------------------
 //
@@ -110,12 +94,20 @@ const animateTrustMetrics = () => {
 // ---- Timeline (Como funciona): la linea se dibuja al hacer scroll ----------
 //
 // Apple-style: el usuario ve literalmente como avanza el proceso
-// mientras baja por la pagina.
+// mientras baja por la pagina. Reversible: al bajar la línea se dibuja y los
+// pasos aparecen, al subir se retraen — es una narrativa paso a paso, tiene
+// sentido que se pueda "rebobinar" igual que se avanza.
+//
+// toggleActions, NO scrub: el comentario de más arriba (parallax eliminado)
+// documenta que scrub:true rompió el navbar fixed en todos los navegadores
+// en este mismo proyecto — scrub ata la animación al scroll frame a frame,
+// que es justo lo que causó el problema. toggleActions consigue reversible
+// reproduciendo el tween normal hacia adelante o hacia atrás según la
+// dirección del scroll, sin atarlo al frame — mismo resultado, sin el riesgo.
 
 const animateTimeline = () => {
   if (!existsInDom('[data-gsap="timeline-section"]')) return
 
-  // La línea de progreso entra de golpe al scroll (sin scrub para no romper fixed)
   gsap.from('[data-gsap="timeline-progress"]', {
     scaleX: 0,
     transformOrigin: 'left center',
@@ -124,22 +116,23 @@ const animateTimeline = () => {
     scrollTrigger: {
       trigger: '[data-gsap="timeline-section"]',
       start: 'top 60%',
-      once: true,
+      end: 'bottom 40%',
+      toggleActions: 'play reverse play reverse',
     },
   })
 
-  ScrollTrigger.batch('[data-gsap="timeline-step"]', {
-    onEnter: (els) => {
-      gsap.from(els, {
-        y: 25,
-        opacity: 0,
-        duration: 0.6,
-        stagger: 0.15,
-        ease: 'power3.out',
-      })
+  gsap.from('[data-gsap="timeline-step"]', {
+    y: 25,
+    opacity: 0,
+    duration: 0.6,
+    stagger: 0.15,
+    ease: 'power3.out',
+    scrollTrigger: {
+      trigger: '[data-gsap="timeline-section"]',
+      start: 'top 75%',
+      end: 'bottom 50%',
+      toggleActions: 'play reverse play reverse',
     },
-    once: true,
-    start: 'top 75%',
   })
 }
 
@@ -163,55 +156,9 @@ const animatePricing = () => {
   })
 }
 
-// ---- CTA final: glow pulsante amber (el cierre tiene que impactar) ---------
-//
-// Cuando el usuario llega al CTA final ya ha visto toda la propuesta.
-// El glow llama la atencion sin ser molesto: 3 pulsos y se detiene.
-
-const animateCtaFinal = () => {
-  if (!existsInDom('[data-gsap="cta-section"]')) return
-
-  const tl = gsap.timeline({
-    scrollTrigger: {
-      trigger: '[data-gsap="cta-section"]',
-      start: 'top 65%',
-      once: true,
-    },
-  })
-
-  tl.from('[data-gsap="cta-headline"]', {
-    y: 40,
-    opacity: 0,
-    duration: 0.8,
-    ease: 'power3.out',
-  }).from(
-    '[data-gsap="cta-sub"]',
-    {
-      y: 20,
-      opacity: 0,
-      duration: 0.5,
-    },
-    '-=0.4'
-  )
-
-  gsap.fromTo(
-    '[data-gsap="cta-primary"]',
-    { boxShadow: '0 0 0 0 rgba(245,158,11,0)' },
-    {
-      boxShadow: '0 0 32px 8px rgba(245,158,11,0.35)',
-      duration: 0.7,
-      yoyo: true,
-      repeat: 3,
-      ease: 'power2.inOut',
-      delay: 0.8,
-      scrollTrigger: {
-        trigger: '[data-gsap="cta-section"]',
-        start: 'top 65%',
-        once: true,
-      },
-    }
-  )
-}
+// CTA final: migrado a Motion (whileInView + variants) en CtaSection,
+// LandingPage.jsx — reversible como Timeline y Pain points, pero sin spring:
+// es el momento de decisión, tiene que transmitir seguridad, no rebote.
 
 // ---- Hook publico -----------------------------------------------------------
 
@@ -233,11 +180,9 @@ export const useLandingAnimations = () => {
     ctx.current = gsap.context(() => {
       if (prefersReducedMotion) return
       animateHero()
-      animatePainCards()
       animateTrustMetrics()
       animateTimeline()
       animatePricing()
-      animateCtaFinal()
     })
 
     return () => ctx.current.revert()
