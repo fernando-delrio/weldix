@@ -1,7 +1,29 @@
 import { Link } from 'react-router-dom'
+import { motion, useReducedMotion } from 'framer-motion'
 
 import { cx } from '../../core/lib/cx'
 import { SpotlightCard } from './SpotlightCard'
+
+const MotionDiv = motion.div
+
+// Mismo patrón reversible que Pain points y Cta final (whileInView sin
+// once:true), pero sin spring: son ~15 tarjetas repartidas en 5 categorías,
+// un rebote repetido tantas veces cansaría en vez de dar vida. Fade + subida
+// corta y rápida, el gesto justo para que la lista larga no aparezca de golpe.
+const featureGridVariants = {
+  hidden: { transition: { staggerChildren: 0.03, staggerDirection: -1 } },
+  visible: { transition: { staggerChildren: 0.05, delayChildren: 0.03 } },
+}
+
+const featureCardVariants = {
+  hidden: { opacity: 0, y: 16, transition: { duration: 0.18, ease: [0.4, 0, 1, 1] } },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.22, 1, 0.36, 1] } },
+}
+
+const featureCardVariantsReduced = {
+  hidden: { opacity: 0, transition: { duration: 0.12 } },
+  visible: { opacity: 1, transition: { duration: 0.2 } },
+}
 
 // Funcionalidades agrupadas por categoría (estilo Jornada). Datos: doc/funcionalidades.md.
 const CATEGORIES = [
@@ -127,25 +149,38 @@ const FeatureCard = ({ card, t }) => (
   </SpotlightCard>
 )
 
-const FeatureCategories = ({ t }) => (
-  <div className="px-6 pb-24">
-    <div className="mx-auto max-w-6xl space-y-16">
-      {CATEGORIES.map((category) => (
-        <section key={category.title}>
-          <div className={cx('mb-6 border-b pb-3', t.divider)}>
-            <h2 className={cx('font-display text-2xl font-extrabold', t.headline)}>
-              {category.title}
-            </h2>
-          </div>
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {category.cards.map((card) => (
-              <FeatureCard key={card.title} card={card} t={t} />
-            ))}
-          </div>
-        </section>
-      ))}
+const FeatureCategories = ({ t }) => {
+  const prefersReducedMotion = useReducedMotion()
+  const cardVariants = prefersReducedMotion ? featureCardVariantsReduced : featureCardVariants
+
+  return (
+    <div className="px-6 pb-24">
+      <div className="mx-auto max-w-6xl space-y-16">
+        {CATEGORIES.map((category) => (
+          <section key={category.title}>
+            <div className={cx('mb-6 border-b pb-3', t.divider)}>
+              <h2 className={cx('font-display text-2xl font-extrabold', t.headline)}>
+                {category.title}
+              </h2>
+            </div>
+            <MotionDiv
+              className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3"
+              variants={featureGridVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: false, amount: 0.15 }}
+            >
+              {category.cards.map((card) => (
+                <MotionDiv key={card.title} variants={cardVariants}>
+                  <FeatureCard card={card} t={t} />
+                </MotionDiv>
+              ))}
+            </MotionDiv>
+          </section>
+        ))}
+      </div>
     </div>
-  </div>
-)
+  )
+}
 
 export default FeatureCategories
