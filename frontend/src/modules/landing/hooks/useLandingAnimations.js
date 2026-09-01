@@ -63,25 +63,9 @@ const animateHero = () => {
 // Parallax eliminado — scrub:true aplicaba transforms que rompían
 // el position:fixed del navbar en todos los navegadores.
 
-// ---- Pain points: stagger de tarjetas --------------------------------------
-
-const animatePainCards = () => {
-  if (!existsInDom('[data-gsap="pain-card"]')) return
-
-  ScrollTrigger.batch('[data-gsap="pain-card"]', {
-    onEnter: (els) => {
-      gsap.from(els, {
-        y: 30,
-        opacity: 0,
-        duration: 0.6,
-        stagger: 0.1,
-        ease: 'power3.out',
-      })
-    },
-    once: true,
-    start: 'top 85%',
-  })
-}
+// Pain points: migrado a Motion (whileInView + variants) en PainSection,
+// LandingPage.jsx — es un simple "aparece al entrar en viewport" sin pin
+// ni scrub, el caso donde Motion es más simple que GSAP ScrollTrigger.
 
 // ---- Trust metrics: scale bounce al entrar ---------------------------------
 //
@@ -233,7 +217,6 @@ export const useLandingAnimations = () => {
     ctx.current = gsap.context(() => {
       if (prefersReducedMotion) return
       animateHero()
-      animatePainCards()
       animateTrustMetrics()
       animateTimeline()
       animatePricing()

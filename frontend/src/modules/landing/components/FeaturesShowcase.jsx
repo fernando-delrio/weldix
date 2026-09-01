@@ -13,8 +13,7 @@ const SHOWCASE = [
     points: [
       'Código automático ORD-YYYY-NNN y flujo de 5 estados.',
       'Historial de eventos por OT: quién cambió qué y cuándo.',
-      'Vista Lista y Kanban con arrastrar y soltar.',
-      'Parte de trabajo en PDF descargable.',
+      'Búsqueda global con Ctrl+K y filtros por estado y cliente.',
     ],
   },
   {

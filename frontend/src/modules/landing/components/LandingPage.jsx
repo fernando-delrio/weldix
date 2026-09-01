@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 
 // Alias en JS puro → ESLint detecta el uso de `motion` fuera de JSX
 const MotionDiv = motion.div
@@ -244,38 +244,145 @@ export const HeroSection = ({ t, isDark }) => (
 )
 
 // ─── pain points ──────────────────────────────────────────────────────────────
+//
+// Bento deliberado, no un accidente: PAIN_POINTS tiene 6 elementos + el cierre
+// ("Weldix es para ti") como 7º. En una grid de 3 columnas, la primera tarjeta
+// grande (2 cols) + 1 normal llenan la fila 1; 3 normales llenan la fila 2;
+// 1 normal + el cierre grande (2 cols) llenan la fila 3. Sin huecos sueltos.
+// La primera y la de cierre no solo ocupan más ancho: llevan icono más grande,
+// texto más grande y más padding, así el peso visual es real, no solo de grid.
+//
+// Motion en vez de GSAP: es "aparece al entrar en viewport", no scroll-hijack
+// ni pin — el patrón más simple gana. reversible (whileInView sin once:true):
+// al bajar aparecen, al subir vuelven a su estado inicial — es literalmente
+// scroll, no un "ya lo vi una vez y ya está".
+const painCardSpan = (index) => (index === 0 ? 'sm:col-span-2 lg:col-span-2' : 'lg:col-span-1')
 
-export const PainSection = ({ t }) => (
-  <section
-    className={cx('border-y px-6 py-16 transition-colors duration-300', t.divider, t.painBg)}
-  >
-    <div className="mx-auto max-w-6xl">
-      <p
-        className={cx(
-          'mb-8 text-center font-mono text-[0.58rem] font-bold uppercase tracking-[0.25em]',
-          t.painText
-        )}
-      >
-        // ¿te suena esto?
-      </p>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {PAIN_POINTS.map(({ icon, text }) => (
-          <div
-            key={text}
-            data-gsap="pain-card"
-            className={cx('flex items-start gap-3 rounded-xl border p-4', t.painBorder)}
+const painContainerVariants = {
+  hidden: { transition: { staggerChildren: 0.04, staggerDirection: -1 } },
+  visible: { transition: { staggerChildren: 0.08, delayChildren: 0.05 } },
+}
+
+// Entrada con spring sutil (bounce 0.16-0.2): un toque de vida, no un rebote
+// de juguete — esta sección es más humana que la de métricas legales, admite
+// algo de personalidad. La salida (scroll hacia arriba) es rápida y sin
+// spring: "slow where deciding, fast where responding" — aquí el sistema
+// solo está respondiendo al gesto de subir, no hay nada que decidir.
+const painCardVariants = {
+  hidden: {
+    opacity: 0,
+    y: 24,
+    scale: 0.94,
+    transition: { duration: 0.22, ease: [0.4, 0, 1, 1] },
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { type: 'spring', duration: 0.5, bounce: 0.16 },
+  },
+}
+
+const painClosingVariants = {
+  hidden: {
+    opacity: 0,
+    y: 28,
+    scale: 0.92,
+    transition: { duration: 0.22, ease: [0.4, 0, 1, 1] },
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { type: 'spring', duration: 0.6, bounce: 0.22 },
+  },
+}
+
+// prefers-reduced-motion: sin desplazamiento ni escala ni spring, solo un
+// fade corto — se conserva el orden de aparición (sigue contando la misma
+// historia) pero sin el movimiento que esa preferencia pide evitar.
+const painReducedVariants = {
+  hidden: { opacity: 0, transition: { duration: 0.15 } },
+  visible: { opacity: 1, transition: { duration: 0.3 } },
+}
+
+export const PainSection = ({ t }) => {
+  const prefersReducedMotion = useReducedMotion()
+  const cardVariants = prefersReducedMotion ? painReducedVariants : painCardVariants
+  const closingVariants = prefersReducedMotion ? painReducedVariants : painClosingVariants
+
+  return (
+    <section
+      className={cx('border-y px-6 py-16 transition-colors duration-300', t.divider, t.painBg)}
+    >
+      <div className="mx-auto max-w-6xl">
+        <p
+          className={cx(
+            'mb-8 text-center font-mono text-sm font-bold uppercase tracking-[0.2em]',
+            t.painText
+          )}
+        >
+          // ¿te suena esto?
+        </p>
+        <MotionDiv
+          className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3"
+          variants={painContainerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: false, amount: 0.25 }}
+        >
+          {PAIN_POINTS.map(({ icon, text }, index) => {
+            const isLead = index === 0
+            return (
+              <MotionDiv
+                key={text}
+                variants={cardVariants}
+                className={cx(
+                  'flex items-start gap-3 rounded-xl border',
+                  isLead ? 'p-5' : 'p-4',
+                  t.painBorder,
+                  painCardSpan(index)
+                )}
+              >
+                <i
+                  className={cx(
+                    icon,
+                    'mt-0.5 shrink-0',
+                    isLead ? 'text-2xl' : 'text-lg',
+                    t.painText
+                  )}
+                />
+                <p className={cx('leading-relaxed', isLead ? 'text-base' : 'text-sm', t.muted)}>
+                  {text}
+                </p>
+              </MotionDiv>
+            )
+          })}
+
+          {/* El cierre ya no es texto plano debajo del grid: es la 7ª pieza
+              del bento, ocupa 2 columnas como la primera, y usa el acento
+              ámbar (no el rosa de "dolor") para marcar que aquí cambia el
+              registro: de problema a solución. Icono + texto más grandes que
+              el resto — es el remate de la sección, tiene que pesar más. */}
+          <MotionDiv
+            variants={closingVariants}
+            className={cx(
+              'flex items-center justify-center gap-3 rounded-xl border p-5 text-center sm:col-span-2 lg:col-span-2',
+              t.accentBorder,
+              t.accentTint
+            )}
           >
-            <i className={cx(icon, 'mt-0.5 shrink-0 text-lg', t.painText)} />
-            <p className={cx('text-sm leading-relaxed', t.muted)}>{text}</p>
-          </div>
-        ))}
+            <i className={cx('bx bx-check-circle shrink-0 text-2xl', t.accent)} />
+            <p className={cx('text-base font-bold sm:text-lg', t.headline)}>
+              Si has dicho sí a alguno de estos,{' '}
+              <span className={t.accent}>Weldix es para ti.</span>
+            </p>
+          </MotionDiv>
+        </MotionDiv>
       </div>
-      <p className={cx('mt-6 text-center text-sm font-semibold', t.muted)}>
-        Si has dicho sí a alguno de estos, Weldix es para ti.
-      </p>
-    </div>
-  </section>
-)
+    </section>
+  )
+}
 
 // ─── trust metrics ────────────────────────────────────────────────────────────
 

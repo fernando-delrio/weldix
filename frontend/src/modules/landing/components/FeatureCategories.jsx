@@ -31,7 +31,7 @@ const CATEGORIES = [
       {
         icon: 'bx bx-list-check',
         title: 'OT digitales',
-        desc: 'Código automático ORD-YYYY-NNN, flujo de 5 estados, historial de eventos y vista Kanban con arrastrar y soltar.',
+        desc: 'Código automático ORD-YYYY-NNN, flujo de 5 estados, historial de eventos y búsqueda global con Ctrl+K.',
       },
       {
         icon: 'bx bx-camera',
