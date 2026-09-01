@@ -156,55 +156,9 @@ const animatePricing = () => {
   })
 }
 
-// ---- CTA final: glow pulsante amber (el cierre tiene que impactar) ---------
-//
-// Cuando el usuario llega al CTA final ya ha visto toda la propuesta.
-// El glow llama la atencion sin ser molesto: 3 pulsos y se detiene.
-
-const animateCtaFinal = () => {
-  if (!existsInDom('[data-gsap="cta-section"]')) return
-
-  const tl = gsap.timeline({
-    scrollTrigger: {
-      trigger: '[data-gsap="cta-section"]',
-      start: 'top 65%',
-      once: true,
-    },
-  })
-
-  tl.from('[data-gsap="cta-headline"]', {
-    y: 40,
-    opacity: 0,
-    duration: 0.8,
-    ease: 'power3.out',
-  }).from(
-    '[data-gsap="cta-sub"]',
-    {
-      y: 20,
-      opacity: 0,
-      duration: 0.5,
-    },
-    '-=0.4'
-  )
-
-  gsap.fromTo(
-    '[data-gsap="cta-primary"]',
-    { boxShadow: '0 0 0 0 rgba(245,158,11,0)' },
-    {
-      boxShadow: '0 0 32px 8px rgba(245,158,11,0.35)',
-      duration: 0.7,
-      yoyo: true,
-      repeat: 3,
-      ease: 'power2.inOut',
-      delay: 0.8,
-      scrollTrigger: {
-        trigger: '[data-gsap="cta-section"]',
-        start: 'top 65%',
-        once: true,
-      },
-    }
-  )
-}
+// CTA final: migrado a Motion (whileInView + variants) en CtaSection,
+// LandingPage.jsx — reversible como Timeline y Pain points, pero sin spring:
+// es el momento de decisión, tiene que transmitir seguridad, no rebote.
 
 // ---- Hook publico -----------------------------------------------------------
 
@@ -229,7 +183,6 @@ export const useLandingAnimations = () => {
       animateTrustMetrics()
       animateTimeline()
       animatePricing()
-      animateCtaFinal()
     })
 
     return () => ctx.current.revert()

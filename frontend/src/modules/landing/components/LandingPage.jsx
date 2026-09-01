@@ -3,6 +3,9 @@ import { motion, useReducedMotion } from 'framer-motion'
 
 // Alias en JS puro → ESLint detecta el uso de `motion` fuera de JSX
 const MotionDiv = motion.div
+// motion(Link): un <Link> normal no entiende `variants`/`animate` — hace
+// falta envolverlo con motion() para que la CTA final pueda animar su glow.
+const MotionLink = motion(Link)
 import { cx } from '../../core/lib/cx'
 import DemoPreview from '../../core/components/DemoPreview'
 import MagneticWrap from './MagneticWrap'
@@ -662,50 +665,94 @@ export const PricingSection = ({ t }) => (
 )
 
 // ─── cta final ────────────────────────────────────────────────────────────────
+//
+// Eco del cierre de Pain points ("Weldix es para ti") pero a escala de página
+// entera: el remate definitivo. Reversible como el resto, pero MÁS calmado
+// que Pain (sin spring, sin rebote) — este es el momento de decisión, tiene
+// que transmitir seguridad, no diversión.
 
-export const CtaSection = ({ t }) => (
-  <section
-    data-gsap="cta-section"
-    className={cx('border-y px-6 py-28 text-center transition-colors duration-300', t.divider)}
-  >
-    <div className="mx-auto max-w-2xl space-y-6">
-      <p className={cx('font-mono text-[0.58rem] font-bold uppercase tracking-[0.25em]', t.accent)}>
-        Empieza hoy
-      </p>
-      <h2
-        data-gsap="cta-headline"
-        className={cx(
-          'font-display text-5xl font-extrabold leading-tight tracking-tight sm:text-6xl',
-          t.headline
-        )}
+const ctaTextVariants = {
+  hidden: { opacity: 0, y: 24, transition: { duration: 0.2, ease: [0.4, 0, 1, 1] } },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] } },
+}
+
+const ctaTextVariantsReduced = {
+  hidden: { opacity: 0, transition: { duration: 0.15 } },
+  visible: { opacity: 1, transition: { duration: 0.3 } },
+}
+
+// El glow del botón se repite cada vez que la sección vuelve a entrar en
+// viewport — refuerza "este es el botón" sin ser un bucle infinito molesto:
+// dos pulsos y para.
+const ctaGlowVariants = {
+  hidden: { boxShadow: '0 0 0 0 rgba(245,158,11,0)' },
+  visible: {
+    boxShadow: [
+      '0 0 0 0 rgba(245,158,11,0)',
+      '0 0 32px 8px rgba(245,158,11,0.35)',
+      '0 0 0 0 rgba(245,158,11,0)',
+    ],
+    transition: { duration: 1.3, repeat: 1, ease: 'easeInOut', delay: 0.45 },
+  },
+}
+
+export const CtaSection = ({ t }) => {
+  const prefersReducedMotion = useReducedMotion()
+  const textVariants = prefersReducedMotion ? ctaTextVariantsReduced : ctaTextVariants
+
+  return (
+    <section
+      className={cx('border-y px-6 py-28 text-center transition-colors duration-300', t.divider)}
+    >
+      <MotionDiv
+        className="mx-auto max-w-2xl space-y-6"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: false, amount: 0.4 }}
       >
-        Tu taller,
-        <br />
-        <span className={t.accent}>en marcha hoy.</span>
-      </h2>
-      <p data-gsap="cta-sub" className={cx('mx-auto max-w-md text-sm leading-relaxed', t.muted)}>
-        Gestiona tus OTs, fichajes y stock desde una sola plataforma. Olvídate del papel y del Excel
-        para siempre.
-      </p>
-      <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-        <Link
-          to="/registro"
-          data-gsap="cta-primary"
-          className={cx(
-            'flex items-center gap-2 rounded-xl px-10 py-4 text-sm font-bold tracking-wide shadow-lg transition active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/70 focus-visible:ring-offset-2',
-            t.btnPrimary
-          )}
+        <p
+          className={cx('font-mono text-[0.58rem] font-bold uppercase tracking-[0.25em]', t.accent)}
         >
-          <i className="bx bx-rocket text-lg" />
-          Probar 15 días gratis
-        </Link>
-      </div>
-      <p className={cx('text-[0.62rem] font-semibold uppercase tracking-[0.18em]', t.faint)}>
-        Sin compromiso · Sin tarjeta · Cancela cuando quieras
-      </p>
-    </div>
-  </section>
-)
+          Empieza hoy
+        </p>
+        <MotionDiv variants={textVariants}>
+          <h2
+            className={cx(
+              'font-display text-5xl font-extrabold leading-tight tracking-tight sm:text-6xl',
+              t.headline
+            )}
+          >
+            Tu taller,
+            <br />
+            <span className={t.accent}>en marcha hoy.</span>
+          </h2>
+        </MotionDiv>
+        <MotionDiv variants={textVariants}>
+          <p className={cx('mx-auto max-w-md text-sm leading-relaxed', t.muted)}>
+            Gestiona tus OTs, fichajes y stock desde una sola plataforma. Olvídate del papel y del
+            Excel para siempre.
+          </p>
+        </MotionDiv>
+        <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+          <MotionLink
+            to="/registro"
+            className={cx(
+              'flex items-center gap-2 rounded-xl px-10 py-4 text-sm font-bold tracking-wide shadow-lg transition active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/70 focus-visible:ring-offset-2',
+              t.btnPrimary
+            )}
+            variants={prefersReducedMotion ? undefined : ctaGlowVariants}
+          >
+            <i className="bx bx-rocket text-lg" />
+            Probar 15 días gratis
+          </MotionLink>
+        </div>
+        <p className={cx('text-[0.62rem] font-semibold uppercase tracking-[0.18em]', t.faint)}>
+          Sin compromiso · Sin tarjeta · Cancela cuando quieras
+        </p>
+      </MotionDiv>
+    </section>
+  )
+}
 
 // ─── footer ───────────────────────────────────────────────────────────────────
 
