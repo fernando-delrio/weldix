@@ -94,12 +94,20 @@ const animateTrustMetrics = () => {
 // ---- Timeline (Como funciona): la linea se dibuja al hacer scroll ----------
 //
 // Apple-style: el usuario ve literalmente como avanza el proceso
-// mientras baja por la pagina.
+// mientras baja por la pagina. Reversible: al bajar la línea se dibuja y los
+// pasos aparecen, al subir se retraen — es una narrativa paso a paso, tiene
+// sentido que se pueda "rebobinar" igual que se avanza.
+//
+// toggleActions, NO scrub: el comentario de más arriba (parallax eliminado)
+// documenta que scrub:true rompió el navbar fixed en todos los navegadores
+// en este mismo proyecto — scrub ata la animación al scroll frame a frame,
+// que es justo lo que causó el problema. toggleActions consigue reversible
+// reproduciendo el tween normal hacia adelante o hacia atrás según la
+// dirección del scroll, sin atarlo al frame — mismo resultado, sin el riesgo.
 
 const animateTimeline = () => {
   if (!existsInDom('[data-gsap="timeline-section"]')) return
 
-  // La línea de progreso entra de golpe al scroll (sin scrub para no romper fixed)
   gsap.from('[data-gsap="timeline-progress"]', {
     scaleX: 0,
     transformOrigin: 'left center',
@@ -108,22 +116,23 @@ const animateTimeline = () => {
     scrollTrigger: {
       trigger: '[data-gsap="timeline-section"]',
       start: 'top 60%',
-      once: true,
+      end: 'bottom 40%',
+      toggleActions: 'play reverse play reverse',
     },
   })
 
-  ScrollTrigger.batch('[data-gsap="timeline-step"]', {
-    onEnter: (els) => {
-      gsap.from(els, {
-        y: 25,
-        opacity: 0,
-        duration: 0.6,
-        stagger: 0.15,
-        ease: 'power3.out',
-      })
+  gsap.from('[data-gsap="timeline-step"]', {
+    y: 25,
+    opacity: 0,
+    duration: 0.6,
+    stagger: 0.15,
+    ease: 'power3.out',
+    scrollTrigger: {
+      trigger: '[data-gsap="timeline-section"]',
+      start: 'top 75%',
+      end: 'bottom 50%',
+      toggleActions: 'play reverse play reverse',
     },
-    once: true,
-    start: 'top 75%',
   })
 }
 
