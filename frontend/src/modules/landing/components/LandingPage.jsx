@@ -422,101 +422,123 @@ export const TrustMetricsBar = ({ t, isDark }) => (
 
 // ─── timeline — inspirado en Deel ────────────────────────────────────────────
 
-export const TimelineSection = ({ t }) => (
-  <section
-    id="como-funciona"
-    data-gsap="timeline-section"
-    className={cx('scroll-mt-24 px-6 py-24 transition-colors duration-300', t.sectionAlt)}
-  >
-    <div className="mx-auto max-w-6xl">
-      <div className={cx('mb-14 border-b pb-8', t.divider)}>
-        <p className={cx('mb-3 text-[11px] font-medium uppercase tracking-[0.12em]', t.accent)}>
-          Cómo funciona
-        </p>
-        <h2
-          className={cx(
-            'font-display text-3xl font-extrabold tracking-tight sm:text-4xl',
-            t.headline
-          )}
+// Migrado de GSAP ScrollTrigger a Motion: con la sección ya compacta
+// (tarjetas + barra fina, sin el bloque de CTA que tenía antes), el rango
+// start/end de ScrollTrigger se volvía tan estrecho que el trigger de salida
+// no disparaba de forma fiable — lo comprobé en el navegador y no asentaba
+// limpio. Es un simple "aparece al entrar en viewport" sin pin ni scrub, el
+// mismo terreno de Pain points/Cta/Funcionalidades, donde Motion ya
+// demostró ser robusto. La página ya mezcla ambas librerías por sección sin
+// problema (el propio Hero lo hace), así que no hay pureza que romper.
+const timelineContainerVariants = {
+  hidden: { transition: { staggerChildren: 0.06, staggerDirection: -1 } },
+  visible: { transition: { staggerChildren: 0.1, delayChildren: 0.03 } },
+}
+
+const timelineStepVariants = {
+  hidden: { opacity: 0, y: 20, transition: { duration: 0.18, ease: [0.4, 0, 1, 1] } },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] } },
+}
+
+const timelineStepVariantsReduced = {
+  hidden: { opacity: 0, transition: { duration: 0.12 } },
+  visible: { opacity: 1, transition: { duration: 0.2 } },
+}
+
+const timelineSegmentVariants = {
+  hidden: { scaleX: 0, transition: { duration: 0.15, ease: [0.4, 0, 1, 1] } },
+  visible: { scaleX: 1, transition: { duration: 0.35, ease: [0.22, 1, 0.36, 1] } },
+}
+
+export const TimelineSection = ({ t }) => {
+  const prefersReducedMotion = useReducedMotion()
+  const stepVariants = prefersReducedMotion ? timelineStepVariantsReduced : timelineStepVariants
+
+  return (
+    <section
+      id="como-funciona"
+      className={cx('scroll-mt-24 px-6 py-24 transition-colors duration-300', t.sectionAlt)}
+    >
+      <div className="mx-auto max-w-6xl">
+        <div className={cx('mb-14 border-b pb-8', t.divider)}>
+          <p className={cx('mb-3 text-[11px] font-medium uppercase tracking-[0.12em]', t.accent)}>
+            Cómo funciona
+          </p>
+          <h2
+            className={cx(
+              'font-display text-3xl font-extrabold tracking-tight sm:text-4xl',
+              t.headline
+            )}
+          >
+            De cero a taller digital.
+            <br />
+            Sin complicaciones.
+          </h2>
+        </div>
+
+        {/* Tarjetas numeradas, no puntos-y-línea — el conector fino no tenía
+            peso visual propio. Cada paso pesa por sí mismo: número grande de
+            fondo, icono en su caja de acento, igual que el resto de tarjetas
+            del sitio (Pain points, Funcionalidades). Cada tarjeta lleva su
+            propia barra bajo ella (no una fila aparte) — se rellena en
+            sincronía exacta con su tarjeta porque son la misma unidad de
+            animación, no dos elementos coordinados a mano. */}
+        <MotionDiv
+          className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+          variants={timelineContainerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: false, amount: 0.2 }}
         >
-          De cero a taller digital.
-          <br />
-          Sin complicaciones.
-        </h2>
-      </div>
-
-      {/* Timeline horizontal en desktop, vertical en mobile */}
-      <div className="relative">
-        {/* Línea horizontal — solo desktop */}
-        <div
-          className={cx(
-            'absolute left-0 right-0 top-[2.25rem] hidden h-px lg:block',
-            t.timelineLine
-          )}
-        />
-        <div
-          data-gsap="timeline-progress"
-          className="absolute left-0 right-0 top-[2.25rem] hidden h-px bg-amber-500 lg:block"
-          style={{ transformOrigin: 'left center' }}
-        />
-
-        <div className="grid gap-10 lg:grid-cols-4 lg:gap-6">
           {TIMELINE_STEPS.map(({ when, icon, title, desc }, i) => (
-            <div
-              key={when}
-              data-gsap="timeline-step"
-              className="relative flex gap-5 lg:flex-col lg:gap-4"
-            >
-              {/* Dot */}
-              <div
-                className={cx(
-                  'relative z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2',
-                  t.timelineDot
-                )}
-              >
-                <i className={cx(icon, 'text-sm text-white')} />
-              </div>
-              {/* Línea vertical — solo mobile */}
-              {i < TIMELINE_STEPS.length - 1 && (
+            <MotionDiv key={when} variants={stepVariants} className="flex flex-col gap-2">
+              <div className={cx('relative overflow-hidden rounded-xl border p-5', t.card)}>
+                <span
+                  className={cx(
+                    'absolute -right-1 -top-3 font-display text-6xl font-black leading-none opacity-[0.06]',
+                    t.headline
+                  )}
+                  aria-hidden="true"
+                >
+                  {String(i + 1).padStart(2, '0')}
+                </span>
                 <div
                   className={cx(
-                    'absolute left-[1.1rem] top-9 h-full w-px lg:hidden',
-                    t.timelineLine
+                    'relative mb-4 flex h-10 w-10 items-center justify-center rounded-xl',
+                    t.accentTint
                   )}
-                />
-              )}
-              <div className="space-y-1 pb-10 lg:pb-0">
+                >
+                  <i className={cx(icon, 'text-lg', t.accent)} />
+                </div>
                 <p
                   className={cx(
-                    'font-mono text-[0.55rem] font-black uppercase tracking-[0.18em]',
+                    'relative font-mono text-[0.55rem] font-black uppercase tracking-[0.18em]',
                     t.accent
                   )}
                 >
                   {when}
                 </p>
-                <h3 className="text-sm font-black uppercase tracking-wide">{title}</h3>
-                <p className={cx('text-xs leading-relaxed', t.muted)}>{desc}</p>
+                <h3 className="relative mt-1 text-sm font-black uppercase tracking-wide">
+                  {title}
+                </h3>
+                <p className={cx('relative mt-1 text-xs leading-relaxed', t.muted)}>{desc}</p>
               </div>
-            </div>
+              {/* Segmento de progreso — el equivalente visual de "vas por
+                  aquí", pero paso a paso en vez de una línea continua. */}
+              <div className={cx('h-1 overflow-hidden rounded-full', t.timelineLine)}>
+                <MotionDiv
+                  variants={prefersReducedMotion ? undefined : timelineSegmentVariants}
+                  className="h-full origin-left rounded-full bg-amber-500"
+                  style={prefersReducedMotion ? { transform: 'scaleX(1)' } : undefined}
+                />
+              </div>
+            </MotionDiv>
           ))}
-        </div>
+        </MotionDiv>
       </div>
-
-      <div className={cx('mt-14 border-t pt-10 text-center', t.divider)}>
-        <Link
-          to="/registro"
-          className={cx(
-            'inline-flex items-center gap-2 rounded-xl px-8 py-3.5 text-sm font-bold tracking-wide shadow-lg transition active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/70 focus-visible:ring-offset-2',
-            t.btnPrimary
-          )}
-        >
-          <i className="bx bx-rocket" />
-          Probar 15 días gratis
-        </Link>
-      </div>
-    </div>
-  </section>
-)
+    </section>
+  )
+}
 
 // ─── precios ──────────────────────────────────────────────────────────────────
 

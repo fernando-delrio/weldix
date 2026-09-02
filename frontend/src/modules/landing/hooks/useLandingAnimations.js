@@ -91,50 +91,13 @@ const animateTrustMetrics = () => {
   })
 }
 
-// ---- Timeline (Como funciona): la linea se dibuja al hacer scroll ----------
-//
-// Apple-style: el usuario ve literalmente como avanza el proceso
-// mientras baja por la pagina. Reversible: al bajar la línea se dibuja y los
-// pasos aparecen, al subir se retraen — es una narrativa paso a paso, tiene
-// sentido que se pueda "rebobinar" igual que se avanza.
-//
-// toggleActions, NO scrub: el comentario de más arriba (parallax eliminado)
-// documenta que scrub:true rompió el navbar fixed en todos los navegadores
-// en este mismo proyecto — scrub ata la animación al scroll frame a frame,
-// que es justo lo que causó el problema. toggleActions consigue reversible
-// reproduciendo el tween normal hacia adelante o hacia atrás según la
-// dirección del scroll, sin atarlo al frame — mismo resultado, sin el riesgo.
-
-const animateTimeline = () => {
-  if (!existsInDom('[data-gsap="timeline-section"]')) return
-
-  gsap.from('[data-gsap="timeline-progress"]', {
-    scaleX: 0,
-    transformOrigin: 'left center',
-    duration: 1.2,
-    ease: 'power2.out',
-    scrollTrigger: {
-      trigger: '[data-gsap="timeline-section"]',
-      start: 'top 60%',
-      end: 'bottom 40%',
-      toggleActions: 'play reverse play reverse',
-    },
-  })
-
-  gsap.from('[data-gsap="timeline-step"]', {
-    y: 25,
-    opacity: 0,
-    duration: 0.6,
-    stagger: 0.15,
-    ease: 'power3.out',
-    scrollTrigger: {
-      trigger: '[data-gsap="timeline-section"]',
-      start: 'top 75%',
-      end: 'bottom 50%',
-      toggleActions: 'play reverse play reverse',
-    },
-  })
-}
+// Timeline: migrado a Motion (whileInView + variants) en TimelineSection,
+// LandingPage.jsx — probé el reversible con GSAP ScrollTrigger primero
+// (toggleActions, sin scrub) y funcionaba a medias: con la sección ya
+// compacta, el rango start/end se volvía tan estrecho que la salida no
+// disparaba de forma fiable. Es un simple "aparece al entrar en viewport"
+// sin pin ni scrub, el mismo terreno donde Motion ya demostró ser robusto
+// en Pain points/Cta/Funcionalidades.
 
 // ---- Pricing ---------------------------------------------------------------
 
@@ -181,7 +144,6 @@ export const useLandingAnimations = () => {
       if (prefersReducedMotion) return
       animateHero()
       animateTrustMetrics()
-      animateTimeline()
       animatePricing()
     })
 
