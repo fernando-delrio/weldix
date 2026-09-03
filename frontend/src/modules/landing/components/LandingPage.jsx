@@ -547,34 +547,29 @@ export const PricingSection = ({ t }) => (
     id="precios"
     className={cx('scroll-mt-24 px-6 py-24 transition-colors duration-300', t.sectionAlt)}
   >
-    <div className="mx-auto max-w-6xl">
-      <div
-        className={cx(
-          'mb-12 flex flex-col justify-between gap-4 border-b pb-8 sm:flex-row sm:items-end',
-          t.divider
-        )}
-      >
-        <div>
-          <p className={cx('mb-3 text-[11px] font-medium uppercase tracking-[0.12em]', t.accent)}>
-            Precios
-          </p>
-          <h2
-            className={cx(
-              'font-display text-3xl font-extrabold tracking-tight sm:text-4xl',
-              t.headline
-            )}
-          >
-            Sin sorpresas. <span className="font-light opacity-40">Sin letra pequeña.</span>
-          </h2>
-        </div>
-        <p className={cx('hidden text-right text-xs leading-relaxed', t.muted)}>
-          15 días de prueba gratuita.
-          <br />
-          Sin tarjeta de crédito.
+    <div className="mx-auto max-w-3xl">
+      {/* max-w-3xl en todo el bloque (cabecera + tarjeta), no solo en la
+          tarjeta: antes la cabecera vivía en un max-w-6xl más ancho que la
+          tarjeta de debajo, así que el título arrancaba más a la izquierda
+          que la propia tarjeta y quedaba descolgado. El texto "15 días de
+          prueba gratuita" que iba al lado tenía `hidden` sin ningún
+          breakpoint que lo reactivara — nunca se veía en ningún tamaño de
+          pantalla — así que se quita en vez de arrastrarlo. */}
+      <div className={cx('mb-12 border-b pb-8', t.divider)}>
+        <p className={cx('mb-3 text-[11px] font-medium uppercase tracking-[0.12em]', t.accent)}>
+          Precios
         </p>
+        <h2
+          className={cx(
+            'font-display text-3xl font-extrabold tracking-tight sm:text-4xl',
+            t.headline
+          )}
+        >
+          Sin sorpresas. <span className="font-light opacity-40">Sin letra pequeña.</span>
+        </h2>
       </div>
 
-      <div className="mx-auto max-w-3xl">
+      <div>
         {/* Tarjeta de precio único — glow-pulse-amber se aplica via CSS keyframe (sin JS).
             overflow-hidden en la tarjeta (no rounded-t-2xl en la barra): un radio de
             16px no cabe en una franja de 2px de alto, así que redondear la propia
