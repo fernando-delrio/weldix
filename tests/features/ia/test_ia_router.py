@@ -50,7 +50,12 @@ class _FakeChatNamespace:
         self._content = content
         self._capture = capture
 
-    def complete(self, model, messages):  # noqa: ARG002 — firma exigida por el service
+    # **kwargs, no una firma cerrada: el chat.complete real del SDK acepta más
+    # de veinte parámetros opcionales (timeout_ms, retries, temperature...). Un
+    # mock más estrecho que la interfaz real convierte cualquier parámetro nuevo
+    # del service en un TypeError que el router traga como 502 — el test se
+    # vuelve rojo por culpa del doble, no del código.
+    def complete(self, model, messages, **kwargs):  # noqa: ARG002
         if self._capture is not None:
             self._capture.append(messages)
         return _FakeResponse(self._content)

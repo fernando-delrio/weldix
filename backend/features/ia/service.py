@@ -2,6 +2,13 @@ from mistralai import Mistral
 
 from backend.core.config import settings
 
+# Sin timeout, una llamada colgada a Mistral bloquea el hilo que la atiende
+# indefinidamente. /ia/consulta es un endpoint síncrono que retiene su conexión
+# de BD mientras espera, así que colgarse no afecta solo a ese usuario: retira
+# una conexión del pool y un hilo del threadpool hasta que Mistral responda.
+# Con timeout, ambos vuelven sí o sí. 30s es de sobra para mistral-small.
+_MISTRAL_TIMEOUT_MS = 30_000
+
 _SYSTEM_PROMPT = """Eres Weldix AI, el asistente técnico y de gestión de un taller de soldadura y calderería industrial.
 Trabajas integrado en la aplicación Weldix. Adapta tus respuestas al rol del usuario (Administrador u Operario),
 que se indica en su perfil, y usa siempre los datos reales del taller que se te facilitan más abajo.
@@ -144,6 +151,7 @@ def consultar(
     response = client.chat.complete(
         model="mistral-small-latest",
         messages=messages,
+        timeout_ms=_MISTRAL_TIMEOUT_MS,
     )
 
     return response.choices[0].message.content
@@ -189,5 +197,9 @@ def consultar_landing(mensaje: str, historial: list[dict] | None = None) -> str:
         messages.extend(historial)
     messages.append({"role": "user", "content": mensaje})
 
-    response = client.chat.complete(model="mistral-small-latest", messages=messages)
+    response = client.chat.complete(
+        model="mistral-small-latest",
+        messages=messages,
+        timeout_ms=_MISTRAL_TIMEOUT_MS,
+    )
     return response.choices[0].message.content
