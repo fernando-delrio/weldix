@@ -49,7 +49,10 @@ def create_job(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_role("admin")),
 ):
-    job = service.create_job(db, body, tenant_id=current_user.tenant_id)
+    try:
+        job = service.create_job(db, body, tenant_id=current_user.tenant_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
     return JobResponse.from_orm_job(job)
 
 

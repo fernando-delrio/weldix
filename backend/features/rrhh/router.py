@@ -583,7 +583,10 @@ def crear_turnos_bulk(
     current_user: User = Depends(require_role("admin")),
 ):
     """Admin: asigna o actualiza varios turnos de una vez (cuadrante semanal)."""
-    turnos = service.crear_turno_bulk(db, current_user.tenant_id, current_user.id, body.turnos)
+    try:
+        turnos = service.crear_turno_bulk(db, current_user.tenant_id, current_user.id, body.turnos)
+    except ValueError as exc:
+        raise HTTPException(400, detail=str(exc))
     return [TurnoAsignadoResponse.from_orm(turno) for turno in turnos]
 
 
@@ -606,7 +609,10 @@ def solicitar_cambio_turno(
     current_user: User = Depends(get_current_user),
 ):
     """Operario solicita un cambio de turno con un compañero."""
-    sol = service.solicitar_cambio_turno(db, current_user.tenant_id, current_user.id, body)
+    try:
+        sol = service.solicitar_cambio_turno(db, current_user.tenant_id, current_user.id, body)
+    except ValueError as exc:
+        raise HTTPException(400, detail=str(exc))
     return SolicitudCambioTurnoResponse.from_orm(sol)
 
 
@@ -675,7 +681,10 @@ def crear_accidente(
     current_user: User = Depends(get_current_user),
 ):
     """Cualquier usuario autenticado puede reportar un accidente/incidente."""
-    acc = service.crear_accidente(db, current_user.tenant_id, current_user.id, body)
+    try:
+        acc = service.crear_accidente(db, current_user.tenant_id, current_user.id, body)
+    except ValueError as exc:
+        raise HTTPException(400, detail=str(exc))
     return AccidenteLaboralResponse.from_orm(acc)
 
 

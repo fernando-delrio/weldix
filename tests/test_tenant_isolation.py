@@ -219,3 +219,69 @@ def test_photos_are_isolated_by_tenant(two_tenants_client, tmp_path, monkeypatch
     )
     assert still_visible_to_b.status_code == 200
     assert [foto["id"] for foto in still_visible_to_b.json()] == [foto_b["id"]]
+
+
+# ─── Tests de asignación cruzada de operario (IDOR de escritura) ───────────
+#
+# Bug real (auditoría backend-reviewer del saas-toolkit): jobs/service.py
+# asignaba el operario_id del body directamente al Job sin comprobar que
+# ese usuario perteneciera al tenant del admin — un admin del Taller A
+# podía asignar una OT a un operario del Taller B solo adivinando su id.
+
+
+def _create_operario(client, admin_token: str, email: str) -> dict:
+    res = client.post(
+        "/auth/admin/signup",
+        json={
+            "email": email,
+            "password": "Operario1234!",
+            "full_name": "Operario de prueba",
+            "role": "operario",
+        },
+        headers=_auth_header(admin_token),
+    )
+    assert res.status_code == 200, f"No se pudo crear operario: {res.json()}"
+    return res.json()
+
+
+def test_admin_no_puede_crear_ot_con_operario_de_otro_tenant(two_tenants_client):
+    # ARRANGE — operario real, pero del Taller B
+    client, token_a, token_b = two_tenants_client
+    op_b = _create_operario(client, token_b, "op-cross-create@taller-b.dev")
+
+    # ACT — el admin de A crea una OT asignándola al operario de B
+    response = client.post(
+        "/trabajos",
+        json={"titulo": "OT cruzada", "cliente": "Cliente Test", "operario_id": op_b["id"]},
+        headers=_auth_header(token_a),
+    )
+
+    # ASSERT
+    assert response.status_code == 400
+
+    # Confirma el efecto de lado real: no se creó la OT cruzada (el tenant
+    # nuevo trae jobs de demo semilla, así que no se compara contra lista vacía)
+    titulos_a = [j["titulo"] for j in client.get("/trabajos", headers=_auth_header(token_a)).json()]
+    assert "OT cruzada" not in titulos_a
+
+
+def test_admin_no_puede_reasignar_ot_a_operario_de_otro_tenant(two_tenants_client):
+    # ARRANGE — OT propia de A, operario real del Taller B
+    client, token_a, token_b = two_tenants_client
+    job_a = _create_job(client, token_a, "OT propia de A")
+    op_b = _create_operario(client, token_b, "op-cross-update@taller-b.dev")
+
+    # ACT — el admin de A intenta reasignarla al operario de B
+    response = client.patch(
+        f"/trabajos/{job_a['id']}",
+        json={"operario_id": op_b["id"]},
+        headers=_auth_header(token_a),
+    )
+
+    # ASSERT — update_job usa 404 para todo ValueError (mismo código que ya
+    # usaba para "job no encontrado"), no 400 como create_job
+    assert response.status_code == 404
+
+    # Confirma el efecto de lado real: la OT sigue sin operario asignado
+    job_actual = client.get(f"/trabajos/{job_a['id']}", headers=_auth_header(token_a)).json()
+    assert job_actual["operario_id"] is None
