@@ -41,6 +41,24 @@ Bugs corregidos (archivo:línea, backend/features/rrhh/):
 11. service.py get_resumen_horas() (~L813): ahora filtra el operario por
     tenant_id al construir operario_nombre — antes un admin podía enumerar
     el nombre real de un operario de otro taller pasando su id.
+
+Encontrados en una segunda auditoría (backend-reviewer del saas-toolkit),
+mismo patrón que los anteriores — un id secundario del body sin validar:
+
+12. service.py solicitar_cambio_turno() (~L953): ahora valida receptor_id,
+    turno_cedido_id y turno_recibido_id contra el tenant del solicitante
+    antes de crear la solicitud — antes, un operario podía apuntar a un
+    compañero o un turno de otro taller solo adivinando el id, y al
+    aprobarse (revisar_cambio_turno intercambia operario_id entre los dos
+    turnos) era una escritura cruzada de tenant, no solo lectura.
+13. service.py crear_accidente() (~L1025): ahora valida afectado_id contra
+    el tenant antes de crear el registro (mismo guard clause que crear_epi)
+    — antes cualquier usuario autenticado podía imputar un accidente
+    laboral a un empleado de otro taller.
+14. service.py crear_turno_bulk() (~L907): ahora valida todos los
+    operario_id del lote contra el tenant en una sola query antes de
+    crear/actualizar turnos — antes un admin podía asignar un turno a un
+    operario de otro taller.
 """
 
 
@@ -344,3 +362,99 @@ def test_resumen_horas_no_expone_nombre_de_operario_de_otro_tenant(rrhh_client):
     # ASSERT — no se filtra el nombre real de un empleado de otro taller
     assert response.status_code == 200
     assert response.json()["operario_nombre"] == "—"
+
+
+# ─── 12 — solicitar cambio de turno con un receptor de otro tenant ─────────
+
+
+def test_operario_no_puede_solicitar_cambio_con_receptor_de_otro_tenant(rrhh_client):
+    # ARRANGE — el operario de A tiene un turno real que podría ceder
+    from backend.features.rrhh.model import TurnoAsignado
+    from datetime import date, timedelta
+
+    ctx = rrhh_client
+    db = ctx["db"]
+    turno_a = TurnoAsignado(
+        tenant_id=ctx["tenant_a"].id,
+        operario_id=ctx["op_a_id"],
+        fecha=date.today() + timedelta(days=5),
+        turno="manana",
+    )
+    db.add(turno_a)
+    db.commit()
+    db.refresh(turno_a)
+
+    # ACT — pide el cambio apuntando a un receptor del OTRO taller
+    response = ctx["client"].post(
+        "/rrhh/turnos/solicitar-cambio",
+        json={
+            "receptor_id": ctx["op_b_id"],
+            "turno_cedido_id": turno_a.id,
+            "turno_recibido_id": turno_a.id,  # no llega a usarse, falla antes
+        },
+        headers=_auth(ctx["token_op_a"]),
+    )
+
+    # ASSERT — receptor_id no pertenece al tenant del solicitante
+    assert response.status_code == 400
+
+    # Confirma el efecto de lado real: no se creó ninguna solicitud
+    solicitudes_a = ctx["client"].get(
+        "/rrhh/turnos/cambios", headers=_auth(ctx["token_admin_a"])
+    ).json()
+    assert solicitudes_a == []
+
+
+# ─── 13 — reportar un accidente a nombre de un operario de otro tenant ─────
+
+
+def test_no_puede_crear_accidente_para_afectado_de_otro_tenant(rrhh_client):
+    # ARRANGE / ACT — el admin de A reporta un accidente sobre el operario de B
+    ctx = rrhh_client
+    response = ctx["client"].post(
+        "/rrhh/accidentes",
+        json={
+            "afectado_id": ctx["op_b_id"],
+            "fecha_hora": "2026-01-01T09:00:00",
+            "tipo": "incidente",
+            "descripcion": "Corte superficial en la mano izquierda",
+        },
+        headers=_auth(ctx["token_admin_a"]),
+    )
+
+    # ASSERT
+    assert response.status_code == 400
+
+    # Confirma el efecto de lado real: no se creó ningún accidente
+    accidentes_b = ctx["client"].get(
+        "/rrhh/accidentes", headers=_auth(ctx["token_admin_b"])
+    ).json()
+    assert accidentes_b == []
+
+
+# ─── 14 — asignar un turno en bloque a un operario de otro tenant ──────────
+
+
+def test_no_puede_crear_turno_bulk_para_operario_de_otro_tenant(rrhh_client):
+    # ARRANGE / ACT — el admin de A asigna un turno al operario de B
+    ctx = rrhh_client
+    response = ctx["client"].post(
+        "/rrhh/turnos/bulk",
+        json={
+            "turnos": [
+                {"operario_id": ctx["op_b_id"], "fecha": "2026-02-01", "turno": "manana"},
+            ]
+        },
+        headers=_auth(ctx["token_admin_a"]),
+    )
+
+    # ASSERT
+    assert response.status_code == 400
+
+    # Confirma el efecto de lado real: no se creó ningún turno
+    turnos_b = ctx["client"].get(
+        "/rrhh/turnos",
+        params={"fecha_inicio": "2026-02-01", "fecha_fin": "2026-02-01"},
+        headers=_auth(ctx["token_admin_b"]),
+    ).json()
+    assert turnos_b == []

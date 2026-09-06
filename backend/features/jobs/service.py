@@ -5,6 +5,7 @@ from sqlalchemy import or_
 from sqlalchemy.orm import Session, joinedload
 
 from backend.core.webhooks import fire_webhook
+from backend.features.auth.model import User
 from backend.features.historial.service import add_event
 
 from .model import Job
@@ -22,6 +23,16 @@ _ESTADO_LABELS = {
 
 def _clamp_progress(value: int) -> int:
     return max(0, min(value, 100))
+
+
+def _validar_operario_del_tenant(db: Session, tenant_id: int | None, operario_id: int) -> None:
+    """Guard clause de aislamiento (mismo patrón que rrhh/service.py): comprueba
+    que operario_id pertenece al mismo tenant que quien crea/edita la OT — sin
+    esto, un admin podría asignar un trabajo a un operario de otro taller solo
+    adivinando su id (IDOR de escritura)."""
+    operario = db.query(User).filter(User.id == operario_id, User.tenant_id == tenant_id).first()
+    if not operario:
+        raise ValueError(f"Operario {operario_id} no encontrado")
 
 
 def _generate_code(db: Session, tenant_id: int | None = None) -> str:
@@ -80,6 +91,9 @@ def get_job_by_code(db: Session, code: str, tenant_id: int | None = None) -> Job
 def create_job(
     db: Session, data: CreateJobRequest, tenant_id: int | None = None
 ) -> Job:
+    if data.operario_id is not None:
+        _validar_operario_del_tenant(db, tenant_id, data.operario_id)
+
     job = Job(
         tenant_id=tenant_id,
         code=data.code or _generate_code(db, tenant_id),
@@ -250,6 +264,8 @@ def update_job(
     updates = data.model_dump(exclude_none=True)
     if "progreso" in updates:
         updates["progreso"] = _clamp_progress(updates["progreso"])
+    if "operario_id" in updates:
+        _validar_operario_del_tenant(db, tenant_id, updates["operario_id"])
     for field, value in updates.items():
         setattr(job, field, value)
     db.commit()

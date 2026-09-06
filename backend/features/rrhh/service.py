@@ -905,6 +905,17 @@ def get_turnos_semana(
 
 
 def crear_turno_bulk(db: Session, tenant_id: int | None, creado_por_id: int, turnos_data: list) -> list:
+    # Una sola query para validar todos los operario_id del lote contra el
+    # tenant, en vez de N queries — evita crear/actualizar turnos con un
+    # operario de otro taller (IDOR de escritura).
+    operario_ids = {t.operario_id for t in turnos_data}
+    validos = {
+        u.id for u in db.query(User.id).filter(User.id.in_(operario_ids), User.tenant_id == tenant_id).all()
+    }
+    invalidos = operario_ids - validos
+    if invalidos:
+        raise ValueError(f"Operario(s) no encontrado(s) en este taller: {sorted(invalidos)}")
+
     creados = []
     for turno_data in turnos_data:
         # Si ya existe un turno para ese operario y fecha, lo actualiza
@@ -951,6 +962,37 @@ def eliminar_turno(db: Session, turno_id: int, tenant_id: int | None) -> None:
 
 
 def solicitar_cambio_turno(db: Session, tenant_id: int | None, solicitante_id: int, data) -> SolicitudCambioTurno:
+    # Los tres ids del body son de otros recursos (receptor, turno cedido,
+    # turno recibido) — sin validarlos contra el tenant, un operario podía
+    # apuntar a un turno de otro taller. Al aprobarse, revisar_cambio_turno
+    # intercambia operario_id entre estos dos turnos, así que sin esta
+    # validación aquí sería una escritura cruzada de tenant, no solo lectura.
+    _validar_operario_del_tenant(db, tenant_id, data.receptor_id)
+
+    turno_cedido = (
+        db.query(TurnoAsignado)
+        .filter(
+            TurnoAsignado.id == data.turno_cedido_id,
+            TurnoAsignado.tenant_id == tenant_id,
+            TurnoAsignado.operario_id == solicitante_id,
+        )
+        .first()
+    )
+    if not turno_cedido:
+        raise ValueError("El turno que cedes no existe o no es tuyo")
+
+    turno_recibido = (
+        db.query(TurnoAsignado)
+        .filter(
+            TurnoAsignado.id == data.turno_recibido_id,
+            TurnoAsignado.tenant_id == tenant_id,
+            TurnoAsignado.operario_id == data.receptor_id,
+        )
+        .first()
+    )
+    if not turno_recibido:
+        raise ValueError("El turno solicitado no existe o no pertenece al receptor")
+
     solicitud = SolicitudCambioTurno(
         tenant_id=tenant_id,
         solicitante_id=solicitante_id,
@@ -1023,6 +1065,7 @@ def get_accidentes(db: Session, tenant_id: int | None) -> list:
 
 
 def crear_accidente(db: Session, tenant_id: int | None, reportado_por_id: int, data) -> AccidenteLaboral:
+    _validar_operario_del_tenant(db, tenant_id, data.afectado_id)
     accidente = AccidenteLaboral(
         tenant_id=tenant_id,
         afectado_id=data.afectado_id,
