@@ -6,6 +6,71 @@
 
 ---
 
+### 2026-09-06 — [Backend: Base de datos / Concurrencia]
+
+**❌ Error:**
+`/rrhh/solicitudes` devolvió 500 en producción con
+`QueuePool limit of size 5 overflow 10 reached, connection timed out, timeout 30.00`.
+No había ninguna query lenta ni fuga de sesiones: el pool nunca se había
+configurado, así que SQLAlchemy aplicaba sus defaults (5 + 10 = 15 conexiones),
+mientras FastAPI atendía los endpoints síncronos en un threadpool de 40 hilos.
+Cada petición retiene una conexión vía `Depends(get_db)` durante toda su vida,
+así que 40 hilos podían reclamar 40 conexiones de un pool de 15. El sobrante
+esperaba 30 segundos y moría.
+
+**✅ Corrección:**
+Tres eslabones de la misma cadena:
+1. `backend/core/database.py` — pool configurado a mano: `pool_size=10`,
+   `max_overflow=10`, `pool_timeout=10` (fallar rápido) y `pool_recycle=280`
+   (Neon cierra las ociosas a los ~5 min).
+2. `backend/main.py` — el threadpool de anyio se limita a 15, por debajo de las
+   20 conexiones. El exceso ahora hace cola en el threadpool (gratis) en vez de
+   reventar contra la base de datos.
+3. `backend/features/ia/service.py` — `timeout_ms` en las llamadas a Mistral.
+   `/ia/consulta` es síncrono y retiene su conexión mientras espera: sin timeout,
+   una llamada colgada inmoviliza una conexión del pool indefinidamente.
+
+Invariante fijada en `tests/test_db_pool_capacity.py`: `hilos < conexiones`.
+
+**🎓 Concepto aprendido:**
+**Los defaults de dos librerías distintas no negocian entre ellos.** SQLAlchemy
+no sabe cuántos hilos tiene FastAPI, y anyio no sabe cuántas conexiones hay en
+el pool. Cuando un recurso escaso (conexiones) se consume desde un pool de
+trabajadores (hilos), esos dos números son *un solo* parámetro de diseño y hay
+que ponerlos a mano y por escrito. Corolario: **un endpoint síncrono que hace
+una llamada de red externa con la sesión de BD abierta está prestando un recurso
+compartido a un tercero que no controlas** — de ahí que toda llamada externa
+lleve timeout obligatorio.
+
+---
+
+### 2026-09-06 — [Testing: dobles de prueba]
+
+**❌ Error:**
+Dos bugs de producción distintos que los tests no detectaron, por la misma causa:
+- El webhook de Stripe reventaba con `AttributeError: get` porque
+  `construct_event()` devuelve un `StripeObject` (que **no** hereda de `dict` y
+  no tiene `.get()`), pero los tests lo simulaban con diccionarios de Python.
+- Al añadir `timeout_ms` a la llamada de Mistral, 7 tests se pusieron en rojo
+  porque el doble declaraba `complete(self, model, messages)` — una firma más
+  estrecha que la real del SDK, que acepta 23 parámetros.
+
+**✅ Corrección:**
+- Stripe: convertir en la frontera con `raw_object.to_dict()` (recursivo por
+  defecto, así el `metadata` anidado también deja de ser un `StripeObject`).
+- Mistral: el doble pasa a `complete(self, model, messages, **kwargs)`.
+
+**🎓 Concepto aprendido:**
+**Un mock más estrecho que la interfaz real es un test que miente.** Los seis
+tests del webhook pasaban en verde mientras producción devolvía 500, porque
+validaban el comportamiento del doble, no el del código. Regla práctica: el
+doble debe aceptar *al menos* lo que acepta el original y devolver *el mismo
+tipo* que el original. Si el doble es más rígido que la realidad, el rojo llega
+en el momento equivocado (un refactor legítimo) y el verde llega en el momento
+equivocado (producción rota).
+
+---
+
 ### 2026-08-05 — [Backend: Admin]
 
 **❌ Error:**
